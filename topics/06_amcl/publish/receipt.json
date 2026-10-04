@@ -1,0 +1,29 @@
+{
+  "hashes": {
+    "package": "85700fae7bbe2a7252c7b37d37b10f0fe3faaa7bde27fa17214685e805ba8ee4",
+    "video": "9587f1136fadbe12dffbd934665c1048938ae222b966ca4b97903c209766f60b",
+    "captions": "14d88d10446280d6f86fc984daf1125c5b82669393e76e8cdf9702a730d50d15",
+    "thumbnail": "7f659847096f56c4b9f171f9647c81d99228a79377799ca6de45fa20154eea92"
+  },
+  "channel_id": "UCKT_GQPU4i_wmtE-b_6wa8A",
+  "init_started": true,
+  "video_id": "ZrRFR6ma-QY",
+  "caption_started": true,
+  "caption_id": "AUieDaYYLSC1g1bUMmQs0qZzlrgsK-_hyDPVEj1EHQDoremH2ZQvYIU19MQJBvb6sVz4ALC8xvx9oqF7OQ",
+  "thumbnail_done": true,
+  "remote_status": {
+    "uploadStatus": "processed",
+    "privacyStatus": "public",
+    "license": "youtube",
+    "embeddable": true,
+    "publicStatsViewable": true,
+    "madeForKids": false,
+    "selfDeclaredMadeForKids": false
+  },
+  "processing": "succeeded",
+  "caption_status": "serving",
+  "verified_at": "2026-09-21T07:52:29.231639+00:00",
+  "requested_privacy": "public",
+  "url": "https://www.youtube.com/watch?v=ZrRFR6ma-QY",
+  "thumbnail_revision": "ASCII label font compatibility fix"
+}

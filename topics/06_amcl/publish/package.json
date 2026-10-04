@@ -1,0 +1,56 @@
+{
+  "video": "../output/amcl_education_ko.mp4",
+  "title": "AMCL은 어떻게 로봇의 위치를 찾을까? | SLAM 다음 편",
+  "description": "SLAM 다음 편: 이번에는 지도가 이미 있습니다. AMCL이 입자로 위치와 방향의 가설을 표현하고, 오도메트리·LiDAR 관측·가중치·재표본추출을 통해 위치를 좁혀가는 과정을 설명합니다.\n\n00:00 이번에는 지도가 이미 있습니다\n00:23 가능한 위치를 입자로 표현\n00:50 이동 정보로 후보들을 움직이기\n01:17 LiDAR와 지도는 얼마나 맞을까?\n01:50 잘 설명하는 가설에 높은 가중치\n02:17 재표본추출: 좋은 가설을 더 많이\n02:58 반복 관측으로 위치를 좁히기\n03:30 SLAM은 지도도, AMCL은 위치를\n\n교육용으로 직접 구현한 적응형 입자 필터입니다. 실제 로봇 데이터 또는 Nav2 AMCL 실행/성능 재현이 아닙니다. 정적 2D 지도, 36개 방향의 모의 LiDAR, 단순 상대 이동 잡음, 분석적으로 계산한 장애물 거리 기반 likelihood field, KLD 방식 입자 수 조절을 사용합니다. 지도는 고정하며 새로 작성하지 않습니다. 지도 표시는 점유 칸이지만 센서 점수는 연속 선분 거리로 계산하는 단순화입니다.\n\n입자는 빈 공간 전체에서 초기화합니다. 측정값 생성과 평가에 사용한 기준 Pose를 추정기에 입력하지 않습니다. 지도 전체의 위치를 모르는 시작을 보여주는 예이며, 실제로는 초기 Pose 주변에서 시작할 수도 있습니다. cmd_vel은 명령이며 이 예제의 이동 입력은 오도메트리입니다.\n\n단일 합성 실험(seed 42 / 관측 seed 6), 22회 갱신 결과: 위치 오차 3.41 cm, 방향 오차 0.36도. 입자 수 900 → 399 → 180. 관측 갱신을 끈 비교의 최종 위치 오차 1.14 m. 일반적인 로봇 성능 수치가 아닙니다. 전역 분포가 여러 봉우리를 가지면 평균 Pose가 부정확할 수 있으며, 여기서는 수렴 후의 가중 평균과 원형 평균 방향을 표시합니다. 실제 시스템의 군집 선택, 회복 입자 주입, TF, 센서 오프셋, 동적 물체 처리는 구현하지 않았습니다.\n\nBlender 공간 영상은 같은 기록을 느리게 재생한 것입니다. 파랑은 입자, 초록 고리는 추정 위치, AMR 모델은 기준 위치입니다. 한국어 합성 음성 및 Whisper 기반 자막 정렬을 사용했습니다.\n\n이전 편 SLAM\nhttps://www.youtube.com/watch?v=VGIooUDrPbM\n\n공식 참고 자료\nhttps://docs.nav2.org/rolling/configuration_and_development/configuration_guide/others/configuring_amcl/\nhttps://github.com/ros-navigation/navigation2/tree/main/nav2_amcl\n\n#AMCL #SLAM #로봇 #자율주행 #ParticleFilter #ROS2\n",
+  "privacy": "public",
+  "channel_id": "UCKT_GQPU4i_wmtE-b_6wa8A",
+  "captions": "../output/subtitles.ko.srt",
+  "caption_language": "ko",
+  "thumbnail": "../output/thumbnail.png",
+  "made_for_kids": false,
+  "contains_synthetic_media": false,
+  "tags": [
+    "AMCL",
+    "SLAM",
+    "Particle Filter",
+    "로봇",
+    "ROS2",
+    "Nav2",
+    "Manim",
+    "Blender"
+  ],
+  "chapters": [
+    {
+      "seconds": 0.0,
+      "title": "이번에는 지도가 이미 있습니다"
+    },
+    {
+      "seconds": 23.966666666666665,
+      "title": "가능한 위치를 입자로 표현"
+    },
+    {
+      "seconds": 50.8,
+      "title": "이동 정보로 후보들을 움직이기"
+    },
+    {
+      "seconds": 77.53333333333333,
+      "title": "LiDAR와 지도는 얼마나 맞을까?"
+    },
+    {
+      "seconds": 110.16666666666666,
+      "title": "잘 설명하는 가설에 높은 가중치"
+    },
+    {
+      "seconds": 137.23333333333332,
+      "title": "재표본추출: 좋은 가설을 더 많이"
+    },
+    {
+      "seconds": 178.33333333333334,
+      "title": "반복 관측으로 위치를 좁히기"
+    },
+    {
+      "seconds": 210.53333333333336,
+      "title": "SLAM은 지도도, AMCL은 위치를"
+    }
+  ]
+}

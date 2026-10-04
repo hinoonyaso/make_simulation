@@ -1,0 +1,25 @@
+{
+  "schema": "robotics-visual-trace/v1",
+  "units": {
+    "time": "s",
+    "position": "m"
+  },
+  "samples": [
+    {
+      "t": 0.0,
+      "position": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "t": 0.1,
+      "position": [
+        0.1,
+        0,
+        0
+      ]
+    }
+  ]
+}

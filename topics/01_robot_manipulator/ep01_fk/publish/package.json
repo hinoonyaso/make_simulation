@@ -1,0 +1,28 @@
+{
+  "video": "../output/EP01_3DOF_Forward_Kinematics_KO.mp4",
+  "title": "로봇팔은 관절 각도로 손의 위치를 어떻게 계산할까? | Forward Kinematics",
+  "description": "베이스 yaw, 어깨 pitch, 팔꿈치 pitch 세 각도만 알면 손끝의 3차원 위치를 바로 계산할 수 있을까요? 평면의 한 링크부터 시작해 두 링크의 누적각, 3차원 확장, 동차변환행렬까지 순서대로 연결합니다.\n\n00:00 3축 로봇팔\n00:28 한 링크의 좌표\n00:55 두 링크와 누적각\n01:29 3차원으로 확장\n02:06 변환행렬\n02:42 정기구학 요약\n\n직접 구현한 교육용 3축 로봇팔 순기구학(Forward Kinematics) 모델입니다. J1은 베이스 yaw, J2는 어깨 pitch, J3는 팔꿈치 pitch이며 링크 길이 2.0 m / 1.5 m, 어깨 높이 0.6 m의 이상적인 기구학 모델입니다. 동역학, 충돌, 실물 측정은 포함하지 않습니다. 화면의 3D 동작(Blender)과 좌표값(Manim)은 같은 계산 trace를 함께 재생하며, 해석적 계산과 동차변환행렬 결과를 1000회 무작위 사례로 교차 검증했습니다(최대 오차 1e-15 m 수준).\n\n한국어 합성 내레이션을 사용했습니다. 화면 자막은 음성 인식 결과가 아니라 제작 대본을 축약한 문구이며, 각 발화 구간의 시작과 끝에 맞춰 표시됩니다.\n\n#ForwardKinematics #로봇팔 #로보틱스 #기구학 #Manim #Blender\n",
+  "privacy": "public",
+  "channel_id": "UCKT_GQPU4i_wmtE-b_6wa8A",
+  "captions": "../output/subtitles.ko.srt",
+  "caption_language": "ko",
+  "made_for_kids": false,
+  "contains_synthetic_media": false,
+  "tags": [
+    "Forward Kinematics",
+    "정기구학",
+    "로봇팔",
+    "로보틱스",
+    "기구학",
+    "Manim",
+    "Blender"
+  ],
+  "chapters": [
+    {"seconds": 0.0, "title": "3축 로봇팔"},
+    {"seconds": 28.7, "title": "한 링크의 좌표"},
+    {"seconds": 55.7, "title": "두 링크와 누적각"},
+    {"seconds": 89.2, "title": "3차원으로 확장"},
+    {"seconds": 126.2, "title": "변환행렬"},
+    {"seconds": 162.2, "title": "정기구학 요약"}
+  ]
+}

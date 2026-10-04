@@ -1,0 +1,36 @@
+video:
+  title: ""
+  topic: ""
+  target_duration_s: null
+  fps: null
+  resolution: "1920x1080"
+  working_timeline: ""
+
+assets:
+  narration: ""
+  bgm: ""
+  manim: []
+  blender: []
+  sfx: []
+
+beats:
+  - id: B01
+    narration_intent: ""
+    persistent_object: ""
+    visual_change: ""
+    source: "manim|blender|editor"
+    asset: ""
+    start_hint_s: null
+    end_hint_s: null
+    evidence_mode: "illustration|toy_simulation|trace_playback|model_execution|reported_result|none"
+    audio:
+      sfx: ""
+      bgm: "low|normal|none"
+
+review:
+  representative_beats: [B01]
+  unresolved: []
+
+delivery:
+  filename: ""
+  preset: ""

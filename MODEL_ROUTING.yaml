@@ -1,0 +1,46 @@
+version: 9.0-source-informed-lite
+objective: "famous-channel-level polish first (bar: pilots/01_teb_reference); templates first, reasoning where visual judgment matters"
+
+orchestrator: {model: gpt-5.6-terra, effort: medium, verbosity: low}
+roles:
+  director: {model: gpt-5.6-sol, effort: high}
+  manim: {model: gpt-5.6-sol, effort: medium}
+  manim_hero: {model: gpt-6-astra, effort: high, activation: escalation_only}
+  blender: {model: gpt-5.6-sol, effort: medium}
+  blender_hero: {model: gpt-6-astra, effort: high, activation: escalation_only}
+  reviewer: {model: gpt-5.6-sol, effort: high, activation: preview_only}
+  resolve: {model: gpt-5.6-terra, effort: medium}
+  youtube: {model: gpt-5.6-luna, effort: low, activation: optional}
+  paper_research: {model: gpt-5.6-sol, effort: high, activation: optional}
+  paper_deep: {model: gpt-6-astra, effort: high, activation: escalation_only}
+
+deterministic_no_llm:
+  - visual asset lookup via core/visual-assets/asset_registry.py
+  - visual beat manifest validation
+  - shared trace validation
+  - reusable asset lookup
+  - sequence staging
+  - ffmpeg/ffprobe media inspection
+  - rendering/export commands
+
+escalation:
+  manim_hero:
+    - flagship visual derivation carries the episode
+    - reviewer finds non-trivial Manim blocker/high defect
+    - one normal patch fails verification
+  blender_hero:
+    - flagship 3D shot or complex spatial/camera choreography
+    - reviewer finds non-trivial Blender blocker/high defect
+    - one normal patch fails verification
+  paper_deep:
+    - dense math central to explanation
+    - conflicting primary sources/version ambiguity
+    - consequential benchmark claim
+
+limits:
+  max_parallel_workers: 2
+  default_review_passes: 1
+  max_revision_passes: 3  # flagship shots; normal shots still stop after one clean pass
+  no_duplicate_worker_for_same_stage: true
+  pass_compact_artifacts_not_full_history: true
+  skip_full_pipeline_for_single_scene_tasks: true

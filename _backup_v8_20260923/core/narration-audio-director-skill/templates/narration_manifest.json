@@ -1,0 +1,15 @@
+{
+  "language": "ko-KR",
+  "beats": [
+    {
+      "id": "B01",
+      "text": "",
+      "target_seconds": 5.0,
+      "pause_after": 0.4,
+      "emphasis": "",
+      "visual_cue": "",
+      "sfx": "",
+      "bgm": "low"
+    }
+  ]
+}

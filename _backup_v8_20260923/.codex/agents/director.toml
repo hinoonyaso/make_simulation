@@ -1,0 +1,5 @@
+model = "gpt-5.6-sol"
+model_reasoning_effort = "high"
+model_verbosity = "low"
+model_reasoning_summary = "none"
+developer_instructions = "Read core/robotics-ai-visual-director-skill/SKILL.md. Load only the one reference needed for the current pass. Emit a compact beat sheet/tool route; do not restate the skill."

@@ -1,0 +1,20 @@
+{
+  "video": "../output/ironcub3_education_ko.mp4",
+  "title": "iRonCub 3는 어떻게 날까? | 제트 추력·MPC를 3D 시뮬레이션으로 이해하기",
+  "description": "iRonCub 3 논문의 핵심을 추력, 회전 모멘트, 모델 예측 제어(MPC), 직접 제작한 3D 시뮬레이션으로 설명합니다.\n\n00:00 사람 모양 로봇은 어떻게 균형을 잡고 날까?\n00:34 네 개의 제트, 하나의 몸\n01:06 첫 번째 조건: 무게를 버틸 힘\n01:37 두 번째 조건: 돌지 않도록 힘을 배분\n02:12 명령을 보냈다고 추력이 즉시 생기지는 않는다\n02:48 미래를 계산하고, 첫 명령만 실행한다\n03:36 같은 제어기, 달라진 엔진 응답\n04:27 논문은 어디까지 보여주었나?\n05:02 로봇 소프트웨어 관점에서 가져갈 것\n\n이 영상의 3D 로봇과 비교 실험은 교육용 축소 모델입니다. 연구팀의 실제 시험 영상이나 제어기 재현이 아닙니다. 50 kg 강체, 평면 운동, 이상적인 상태 피드백, 1차 추력 지연을 가정하며 관절·UKF·접촉·열유동은 구현하지 않았습니다. 논문의 제트 모델은 비선형 2차 모델입니다.\n자체 12초 실험 / 모델 일치: 위치 RMSE 1.50 cm, 최대 기울기 0.85도\n자체 12초 실험 / 추력 모델 불일치: 위치 RMSE 2.19 cm, 최대 기울기 10.58도\n수치는 실제 iRonCub의 성능이 아닙니다. 비교 실험은 공중에서 시작하며, 제어기의 예측 τ=0.35초는 동일하고 실제 엔진 모델 τ만 0.35/0.77초로 다릅니다.\n\n한국어 합성 음성 및 Whisper 기반 자막 정렬을 사용했습니다.\n\n논문·공식 자료\nhttps://arxiv.org/abs/2506.01125v1\nhttps://github.com/ami-iit/paper_gorbani_mohamed_2025_ironcub3\nhttps://ami.iit.it/aerial-humanoid-robotics\n\n#iRonCub #로봇 #MPC #PhysicalAI #시뮬레이션\n",
+  "privacy": "public",
+  "channel_id": "UCKT_GQPU4i_wmtE-b_6wa8A",
+  "captions": "../output/subtitles.ko.srt",
+  "caption_language": "ko",
+  "thumbnail": "../output/thumbnail.png",
+  "made_for_kids": false,
+  "tags": [
+    "iRonCub",
+    "MPC",
+    "Flying Humanoid",
+    "Physical AI",
+    "로봇",
+    "Manim",
+    "Blender"
+  ]
+}

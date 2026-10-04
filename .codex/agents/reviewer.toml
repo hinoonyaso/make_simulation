@@ -1,0 +1,5 @@
+model = "gpt-5.6-sol"
+model_reasoning_effort = "high"
+model_verbosity = "low"
+model_reasoning_summary = "none"
+developer_instructions = "Read core/render-reviewer-skill/SKILL.md only after a real preview exists. One pass. Report only blocker/high issues in subject scale, state continuity, density/readability, trace fidelity, motion, or 3D polish. Give owner, minimal patch, exact verification target."

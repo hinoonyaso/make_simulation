@@ -1,0 +1,55 @@
+{
+  "video": "../output/astar_education_ko.mp4",
+  "title": "A*는 어떻게 최단 경로를 찾을까? | 로봇 경로 계획",
+  "description": "SLAM으로 지도를 만들고 AMCL로 위치를 찾았다면, 이제 경로를 계획할 차례입니다. A*가 g+h로 후보를 선택하고 Open/Closed를 갱신하며, 부모 노드를 역추적해 최단 경로를 얻는 과정을 실제 계산 기록으로 보여줍니다.\n\n00:00 장애물 사이로 가장 짧게 가려면?\n00:25 목적지 방향을 모르면 넓게 탐색\n00:50 A*의 핵심: 지나온 비용 + 예상 비용\n01:18 한 칸의 점수를 직접 계산\n01:46 Open과 Closed가 바뀌는 과정\n02:14 벽을 통과할 수 없다면 우회\n02:57 목적지에서 부모를 거꾸로 따라가기\n03:32 로봇에서는 전역 경로가 됩니다\n\n직접 구현한 교육용 12×9 정적 격자 탐색입니다. 상하좌우 4방향, 모든 이동 비용 1, 통과 불가능한 장애물, Manhattan 휴리스틱을 사용합니다. g는 현재 발견한 최선 경로 비용, h는 남은 비용의 하한 추정, f=g+h입니다. 이 휴리스틱은 일관적이므로 Closed를 다시 열지 않는 구현에서도 최적성을 유지합니다. 목표를 처음 발견할 때가 아니라 최소 f로 Open에서 꺼낼 때 종료합니다.\n\n같은 지도: A*와 Dijkstra 모두 최단 비용 16. 유효하게 꺼낸 칸 수(시작·목적지 포함)는 A* 41 / Dijkstra 89입니다. 시간 성능 벤치마크가 아닙니다. 지도, 휴리스틱, 동점 처리에 따라 수가 달라집니다. A* 동점은 작은 h, 그 다음 삽입 순서로 처리하며, 이웃 순서는 오른쪽·위·아래·왼쪽입니다. 예시 칸 (5,5)의 g=5, h=7, f=12도 같은 실행에서 나온 값입니다.\n\n빈 격자 비용 10, 장애물 격자 비용 16, 도달 불가능한 목표를 별도로 검증했고 독립 BFS 결과와 최단 비용을 비교했습니다. 영상은 지도 위 탐색 계산이며 실제 로봇 주행이 아닙니다. 로봇 크기·회전 반경·동적 장애물·costmap inflation·controller는 이 격자 모형에 구현하지 않았습니다.\n\nNav2에서는 점유 지도와 센서 등을 바탕으로 구성한 global costmap을 선택된 플래너가 사용합니다. NavFn의 use_astar 같은 설정을 통해 A*를 선택할 수 있습니다. 본 영상은 Nav2/NavFn 구현 재현이 아닙니다. Global Path와 실제 속도 명령을 구분하며 다음 Nav2 편으로 연결합니다.\n\n이전 편\nSLAM: https://www.youtube.com/watch?v=VGIooUDrPbM\nAMCL: https://www.youtube.com/watch?v=ZrRFR6ma-QY\n\n참고 자료\nhttps://www.redblobgames.com/pathfinding/a-star/introduction.html\nhttps://docs.nav2.org/rolling/configuration_and_development/configuration_guide/planners_plugins/configuring_navfn/\n\n한국어 합성 내레이션, Whisper 자막 정렬, Manim 원본 애니메이션을 사용했습니다.\n#AStar #경로탐색 #로봇 #Nav2 #ROS2 #알고리즘\n",
+  "privacy": "public",
+  "channel_id": "UCKT_GQPU4i_wmtE-b_6wa8A",
+  "captions": "../output/subtitles.ko.srt",
+  "caption_language": "ko",
+  "thumbnail": "../output/thumbnail.png",
+  "made_for_kids": false,
+  "contains_synthetic_media": false,
+  "tags": [
+    "A*",
+    "AStar",
+    "경로 탐색",
+    "로봇",
+    "Nav2",
+    "ROS2",
+    "Manim"
+  ],
+  "chapters": [
+    {
+      "seconds": 0.0,
+      "title": "장애물 사이로 가장 짧게 가려면?"
+    },
+    {
+      "seconds": 25.666666666666664,
+      "title": "목적지 방향을 모르면 넓게 탐색"
+    },
+    {
+      "seconds": 50.0,
+      "title": "A*의 핵심: 지나온 비용 + 예상 비용"
+    },
+    {
+      "seconds": 78.56666666666666,
+      "title": "한 칸의 점수를 직접 계산"
+    },
+    {
+      "seconds": 106.69999999999999,
+      "title": "Open과 Closed가 바뀌는 과정"
+    },
+    {
+      "seconds": 134.89999999999998,
+      "title": "벽을 통과할 수 없다면 우회"
+    },
+    {
+      "seconds": 177.7,
+      "title": "목적지에서 부모를 거꾸로 따라가기"
+    },
+    {
+      "seconds": 212.03333333333333,
+      "title": "로봇에서는 전역 경로가 됩니다"
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "version": "8.0",
+  "default_route": [
+    "director",
+    "narration_if_needed",
+    "manim_or_blender",
+    "render_reviewer",
+    "resolve",
+    "youtube_if_requested"
+  ],
+  "side_services": [
+    "visual_asset_library"
+  ],
+  "optional": [
+    "paper_research"
+  ],
+  "max_default_review_passes": 2,
+  "codex_routing": {
+    "project_config": ".codex/config.toml",
+    "model_policy": "MODEL_ROUTING.yaml",
+    "orchestrator": {
+      "model": "gpt-5.6-terra",
+      "effort": "medium"
+    },
+    "astra_policy": "escalation_only"
+  }
+}

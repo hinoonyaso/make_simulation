@@ -1,0 +1,12 @@
+review_pass: 1
+preview: ""
+issues:
+  - severity: high
+    beat: B04
+    time: "00:31-00:35"
+    problem: ""
+    why: ""
+    owner: Manim
+    patch: ""
+    verify: ""
+stop_condition: "no blocker/high issues remain"

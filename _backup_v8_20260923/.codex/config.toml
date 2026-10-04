@@ -1,0 +1,65 @@
+# Project-local Codex routing for Robotics / AI Visual Video V8.
+# Loaded only when this project is trusted by Codex.
+
+model = "gpt-5.6-terra"
+model_reasoning_effort = "medium"
+model_verbosity = "low"
+model_reasoning_summary = "none"
+
+[agents]
+enabled = true
+max_concurrent_threads_per_session = 3
+default_subagent_model = "gpt-5.6-terra"
+default_subagent_reasoning_effort = "medium"
+
+[agents.director]
+description = "Plan the educational story and compact beat sheet. Use the Visual Director skill only."
+config_file = "agents/director.toml"
+
+[agents.narration]
+description = "Write and time concise narration/audio cues after the beat sheet is locked."
+config_file = "agents/narration.toml"
+
+[agents.manim]
+description = "Build normal Manim educational scenes from the locked beat/narration manifests."
+config_file = "agents/manim.toml"
+
+[agents.manim_hero]
+description = "Escalation role for a flagship or repeatedly failing Manim hero scene. Use only when routing rules trigger it."
+config_file = "agents/manim_hero.toml"
+
+[agents.blender]
+description = "Build normal Blender robotics/spatial scenes using existing helpers and assets first."
+config_file = "agents/blender.toml"
+
+[agents.blender_hero]
+description = "Escalation role for a flagship or repeatedly failing Blender hero scene. Use only when routing rules trigger it."
+config_file = "agents/blender_hero.toml"
+
+[agents.asset_library]
+description = "Resolve/register reusable visual assets by targeted lookup; do not redesign scenes."
+config_file = "agents/asset_library.toml"
+
+[agents.reviewer]
+description = "Inspect actual preview frames/video and emit a minimal root-cause patch list."
+config_file = "agents/reviewer.toml"
+
+[agents.reviewer_deep]
+description = "Escalation reviewer for blockers, ambiguous visual defects, or a failed first patch."
+config_file = "agents/reviewer_deep.toml"
+
+[agents.resolve]
+description = "Assemble and finish approved assets in DaVinci Resolve through the installed MCP; preserve master timelines."
+config_file = "agents/resolve.toml"
+
+[agents.youtube]
+description = "Prepare/preflight/publish YouTube packages only when explicitly requested."
+config_file = "agents/youtube.toml"
+
+[agents.paper_research]
+description = "Optional primary-source paper/benchmark research; return only the compact evidence handoff."
+config_file = "agents/paper_research.toml"
+
+[agents.paper_deep]
+description = "Escalation role for dense math, conflicting evidence, or a benchmark-critical paper claim."
+config_file = "agents/paper_deep.toml"

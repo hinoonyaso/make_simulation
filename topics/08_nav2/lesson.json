@@ -1,0 +1,97 @@
+{
+  "topic": "Nav2",
+  "level": 3,
+  "evidence_mode": "toy integrated closed-loop model; official architecture explanation",
+  "learning_objective": "Explain localization, costmaps, planning, control and orchestration as a feedback system.",
+  "brief": {
+    "question": "What happens after setting a goal?",
+    "mechanism": "Sensor changes cause obstacle estimates, cost/path updates and changed velocity commands.",
+    "hero_experiment": "Same start/goal with and without an appearing moving obstacle.",
+    "system_takeaway": "Path is a spatial reference; controller outputs velocity; robot generates next observation."
+  },
+  "prerequisites": [
+    "05_slam",
+    "06_amcl",
+    "07_astar"
+  ],
+  "sources": [
+    "https://docs.nav2.org/rolling/getting_started/nav2_behavior_trees/",
+    "https://docs.nav2.org/jazzy/configuration_and_development/configuration_guide/core_servers/costmap_2d/costmap_plugins/inflation/",
+    "https://docs.nav2.org/rolling/configuration_and_development/tuning_guide/"
+  ],
+  "source_checked": "2026-09-21",
+  "seed": 14,
+  "units": {
+    "position": "m",
+    "angles": "rad",
+    "linear_velocity": "m/s",
+    "angular_velocity": "rad/s",
+    "time": "s"
+  },
+  "frame": "single world frame x forward/right on diagram, y up, yaw CCW; ideal co-located lidar",
+  "contracts": [
+    {
+      "boundary": "Environment -> Lidar",
+      "data": "120 ranges, 3.2m max, 2mm Gaussian noise",
+      "rate_hz": 10
+    },
+    {
+      "boundary": "Lidar + known static map + ideal Pose -> obstacle estimate",
+      "data": "circle-fit center; known 0.30m radius; no truth object labels"
+    },
+    {
+      "boundary": "Pose + Goal + costs -> Planner",
+      "data": "8-connected weighted A* path, 0.15m resolution",
+      "rate": "1Hz or path invalid"
+    },
+    {
+      "boundary": "Path + obstacle distance field + state -> Controller",
+      "data": "candidate constant-twist rollouts, horizon 1.5s, selected v/w",
+      "rate_hz": 10
+    },
+    {
+      "boundary": "cmd_vel -> Wheels -> Robot -> next observation",
+      "data": "exact differential-drive kinematics, wheel radius .1m, track .45m",
+      "rate_hz": 10
+    }
+  ],
+  "assumptions": [
+    "Ideal localization input; AMCL not executed",
+    "Static map plus estimated circular obstacle; local distance checks replace full Nav2 rolling costmap",
+    "Instant ideal stop on invalid path; no slip, actuator dynamics, contact forces, TF, networking or latency",
+    "Simple state-machine orchestration, not BehaviorTree.CPP",
+    "Single seed and one trial per condition; no general performance claims",
+    "Blender is trace playback; annotation holds and video mapping in timeline.json"
+  ],
+  "trace": "output/trace.json",
+  "metrics": {
+    "baseline": {
+      "success": true,
+      "duration_s": 14.0,
+      "final_position_error_m": 0.11773444891063445,
+      "final_yaw_error_rad": 0.0,
+      "minimum_clearance_m": 1.25,
+      "path_invalid_replans": 0,
+      "plans": 14
+    },
+    "dynamic": {
+      "success": true,
+      "duration_s": 17.200000000000003,
+      "final_position_error_m": 0.11563461493140118,
+      "final_yaw_error_rad": 0.06844055552000139,
+      "minimum_clearance_m": 0.39813317359005695,
+      "path_invalid_replans": 1,
+      "plans": 18
+    }
+  },
+  "success": "Position error < .12m and yaw error < .08rad",
+  "collision_evaluation": "Minimum circular footprint clearance sampled additionally at 100Hz in validate.py; not a continuous safety proof",
+  "timeline": "output/timeline.json",
+  "artifacts": {
+    "video": "output/nav2_education_ko.mp4",
+    "captions": "output/subtitles.ko.srt",
+    "thumbnail": "output/thumbnail.png",
+    "package": "publish/package.json"
+  },
+  "commands": "README.md"
+}

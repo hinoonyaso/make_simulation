@@ -1,0 +1,5 @@
+model = "gpt-5.6-terra"
+model_reasoning_effort = "medium"
+model_verbosity = "low"
+model_reasoning_summary = "none"
+developer_instructions = "Read core/davinci-resolve-robotics-postproduction-skill/SKILL.md only when approved assets exist. Use the already-installed davinci-resolve MCP. Inspect first, preserve the master timeline, duplicate before destructive edits, and keep narration dominant."

@@ -1,0 +1,22 @@
+{
+  "video": "../simulation_v3/output/pixel_depth_simulation_ko_v3.mp4",
+  "title": "픽셀과 깊이로 3D 위치를 구하는 법 | 카메라 역투영 시뮬레이션",
+  "description": "픽셀 좌표와 깊이 Z, 카메라 내부 파라미터 K로 3D 표면 위치를 구하는 과정을 Manim 수식과 Blender 시뮬레이션으로 설명합니다.\n\n움직이는 장면 → 카메라 RGB·깊이 관측 → 역투영 → 실제 표면점과 오차 비교\nX = (u − cx) Z / fx, Y = (v − cy) Z / fy\n\n00:00 관측해서 복원하는 시뮬레이션\n00:20 물체가 움직이면 픽셀도 바뀐다\n00:41 깊이는 광학축 방향 성분\n00:59 기준 실험: 보정값이 정확하다면\n01:20 실험 1: 깊이 노이즈를 넣으면\n01:40 실험 2: 초점 거리가 잘못됐다면\n01:59 정확한 보정값으로 다시 복원\n02:19 수식보다 중요한 입력의 의미\n\n[실험 조건과 결과]\n합성 핀홀 카메라, 160×120 관측, fx=fy=150 px, 주점 (79.5,59.5), 이상적인 물체 구분을 가정합니다. 깊이는 광선의 직선거리가 아닌 광학축 Z 성분입니다. 복원 대상은 물체 중심이 아니라 선택 픽셀이 보는 표면점입니다.\n\n같은 10초 경로의 301개 표본으로 계산한 3D 위치 RMSE:\n• 이상적인 기준: 약 0 mm\n• 깊이 잡음 σZ=0.04 m: 40.33 mm\n• 복원용 fx만 실제 값의 80%로 변경: 59.99 mm\n• 정확한 보정값 복구: 약 0 mm\n난수 seed: 20260916\n\n이 수치는 자체 합성 실험 결과이며 실제 깊이 카메라의 정확도를 뜻하지 않습니다. 렌즈 왜곡과 실제 센서의 모든 오차는 구현하지 않았습니다. 영상은 계산된 실험 기록을 재생하며, 카메라 좌표를 로봇에서 사용하려면 좌표 변환과 동작 계획이 별도로 필요합니다.\n\n한국어 합성 음성과 Whisper로 정렬한 교정 자막을 사용했습니다.\n\n[참고 자료]\nOpenCV Camera Calibration and 3D Reconstruction\nhttps://docs.opencv.org/4.x/d9/d0c/group__calib3d.html\nROS REP-103 좌표계 규약\nhttps://www.ros.org/reps/rep-0103.html\n\n#로보틱스 #컴퓨터비전 #DepthCamera #Manim #Blender\n",
+  "privacy": "public",
+  "channel_id": "UCKT_GQPU4i_wmtE-b_6wa8A",
+  "captions": "../simulation_v3/output/subtitles.ko.srt",
+  "caption_language": "ko",
+  "thumbnail": "../simulation_v3/output/thumbnail.jpg",
+  "made_for_kids": false,
+  "contains_synthetic_media": false,
+  "tags": [
+    "로보틱스",
+    "컴퓨터비전",
+    "Depth Camera",
+    "카메라 보정",
+    "역투영",
+    "Manim",
+    "Blender",
+    "3D 시뮬레이션"
+  ]
+}

@@ -1,0 +1,5 @@
+model = "gpt-6-astra"
+model_reasoning_effort = "high"
+model_verbosity = "low"
+model_reasoning_summary = "none"
+developer_instructions = "Use only for a flagship Manim hero scene, a high/blocker review defect, or after two failed normal attempts. Read core/manim-robotics-education-skill/SKILL.md plus only the active topic/reference; inspect real renders before finalizing."

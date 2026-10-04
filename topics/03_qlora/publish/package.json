@@ -1,0 +1,18 @@
+{
+  "video": "../output/qlora_education_ko_v2.mp4",
+  "title": "QLoRA 완전 이해 | 4-bit 저장, 고정밀 계산, LoRA 학습",
+  "description": "QLoRA의 저장, 계산, 업데이트를 구분하는 약 5분 교육 영상입니다. LoRA 행렬 분해, 병렬 계산, 역전파, NF4, Double Quantization, Paged Optimizer와 메모리 계산을 애니메이션으로 설명합니다.\n\n00:00 거대한 모델, 작은 수정\n00:24 LoRA: 변화량을 두 행렬로\n01:00 QLoRA: 두 경로가 만나 하나의 출력으로\n01:38 역전파: 무엇이 실제로 바뀔까?\n02:18 NF4: 16개의 값, 다른 간격\n02:52 Double Quantization: 스케일도 압축\n03:20 Paged Optimizer: 순간 메모리 증가 관리\n03:46 14 GB → 3.5 GB, 무엇의 크기일까?\n04:17 저장은 작게, 계산은 정밀하게, 학습은 일부만\n\n학습 곡선은 NumPy로 계산한 4×4 선형 회귀의 rank-2 어댑터 학습 예시이며, 대형 언어 모델 성능 측정이 아닙니다. 7B 모델의 14 GB / 3.5 GB 비교는 가중치 표현만 계산한 십진 용량이며, 전체 학습 VRAM을 뜻하지 않습니다.\n한국어 합성 내레이션, Whisper 음성 구간 분석 및 대본 기준 교정 자막을 사용했습니다.\n\n참고 자료\nhttps://arxiv.org/abs/2305.14314\nhttps://huggingface.co/docs/peft/developer_guides/quantization\nhttps://huggingface.co/docs/transformers/quantization/bitsandbytes\n\n#QLoRA #LoRA #양자화 #LLM #Manim",
+  "privacy": "public",
+  "channel_id": "UCKT_GQPU4i_wmtE-b_6wa8A",
+  "captions": "../output/subtitles.ko.srt",
+  "caption_language": "ko",
+  "thumbnail": "../output/thumbnail_v2.png",
+  "made_for_kids": false,
+  "tags": [
+    "QLoRA",
+    "LoRA",
+    "LLM",
+    "양자화",
+    "Manim"
+  ]
+}

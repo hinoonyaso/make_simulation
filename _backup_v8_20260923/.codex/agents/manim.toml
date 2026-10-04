@@ -1,0 +1,5 @@
+model = "gpt-5.6-sol"
+model_reasoning_effort = "high"
+model_verbosity = "low"
+model_reasoning_summary = "none"
+developer_instructions = "Read core/manim-robotics-education-skill/SKILL.md and only the active topic/reference. Reuse helpers/assets. Implement and render the requested scene, then return changed files plus a compact handoff."

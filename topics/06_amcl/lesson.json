@@ -1,0 +1,71 @@
+{
+  "topic": "AMCL",
+  "level": 1,
+  "evidence_mode": "educational adaptive particle filter, not Nav2 execution",
+  "learning_objective": "알려진 지도에서 이동·관측·가중치·재표본추출로 위치 분포를 좁힌다",
+  "episode_brief": {
+    "hero_experiment": "900 global pose hypotheses -> odometry motion -> likelihood field sensor scores -> KLD resampling -> localized distribution",
+    "system_takeaway": "static map + odometry + ranges -> estimated map-frame pose; no map updates",
+    "limitations": "single synthetic run, no recovery injection, no clustering, static geometry"
+  },
+  "prerequisite": "../05_slam",
+  "trace": "output/trace.json",
+  "metrics": {
+    "final_position_error_m": 0.03411736247020456,
+    "final_heading_error_deg": 0.3600844989582984,
+    "no_sensor_final_error_m": 1.137228741084007,
+    "initial_particles": 900,
+    "final_particles": 180,
+    "counts": [
+      399,
+      180,
+      180,
+      180,
+      180,
+      180,
+      180,
+      180,
+      180,
+      180,
+      180,
+      180,
+      180,
+      180,
+      180,
+      180,
+      180,
+      180,
+      180,
+      180,
+      180,
+      180
+    ]
+  },
+  "seeds": {
+    "particles": 42,
+    "observations": 6
+  },
+  "units": {
+    "position": "m",
+    "heading": "rad"
+  },
+  "model": {
+    "rays": 36,
+    "scan_sigma_m": 0.025,
+    "likelihood_sigma_m": 0.45,
+    "KLD_epsilon": 0.08,
+    "KLD_z": 2.326,
+    "KLD_bins": [
+      0.35,
+      0.35,
+      0.25
+    ],
+    "min_particles": 180,
+    "max_particles": 900
+  },
+  "video_time": "output/timeline.json",
+  "sources": [
+    "https://docs.nav2.org/rolling/configuration_and_development/configuration_guide/others/configuring_amcl/",
+    "https://github.com/ros-navigation/navigation2/tree/main/nav2_amcl"
+  ]
+}

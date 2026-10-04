@@ -1,0 +1,37 @@
+{
+  "topic": "04_ironcub3",
+  "level": 2,
+  "evidence_mode": "paper explanation + original toy simulation",
+  "objective": "Understand thrust balance, moment allocation and actuator-model mismatch",
+  "sources": "research/sources.json",
+  "claim_ledger": "research/brief.md",
+  "config": {
+    "mass_kg": 50.0,
+    "gravity": 9.81,
+    "inertia_kg_m2": 8.0,
+    "lever_arm_m": 0.32,
+    "integration_dt": 0.01,
+    "controller_dt": 0.1,
+    "prediction_horizon_s": 3.0,
+    "controller_tau_s": 0.35,
+    "jet_max_N": 250,
+    "seed": null
+  },
+  "trace": "output/simulation.json",
+  "metrics": {
+    "nominal": {
+      "position_rmse_m": 0.01497007174406515,
+      "max_error_m": 0.039297483371680805,
+      "final_error_m": 1.3503019436523888e-10,
+      "max_pitch_deg": 0.8484655014545452
+    },
+    "mismatch": {
+      "position_rmse_m": 0.02186251423970732,
+      "max_error_m": 0.06727031099776098,
+      "final_error_m": 0.06727031099776098,
+      "max_pitch_deg": 10.578718723567361
+    }
+  },
+  "timeline": "output/composition_timeline.json",
+  "video": "output/ironcub3_education_ko.mp4"
+}

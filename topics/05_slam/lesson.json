@@ -1,0 +1,33 @@
+{
+  "topic": "SLAM",
+  "level": 1,
+  "learning_objective": "관측과 이동량으로 위치를 보정하고 지도를 갱신하는 반복을 설명한다",
+  "evidence_mode": "computed educational toy demonstration",
+  "hero_experiment": "biased odometry -> ICP scan matching -> corrected pose -> occupancy evidence update",
+  "trace": "output/trace.json",
+  "metrics": {
+    "position_rmse_odometry_m": 0.5757122250963568,
+    "position_rmse_corrected_m": 0.0741345248765342,
+    "sample1_predicted_error_m": 0.07905694150420949,
+    "sample1_corrected_error_m": 0.009037521071650866
+  },
+  "units": {
+    "position": "m",
+    "angle": "rad"
+  },
+  "seeds": {
+    "estimator": 21,
+    "spatial_visualization": 22
+  },
+  "sources": [
+    "https://google-cartographer-ros.readthedocs.io/en/latest/algo_walkthrough.html"
+  ],
+  "assumptions": [
+    "static 2D walls",
+    "first pose defines map origin",
+    "scan-to-scan ICP",
+    "no loop closure or graph optimization"
+  ],
+  "timeline": "output/timeline.json",
+  "system_takeaway": "relative motion + local range scan -> map-frame pose + occupancy map -> planning input"
+}

@@ -1,0 +1,37 @@
+[
+  {
+    "id": "paper",
+    "title": "iRonCub 3: The Jet-Powered Flying Humanoid Robot",
+    "version": "arXiv:2506.01125v1",
+    "date": "2025-06-01",
+    "url": "https://arxiv.org/abs/2506.01125v1",
+    "accessed": "2026-09-16",
+    "authors": [
+      "Davide Gorbani",
+      "Hosameldin Awadalla Omer Mohamed",
+      "Giuseppe L’Erario",
+      "Gabriele Nava",
+      "Punith Reddy Vanteddu",
+      "Shabarish Purushothaman Pillai",
+      "Antonello Paolino",
+      "Fabio Bergonti",
+      "Saverio Taliani",
+      "Alessandro Croci",
+      "Nicholas James Tremaroli",
+      "Silvio Traversaro",
+      "Bruno Vittorio Trombetta",
+      "Daniele Pucci"
+    ]
+  },
+  {
+    "id": "official-demo",
+    "url": "https://github.com/ami-iit/paper_gorbani_mohamed_2025_ironcub3",
+    "commit": "11059150a8e92069bdb25c7c51117b78d509e914",
+    "role": "official accompanying demonstration; not copied into output"
+  },
+  {
+    "id": "official-platform",
+    "url": "https://ami.iit.it/aerial-humanoid-robotics",
+    "role": "platform and research context"
+  }
+]

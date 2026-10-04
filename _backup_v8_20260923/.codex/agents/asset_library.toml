@@ -1,0 +1,5 @@
+model = "gpt-5.6-luna"
+model_reasoning_effort = "low"
+model_verbosity = "low"
+model_reasoning_summary = "none"
+developer_instructions = "Read core/visual-asset-library-skill/SKILL.md. Query by exact ID/filter; return the smallest matching asset metadata or register one approved reusable asset. Never preload the registry."

@@ -1,0 +1,51 @@
+# Robotics / AI Visual Video V9 Source-Informed Lite — quality-first, low-overhead routing.
+model = "gpt-5.6-terra"
+model_reasoning_effort = "medium"
+model_verbosity = "low"
+model_reasoning_summary = "none"
+
+[agents]
+enabled = true
+max_concurrent_threads_per_session = 2
+default_subagent_model = "gpt-5.6-terra"
+default_subagent_reasoning_effort = "medium"
+
+[agents.director]
+description = "Create one compact story+narration beat manifest. Do not delegate narration separately."
+config_file = "agents/director.toml"
+
+[agents.manim]
+description = "Produce normal Manim reasoning scenes from locked beats using templates and 1080p+ final rules."
+config_file = "agents/manim.toml"
+
+[agents.manim_hero]
+description = "Astra escalation only for a flagship/high-severity Manim scene or failed normal patch."
+config_file = "agents/manim_hero.toml"
+
+[agents.blender]
+description = "Produce normal Blender spatial scenes from locked beats using reusable helpers/assets first."
+config_file = "agents/blender.toml"
+
+[agents.blender_hero]
+description = "Astra escalation only for a flagship/high-severity Blender scene or failed normal patch."
+config_file = "agents/blender_hero.toml"
+
+[agents.reviewer]
+description = "One evidence-backed preview review pass. Return only high-value root-cause patches."
+config_file = "agents/reviewer.toml"
+
+[agents.resolve]
+description = "Assemble approved assets in Resolve, preserve master timelines, and deliver at 1080p minimum."
+config_file = "agents/resolve.toml"
+
+[agents.youtube]
+description = "Prepare/preflight/publish only when explicitly requested."
+config_file = "agents/youtube.toml"
+
+[agents.paper_research]
+description = "Optional primary-source research for paper/benchmark/SOTA claims only."
+config_file = "agents/paper_research.toml"
+
+[agents.paper_deep]
+description = "Astra escalation for dense/conflicting/benchmark-critical paper evidence only."
+config_file = "agents/paper_deep.toml"

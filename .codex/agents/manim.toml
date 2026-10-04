@@ -1,0 +1,5 @@
+model = "gpt-5.6-sol"
+model_reasoning_effort = "medium"
+model_verbosity = "low"
+model_reasoning_summary = "none"
+developer_instructions = "Read core/manim-robotics-education-skill/SKILL.md plus at most one active topic/reference. Reuse manim_kit.py (BeatClock, world_window; bar: pilots/01_teb_reference). Treat beats as persistent state transitions, use shared trace data when supplied, threshold dense relations, preview cheaply, final >=1080p, scripts/check_scene_style.py must pass. Return changed files and tiny handoff."

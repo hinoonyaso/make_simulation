@@ -1,0 +1,138 @@
+{
+  "topic": "DWB vs TEB",
+  "level": 1,
+  "evidence_mode": "executable toy mechanisms + closed-loop kinematics; not plugin execution",
+  "learning_objective": "Differentiate local velocity sampling from timed trajectory optimization; both yield current cmd_vel.",
+  "brief": {
+    "question": "How do local velocity search and timed trajectory optimization differ?",
+    "evidence_mode": "Two runnable toy mechanisms, not package execution or performance benchmark",
+    "intervention": "same fixed global path, empty corridor versus static local obstacle",
+    "state": "x,y,yaw and previous velocity; ideal obstacle map",
+    "forward_model": "constant-twist differential drive, dt=.2s",
+    "outputs": "velocity samples and costs versus optimized poses and positive time differences; both yield cmd_vel",
+    "metrics": "goal success, outer clearance, path length, pose error; no runtime ranking",
+    "spatial_question": "How does the computed command change motion in the same corridor?"
+  },
+  "prerequisites": [
+    "08_nav2",
+    "07_astar"
+  ],
+  "source_checked": "2026-09-22",
+  "sources": [
+    "https://docs.nav2.org/rolling/configuration_and_development/configuration_guide/controller_plugins/dwb_controller/",
+    "https://github.com/ros-navigation/navigation2/tree/main/nav2_dwb_controller",
+    "https://github.com/rst-tu-dortmund/teb_local_planner/tree/ros2-master",
+    "https://github.com/rst-tu-dortmund/teb_local_planner/tree/humble-devel"
+  ],
+  "teb_branches": {
+    "ros2-master": {
+      "sha": "e4562a62bac75f6004b74661ba1538be9cd07608",
+      "date": "2024-11-10T06:07:55Z",
+      "url": "https://github.com/rst-tu-dortmund/teb_local_planner/commit/e4562a62bac75f6004b74661ba1538be9cd07608"
+    },
+    "humble-devel": {
+      "sha": "630a22e88dc9fd45be726a762edbb5b776bef231",
+      "date": "2022-09-12T17:32:48Z",
+      "url": "https://github.com/rst-tu-dortmund/teb_local_planner/commit/630a22e88dc9fd45be726a762edbb5b776bef231"
+    }
+  },
+  "support_limit": "Plugin declaration verified; no current distro build/runtime compatibility test; README retains older Dashing context",
+  "model": {
+    "dt": 0.2,
+    "rate_hz": 5,
+    "units": {
+      "position": "m",
+      "orientation": "rad",
+      "velocity": "m/s",
+      "angular_velocity": "rad/s",
+      "time": "s"
+    },
+    "frame": "single world frame, +x corridor forward, +y left, yaw CCW",
+    "robot_radius": 0.22,
+    "wheel_radius": 0.1,
+    "wheel_track": 0.42,
+    "corridor_width": 2.5,
+    "obstacle_center": [
+      0.0,
+      -0.18
+    ],
+    "obstacle_radius": 0.3,
+    "seed": null
+  },
+  "contracts": [
+    {
+      "input": "ideal Pose, previous velocity, shared fixed global path, ideal full local obstacle map",
+      "output": "current linear/angular velocity command",
+      "rate_hz": 5
+    },
+    {
+      "input": "DWB toy velocity candidates",
+      "output": "2s constant-twist predictions, validity, cost components, selected index"
+    },
+    {
+      "input": "TEB toy Pose/DeltaT initialization",
+      "output": "12 optimized poses, 11 positive intervals, objective components, first-segment command"
+    },
+    {
+      "input": "cmd_vel",
+      "output": "exact constant-twist next Pose and wheel angles; next feedback"
+    }
+  ],
+  "assumptions": [
+    "Not Nav2 DWB or ROS2 TEB execution",
+    "No lidar/localization uncertainty, latency, slip or contact dynamics",
+    "DWB custom cost functions; TEB scipy least_squares, not g2o",
+    "TEB fixed node count, one initialization, no topology search or auto-resize",
+    "Penalty constraints leave finite residuals; execution commands clamped",
+    "Different cost/acceleration/horizon settings prohibit benchmark ranking",
+    "Each condition one deterministic trial; numerical collision samples not safety proof"
+  ],
+  "trace": "output/trace.json",
+  "hero_pose": [
+    -1.25,
+    0,
+    0
+  ],
+  "results": {
+    "dwb_empty": {
+      "success": true,
+      "duration_s": 13.200000000000001,
+      "position_error_m": 0.09673925301357578,
+      "yaw_error_rad": 0.0,
+      "minimum_clearance_m": 0.5799999999999998,
+      "path_length_m": 5.903260746986424
+    },
+    "dwb_obstacle": {
+      "success": true,
+      "duration_s": 14.200000000000001,
+      "position_error_m": 0.09363285042593955,
+      "yaw_error_rad": 0.06750000000000034,
+      "minimum_clearance_m": 0.08996122209674098,
+      "path_length_m": 6.070036335698642
+    },
+    "teb_empty": {
+      "success": true,
+      "duration_s": 10.600000000000001,
+      "position_error_m": 0.0791860628367532,
+      "yaw_error_rad": 0.009401470912979715,
+      "minimum_clearance_m": 0.5799999999999998,
+      "path_length_m": 5.920914848144138
+    },
+    "teb_obstacle": {
+      "success": true,
+      "duration_s": 10.8,
+      "position_error_m": 0.08470073053590708,
+      "yaw_error_rad": 0.03730594669738663,
+      "minimum_clearance_m": 0.20059951609102603,
+      "path_length_m": 6.038448870570018
+    }
+  },
+  "timeline": "output/timeline.json",
+  "commands": "README.md",
+  "artifacts": {
+    "video": "output/dwb_teb_education_ko.mp4",
+    "captions": "output/subtitles.ko.srt",
+    "thumbnail": "output/thumbnail.png",
+    "package": "publish/package.json"
+  }
+}

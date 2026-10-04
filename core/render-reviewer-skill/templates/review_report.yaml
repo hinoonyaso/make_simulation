@@ -1,0 +1,12 @@
+review_pass: 1
+preview: ""
+frames_dir: ""   # scripts/extract_review_frames.py --out
+issues:
+  - severity: high        # blocker | high
+    beat: B04
+    time: "00:31-00:35"
+    evidence: ""          # what is visible in the frame/clip and why it harms comprehension
+    owner: Manim          # Director | Manim | Blender | Resolve
+    patch: ""             # minimal root-cause change
+    verify: ""            # exact frame/time/check that proves the fix
+stop_condition: "no blocker/high issues remain"

@@ -1,0 +1,26 @@
+{
+  "language": "ko-KR",
+  "voice": "ko-KR-SunHiNeural",
+  "rate": "+0%",
+  "beats": [
+    {
+      "id": "B01",
+      "text": "관절 하나를 돌리면 손끝은 어디로 움직일까?",
+      "caption": "",
+      "sec": 5.0,
+      "min_sec": null,
+      "object": "robot_arm",
+      "state_change": "rest_pose -> joint1_rotated",
+      "focus": "joint1 and end_effector",
+      "tool": "M",
+      "evidence": "illustration",
+      "trace": "",
+      "sfx": "",
+      "bgm": "low",
+      "audio": "",
+      "media": "",
+      "media_in": null,
+      "media_out": null
+    }
+  ]
+}

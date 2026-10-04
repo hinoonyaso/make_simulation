@@ -1,0 +1,66 @@
+{
+  "video": "../output/nav2_education_ko.mp4",
+  "title": "ROS2 Nav2는 로봇을 목적지까지 어떻게 보내는가? | SLAM·AMCL·A* 종합편",
+  "description": "SLAM·AMCL·A* 다음 종합편입니다. 목표 입력부터 위치 추정, 글로벌/로컬 코스트맵, 경로 계획, 속도 제어, 바퀴 구동, 재계획과 Behavior Tree의 역할까지 Nav2의 데이터 흐름을 설명합니다.\n\n00:00 목표점을 찍으면 무슨 일이 일어날까?\n00:32 Localization: 나는 어디에 있을까?\n00:55 Global Costmap: 지나가기 쉬운 곳과 어려운 곳\n01:33 Global Planner: 전체 경로를 만든다\n02:06 Local Costmap: 지금 앞에 생긴 장애물\n02:43 Controller: 경로를 속도로 바꾼다\n03:30 Base Controller: 바퀴가 움직인다\n04:06 장애물 등장: 멈추고 다시 계획하기\n04:57 Behavior Tree: 누가 전체 순서를 관리할까?\n05:36 전체 흐름: 한 줄이 아니라 피드백 루프\n\n직접 구현한 교육용 통합 모형이며 실제 ROS 2/Nav2 실행이나 성능 재현이 아닙니다. 위치 입력은 오차 없는 Pose로 대체하며 AMCL은 구조 설명만 합니다. 모의 LiDAR(120방향, 최대 3.2m, 거리 잡음 표준편차 2mm)가 새 장애물 관측을 만들고, 정적 지도와 다른 점의 원 적합으로 장애물 중심을 추정합니다. 장애물 실제 위치는 센서 생성과 평가에만 사용합니다.\n\n0.15m 격자의 8방향 비용 가중 A*, 1.5초 후보 궤적 평가, 차동 구동 운동학을 구현했습니다. 센서·제어는 10Hz, 계획은 1초 주기 또는 경로 무효 때 갱신합니다. 로컬 판단은 같은 장애물 추정의 연속 거리장을 사용하며 별도 Nav2 rolling-grid 구현은 아닙니다. 원형 로봇 반지름 0.25m, 바퀴 반지름 0.10m, 바퀴 간격 0.45m입니다. 접촉 동역학·미끄러짐·TF·통신 지연·실제 모터 제어는 생략했습니다. 경로 무효 시 정지는 이상적 명령 전환입니다.\n\n장애물 없음: 14.0초 / 새 장애물 있음: 17.2초. 두 경우 모두 위치 0.12m 이내·방향 0.08rad 이내 목표 조건을 만족했습니다. 새 장애물 조건의 로봇 외곽 최소 간격은 약 0.40m, 경로 무효에 따른 재계획은 1회입니다. 단일 합성 실험(seed 14) 결과이며 일반적인 로봇 성능 수치가 아닙니다. 블렌더 장면은 동일 기록의 느린 재생이며 재계획 순간을 설명용으로 잠시 정지합니다.\n\nBehavior Tree 그림은 역할을 줄인 개념도입니다. 실험의 조율기는 단순 상태 기계이며 BehaviorTree.CPP 실행이 아닙니다. 실제 Nav2에서는 트리·플러그인·레이어 설정에 따라 재계획, 복구, 센서 반영 방식이 달라집니다. Inflation 영역 전체가 통행 금지는 아니며, 위치 추정과 코스트맵은 지속적으로 갱신됩니다.\n\n앞선 영상\nSLAM https://www.youtube.com/watch?v=VGIooUDrPbM\nAMCL https://www.youtube.com/watch?v=ZrRFR6ma-QY\nA* https://www.youtube.com/watch?v=j5MNfkM39cc\n\n공식 참고 자료\nhttps://docs.nav2.org/rolling/getting_started/nav2_behavior_trees/\nhttps://docs.nav2.org/jazzy/configuration_and_development/configuration_guide/core_servers/costmap_2d/costmap_plugins/inflation/\nhttps://docs.nav2.org/rolling/configuration_and_development/tuning_guide/\n\n한국어 합성 내레이션, Whisper 자막 정렬, Manim·Blender 원본 애니메이션을 사용했습니다.\n#Nav2 #ROS2 #로봇 #AMR #자율주행 #BehaviorTree\n",
+  "privacy": "public",
+  "channel_id": "UCKT_GQPU4i_wmtE-b_6wa8A",
+  "captions": "../output/subtitles.ko.srt",
+  "caption_language": "ko",
+  "thumbnail": "../output/thumbnail.png",
+  "made_for_kids": false,
+  "contains_synthetic_media": false,
+  "tags": [
+    "Nav2",
+    "ROS2",
+    "로봇",
+    "AMR",
+    "SLAM",
+    "AMCL",
+    "AStar",
+    "Behavior Tree",
+    "Manim",
+    "Blender"
+  ],
+  "chapters": [
+    {
+      "seconds": 0.0,
+      "title": "목표점을 찍으면 무슨 일이 일어날까?"
+    },
+    {
+      "seconds": 32.233333333333334,
+      "title": "Localization: 나는 어디에 있을까?"
+    },
+    {
+      "seconds": 55.300000000000004,
+      "title": "Global Costmap: 지나가기 쉬운 곳과 어려운 곳"
+    },
+    {
+      "seconds": 93.76666666666667,
+      "title": "Global Planner: 전체 경로를 만든다"
+    },
+    {
+      "seconds": 126.3,
+      "title": "Local Costmap: 지금 앞에 생긴 장애물"
+    },
+    {
+      "seconds": 163.89999999999998,
+      "title": "Controller: 경로를 속도로 바꾼다"
+    },
+    {
+      "seconds": 210.9333333333333,
+      "title": "Base Controller: 바퀴가 움직인다"
+    },
+    {
+      "seconds": 246.76666666666662,
+      "title": "장애물 등장: 멈추고 다시 계획하기"
+    },
+    {
+      "seconds": 297.69999999999993,
+      "title": "Behavior Tree: 누가 전체 순서를 관리할까?"
+    },
+    {
+      "seconds": 336.53333333333325,
+      "title": "전체 흐름: 한 줄이 아니라 피드백 루프"
+    }
+  ]
+}

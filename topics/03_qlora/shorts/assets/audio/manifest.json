@@ -1,0 +1,98 @@
+[
+  {
+    "chapter": 0,
+    "line": 0,
+    "text": "거대한 언어 모델을 내 데이터로 가르치려면, 모든 가중치를 다시 학습해야 할까요? 큐로라는 다른 방법을 사용합니다.",
+    "caption": "거대한 모델,\n모두 다시 학습해야 할까?",
+    "audio": "assets/audio/00.wav",
+    "duration": 6.8,
+    "start": 0.0,
+    "end": 6.8,
+    "source_chapter": 0,
+    "source_line": 0
+  },
+  {
+    "chapter": 1,
+    "line": 0,
+    "text": "이미 배운 지식은 압축해서 보관하고, 새로운 작업에 필요한 변화만 작은 행렬에 학습합니다.",
+    "caption": "기본 모델은 압축\n새로운 변화만 학습",
+    "audio": "assets/audio/01.wav",
+    "duration": 5.3,
+    "start": 6.8,
+    "end": 12.1,
+    "source_chapter": 0,
+    "source_line": 1
+  },
+  {
+    "chapter": 2,
+    "line": 0,
+    "text": "먼저 로라입니다. 원래 가중치 더블유에 변화량을 더하되, 그 변화량을 작은 두 행렬, 비와 에이의 곱으로 표현합니다.",
+    "caption": "변화량 ΔW를\n작은 B × A로 표현",
+    "audio": "assets/audio/02.wav",
+    "duration": 7.466666666666667,
+    "start": 12.1,
+    "end": 19.566666666666666,
+    "source_chapter": 1,
+    "source_line": 0
+  },
+  {
+    "chapter": 3,
+    "line": 0,
+    "text": "큐로라는 여기에 사 비트 양자화를 결합합니다. 기본 가중치는 사 비트 코드로 저장하지만, 곱셈할 때는 더 높은 정밀도로 복원해 사용합니다.",
+    "caption": "4-bit로 저장\nBF16 / FP16으로 계산",
+    "audio": "assets/audio/03.wav",
+    "duration": 8.266666666666667,
+    "start": 19.566666666666666,
+    "end": 27.833333333333336,
+    "source_chapter": 2,
+    "source_line": 0
+  },
+  {
+    "chapter": 4,
+    "line": 0,
+    "text": "마지막에 두 결과를 더합니다. 기본 모델을 통과한 결과가 로라의 입력이 되는 직렬 구조가 아닙니다.",
+    "caption": "같은 입력, 두 경로\n마지막에 더한다",
+    "audio": "assets/audio/04.wav",
+    "duration": 6.133333333333334,
+    "start": 27.833333333333336,
+    "end": 33.96666666666667,
+    "source_chapter": 2,
+    "source_line": 2
+  },
+  {
+    "chapter": 5,
+    "line": 0,
+    "text": "옵티마이저가 에이와 비를 갱신해도, 사 비트 기본 가중치는 그대로입니다. 화면의 색 변화는 업데이트 위치를 보여주는 교육용 예시입니다.",
+    "caption": "업데이트는 A와 B\n기본 가중치는 고정",
+    "audio": "assets/audio/05.wav",
+    "duration": 8.133333333333333,
+    "start": 33.96666666666667,
+    "end": 42.1,
+    "source_chapter": 3,
+    "source_line": 1
+  },
+  {
+    "chapter": 6,
+    "line": 0,
+    "text": "이 막대는 가중치 표현만 비교합니다. 실제로는 스케일과 비양자화 층, 어댑터와 기울기, 옵티마이저 상태 등이 더 필요합니다.",
+    "caption": "가중치 코드 용량\n≠ 전체 학습 VRAM",
+    "audio": "assets/audio/06.wav",
+    "duration": 7.9,
+    "start": 42.1,
+    "end": 50.0,
+    "source_chapter": 7,
+    "source_line": 1
+  },
+  {
+    "chapter": 7,
+    "line": 0,
+    "text": "정리하겠습니다. 큐로라는 기본 모델을 엔에프포로 저장하고, 필요한 계산은 더 높은 정밀도로 수행하며, 작은 로라 행렬을 학습합니다.",
+    "caption": "저장은 작게\n필요한 변화만 학습",
+    "audio": "assets/audio/07.wav",
+    "duration": 8.033333333333333,
+    "start": 50.0,
+    "end": 58.03333333333333,
+    "source_chapter": 8,
+    "source_line": 0
+  }
+]

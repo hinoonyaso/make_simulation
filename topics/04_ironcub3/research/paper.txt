@@ -1,0 +1,556 @@
+arXiv:2506.01125v1  [cs.RO]  1 Jun 2025
+iRonCub 3: The Jet-Powered Flying Humanoid Robot
+Davide Gorbani∗1,2, Hosameldin Awadalla Omer Mohamed∗1, Giuseppe L’Erario1, Gabriele Nava1,
+Punith Reddy Vanteddu1,2, Shabarish Purushothaman Pillai1, Antonello Paolino1,3,
+Fabio Bergonti1, Saverio Taliani1, Alessandro Croci1, Nicholas James Tremaroli1,
+Silvio Traversaro1, Bruno Vittorio Trombetta1 and Daniele Pucci1,2
+Abstract— This article presents iRonCub 3, a jet-powered
+humanoid robot, and its first flight experiments. Unlike tradi-
+tional aerial vehicles, iRonCub 3 aims to achieve flight using
+a full-body humanoid form, which poses unique challenges in
+control, estimation, and system integration. We highlight the
+robot’s current mechanical and software architecture, including
+its propulsion system, control framework, and experimental
+infrastructure. The control and estimation framework is first
+validated in simulation by performing a takeoff and tracking a
+reference trajectory. Then, we demonstrate, for the first time,
+a liftoff of a jet-powered humanoid robot — an initial but
+significant step toward aerial humanoid mobility. Also, we detail
+how the experimental area around a jet-powered humanoid
+robot should be designed in order to deal with a level of
+complexity that is substantially superior than indoor humanoid
+robot experiments.
+I. INTRODUCTION
+Humanoid robots are increasingly employed in research
+and industry due to their ability to operate in environments
+designed for humans. Traditionally, their capabilities have
+been confined to terrestrial locomotion and manipulation.
+However, the integration of aerial mobility into humanoid
+platforms presents a new and promising research frontier.
+Several works have explored the integration of aerial
+mobility with manipulation and terrestrial locomotion. These
+efforts typically focus on equipping aerial robots with
+additional capabilities, such as robotic arms or wheeled/legged
+appendages, to enhance their versatility in interacting with
+complex environments [1], [2], [3]. A common example is
+the class of aerial manipulators, which consist of multirotor
+platforms outfitted with robotic arms or grippers for physical
+interaction [4], [1]. However, aerial manipulators represent
+just one subset of multibody flying robots. Other notable
+examples include: hexapod-quadrotor hybrid systems [5];
+platforms that combine aerial and terrestrial locomotion,
+such as hybrid quadrotors with wheels or legs [6]; bio-
+inspired insect robots capable of both flight and ground
+movement [7]; and reconfigurable structures that can morph
+to adapt to different locomotion modes [8], [9]. Furthermore,
+recent research has investigated humanoid robots enhanced
+with thrusters to support bipedal motion and short bursts of
+flight [2], [3].
+∗These authors contributed equally to this work.
+1Artificial and Mechanical Intelligence, Istituto Italiano di Tecnologia,
+Genoa, Italy firstname.surname@iit.it
+2School of Computer Science, University of Manchester, Manchester, UK
+3Department of Industrial Engineering, University of Naples Federico II,
+Naples, Italy
+Fig. 1.
+iRonCub-Mk3 in the experimental area.
+A more ambitious direction is represented by the iRonCub
+project [10], [11], which seeks to unify aerial, terrestrial, and
+manipulation capabilities within a single humanoid platform.
+The goal is to make the iCub humanoid robot [12] fly
+with the addition of four jet turbines, two mounted on the
+arms and two on the jetpack. The potential applications of
+aerial humanoid robots extend across multiple high-impact
+domains where ground-based or conventional aerial systems
+face limitations. In search and rescue missions, for instance,
+flying humanoid robots can traverse collapsed buildings,
+steep terrain, or flooded zones, combining flight with the
+ability to interact physically with the environment, such as
+opening doors or lifting debris. In infrastructure inspection and
+maintenance, a flying humanoid could reach hard-to-access
+locations like bridges, high-rise structures, or industrial plants,
+and perform tasks requiring dexterity, such as turning valves
+or manipulating tools.
+Another promising area is disaster response in hazardous
+environments, such as nuclear facilities or chemical plants,
+where robots must operate in complex spaces designed
+for humans while avoiding harmful exposure. Additionally,
+applications in telepresence and human-avatar systems could
+benefit from a robot that can navigate complex 3D envi-
+ronments while mimicking human motion, useful for virtual
+interaction, inspection, or even remote training scenarios.
+By leveraging the human-like morphology, aerial humanoid
+robots offer the promise of combining the spatial access and
+reach of flying robots with the intuitive physical interaction
+capabilities of humanoids, potentially opening new frontiers
+
+Fig. 2.
+CAD rendering of iRonCub-Mk3.
+in robotics deployment.
+In this article, we outline the current status of the iRonCub
+project, covering the latest design version, referred to as
+iRonCub-Mk3, a jet-powered humanoid robot developed as a
+research platform to investigate aerial humanoid locomotion.
+The iRonCub-Mk3 represents an advancement over the earlier
+model, iRonCub-Mk1, which was presented in the article [13].
+This article is showcasing:
+• The design and integration of a custom jetpack and
+modified forearms into the iCub3 platform;
+• A software architecture for estimation and control that
+leverages model-based approaches;
+• An experimental demonstration of vertical liftoff — the
+first step toward fully autonomous humanoid flight.
+The remainder of this article is organised as follows:
+Section II describes the system architecture and methods;
+Section III outlines the experimental infrastructure; Section
+IV presents simulation and hardware results; and Section V
+concludes with a discussion of limitations and future work.
+II. METHODS
+A. Mechanical design
+The iRonCub-Mk3 platform is based on the iCub3 hu-
+manoid robot [12] and is equipped with four JetCat P250 Pro
+turbines1, two mounted on the forearms and two integrated
+into a custom-designed jetpack. Fig. 2 shows the CAD model
+of the iRonCub-Mk3 configuration, highlighting the robot’s
+design, including the forearm turbine placement and jetpack
+integration.
+1www.jetcat.de/en/products/produkte/jetcat/kategorien/professional/P250-
+PRO-S
+1) Jetpack design: Building upon the iCub3 design [12],
+modifications were made to securely mount the jetpack.
+Specifically, load-bearing mounting brackets were custom-
+manufactured and installed on both the left and right sides
+of the central block housing the shoulder pitch motors and
+torso yaw. These brackets provide additional fixture points for
+securely attaching the jetpack. The integration of the jetpack
+with these components is shown in Fig. 3. The jetpack design
+was driven by the following considerations:
+• Ease of assembly, disassembly.
+• Minimal volume.
+• Structural integrity to handle the stress forces exerted
+by the jet engines.
+• Minimal modification to the original iCub3 design.
+To enhance stability during flight and improve control over
+angular momentum, slight tilt angles were incorporated into
+the attached jet engines. This tilt also helps mitigate the
+impact of exhaust heat on the robot’s lower body.
+2) Forearms design: The iRonCub-Mk3 prototype was
+initially configured without forearms to streamline the de-
+velopment of flight control systems. In this version, jets are
+mounted on the arms below the elbows, providing thrust for
+stabilisation and manoeuvrability. The hands were removed
+from this prototype to focus exclusively on testing the flight
+capabilities, rather than manipulation at this stage. However,
+the forearms remain compatible with the system and can be
+integrated in later versions as needed. Fig. 4 shows the CAD
+rendering of the forearms of the iRonCub-Mk3.
+Additionally, a Finite Element Method (FEM) analysis was
+conducted on both the jetpack and the forearm to ensure their
+structures could withstand the forces from the jet engines.
+Boundary conditions were fixed at the assembly fixture
+locations on the robot, and axial loads of 750N, which is
+three times the peak thrust of each turbine, were applied to
+the brackets of the jet engines. Fig. 5 illustrates the results
+of this FEM analysis.
+B. Software architecture
+The high-level software architecture is based on three
+components:
+• Base Pose Estimator
+• Thrust Estimator and Jet Control
+• Flight Controller
+Fig. 6 illustrates the interaction between the various soft-
+ware components. The Thrust Estimator and Jet Control,
+described in subsection II-C, interface with the jet engines
+and estimate the generated thrust using measurements from
+both the robot and the jet turbines. The Base Pose Estimator,
+discussed in subsection II-D, determines the robot’s base pose
+based on data from onboard sensors. The Flight Controller,
+detailed in subsection II-E, computes the desired throttle
+commands for the jet turbines as well as the target joint
+positions.
+Throttle commands are transmitted to the jet turbines’ low-
+level controller, which operates at 10 Hz, while the desired
+joint positions are sent to the joint-level low-level controller,
+running at 1000 Hz.
+
+Fig. 3.
+Exploded view (right) and assembled view (left) of the jetpack. The components labeled numerically and color coded in the figure: 1. eyelet screw,
+2. load-bearing fixture, 3. top plate 4. vertical frame, 5. Force-torque sensor bracket, 6. mounting bracket installed on the robot to provide additional fixture,
+7. Connection between frame and mounted bracket, 8. Force-torque sensor, 9. outer turbine clamp, 10. Jetcat P250 Pro turbine, and 11. inner turbine clamp.
+Fig. 4.
+CAD rendering of the forearms of the iRonCub-Mk3 robot. In this version, the forearms of the iCub robot are removed to facilitate flight tests. On
+the left is the assembled view, and on the right is the exploded view. The components labeled numerically and color coded in the figure include: 1. forearm
+lock, 2. forearm shaft, 3. turbine inner clamp, 4. Jetcat P250 Pro turbine, and 5. turbine outer clamp.
+
+Fig. 5.
+Illustration of the FEM analysis on the jetpack (left) and forearm (right). Boundary conditions were fixed at the screw points on the robot, and load
+conditions were set to 750N on the clamps of the jet engines, axially loaded, for both components.
+Fig. 6.
+Block diagram showing the interaction among the main software components. The Thrust Estimator and Jet Control, described in subsection II-C,
+communicate with the jet engines and estimate the generated thrust using sensor data from both the robot and the turbines. The Base Pose Estimator,
+outlined in subsection II-D, calculates the robot’s base pose using information from onboard sensors. The Flight Controller, explained in subsection II-E,
+implementing a Variable Sampling Linear Model Predictive Controller (MPC), generates the required throttle commands for the jet turbines along with
+the target joint positions.
+All the software components run on the robot’s onboard
+computer, with communication between them handled by the
+YARP middleware [14].
+C. Thrust estimation and Jet Control
+To estimate the thrust produced by the jet engines, we im-
+plemented an Unscented Kalman Filter (UKF) that combines
+measurements from force-torque sensors mounted on both
+the robot’s arms and jetpack, with a second-order nonlinear
+dynamic model that predicts thrust output based on throttle
+input values. The force-torque sensors were calibrated in
+situ following the procedure outlined in [15], enhancing
+their accuracy across a broader range of force and torque
+measurements.
+To develop the dynamic model for thrust prediction, a
+dedicated test bench was constructed, as shown in Fig. 7.
+This setup enabled controlled experiments on the jet engines,
+generating datasets used to identify models that relate input
+commands to the resulting thrust levels. Further details of
+these studies can be found in [16], [17].
+The iCub3 robot is already equipped with force-torque
+sensors on its arms, as illustrated in Fig. 8. In addition,
+the iRonCub-Mk3 features two extra force-torque sensors
+mounted on the jetpack to directly measure the thrust forces
+generated by the rear jet engines. The mounting configuration
+of these sensors is shown in Fig. 9.
+The force-torque sensors’ data, combined with the rotation
+
+Fig. 7.
+Custom-designed testbench used for conducting experiments on the
+jet engines to develop dynamic models of thrust generation.
+Fig. 8.
+In green: the force-torque sensors mounted on the arms of
+iRonCub-Mk3.
+speeds of the jet engines (RPM), provide thrust intensity
+measurements to the UKF thrust estimation.
+The Jet Control is devoted to sending throttle commands
+to the turbines, and it operates at 10 Hz, the same frequency
+at which the low-level controller of the turbines runs.
+D. Base Pose Estimation
+For what concerns the estimation of the base position, we
+rely on two sensors: one Inertial Measurement Unit (IMU)
+and a depth camera. We chose the Xsens MTI-670G as IMU
+and the RealSense8 T265 as depth camera. The Xsens IMU
+provides the orientation and the angular velocity, while the
+Realsense measures the position, orientation, linear velocity,
+and angular velocity. A UKF combines the measurements
+coming from the two sensors to provide an estimation of the
+position, orientation, linear velocity, and angular velocity of
+the base of the robot at a frequency of 200Hz.
+E. Flight Controller
+The controller used for the experiment is the Linear Parame-
+ter Varying Model Predictive Control (MPC) proposed in [18];
+this MPC combines the equation of the centroidal momentum
+[19] and the nonlinear second-order model proposed in [16]
+to predict the dynamics of the jet engines, and computes the
+Fig. 9.
+In green: the force-torque sensors mounted on the jetpack of
+iRonCub-Mk3.
+optimal joints position and jet throttle to track a reference
+trajectory. In fact, the dynamics of the jets are highly nonlinear,
+and it has to be taken into account when building the controller.
+Moreover, this controller is able to deal with the different
+actuation frequencies of the jets and the joints, computing
+the control input for the different actuators at a frequency
+consistent with the actuation bandwidth.
+One key limitation of the proposed MPC is its reliance on
+Euler angles, which are susceptible to singularities. However,
+in our chosen reference frame, the singularity occurs only
+when the robot is pitched 90 degrees—i.e., fully horizontal.
+Since our focus is on Vertical Take-Off and Landing (VTOL),
+the robot operates far from this condition. Moreover, due to
+the assumption made in the linearisation, this controller is
+not suitable for performing aggressive manoeuvres.
+1) Take-off phase: During the take-off phase, the robot is
+in contact with the ground through the feet, so there are two
+contact forces, one per foot, that should be taken into account
+when writing the equation of the centroidal momentum [18]:
+G[J ] ˙h = A(q)T + mge3.
+(1)
+Since we don’t have an adequate estimate of the contact
+forces, we rewrite (1) in the following way:
+G[J ] ˙h = A(q)T + αmge3,
+(2)
+where α is a parameter that regulates the percentage of the
+body weight that is compensated by the thrust forces. This
+parameter during the take-off phase starts from 0 when the
+turbines are not providing any thrust force, and when it
+reaches one, the robot detaches from the ground.
+F. Simulation environment
+All the software parts are tested first in simulation; the
+simulations are performed using the Gazebo simulator [20].
+Thanks to the YARP Gazebo plugins [21], we are able to use
+the same software components both in simulation and on the
+real robot, since they provide the same interfaces used for
+the real robot also in Gazebo.
+Simulation-based verification is a critical step, particularly
+given the safety risks associated with the jet propulsion
+system, which operates at temperatures around 600◦C. Early
+detection of software faults in simulation mitigates the
+
+Fig. 10.
+The iRonCub-MK3 robot in the Gazebo simulation environment,
+where comprehensive testing of its flight control strategies and system inter-
+actions is carried out. This virtual setup provides a safe and flexible platform
+for evaluating performance under various conditions before transitioning to
+physical experiments.
+risk of hardware damage or hazardous conditions during
+experimental trials.
+This approach also contributes to reducing the sim-to-real
+gap by testing the same software both in simulation and on
+the real hardware. Moreover, the noise on the measurement
+induced by the vibration of the turbines is added in
+simulation; to do that, we computed the standard deviation
+of the noise from data acquired with the real hardware and
+added it to the measurements coming from the simulated
+sensors. Fig. 10 shows the iRonCub robot in a simulation
+in Gazebo while hovering.
+III. EXPERIMENTAL AREA
+The experiments are conducted in a flight area on the
+terrace of the Center for Robotics and Intelligent Systems
+(CRIS), a key hub of the Italian Institute of Technology. A 3D
+reconstruction of the building, captured from Google Earth,
+is shown in Fig. 11.
+The facility consists of three main zones:
+• iRonCub Area: the primary test zone where experimental
+flights are executed.
+• Control Room: The operational hub for software execu-
+tion and real-time monitoring, located at a safe distance
+from the flight area.
+• Storage Bunker: A secure, shielded storage area for
+equipment and fuel systems necessary for the experi-
+ments.
+Fig. 12 depicts the iRonCub Area, where the experiments
+are conducted. In this setup, the robot is suspended from
+a 2-meter-high crane, providing sufficient manoeuvrability
+while remaining securely tethered to prevent accidents in case
+of controller failure. To aid heat dissipation and protect the
+robot from overheating, its lower section is covered with heat-
+resistant Aerogel material to shield it from the jet exhaust’s
+high temperatures. Additionally, raised platforms fit with
+cement tiles are placed on the ground to elevate the robot,
+minimising heat buildup during the tests. The figure also
+Fig. 11.
+3D view from Google Earth showing the Center for Robotics and
+Intelligent Systems (CRIS) building at the Italian Institute of Technology,
+with a zoomed-in focus on the designated flight testing area.
+highlights the fuel line supplying the jet engines, with jet fuel
+stored in tanks housed within an explosion-proof container.
+Inside the Control Room, laptops connect to the robot’s
+onboard computer via Secure Shell (SSH), allowing remote
+execution of all control and estimation software modules. A
+dedicated machine handles data logging and video recording
+from fixed webcams. The data acquisition system employs
+the same logging framework described in [12], enhanced
+to support real-time telemetry visualisation, which aids in
+monitoring system performance during flight. During each
+experimental session, at least two team members remain
+in the Control Room to oversee software operations, while
+at least one team member stays at a safe distance near the
+experimental area. This person monitors the experiments
+directly to compensate for any communication delays from
+the Control Room and is responsible for reporting any issues
+that may not be immediately noticeable from inside.
+IV. RESULTS
+This section presents experimental results obtained both
+in simulation and on the physical robot. In simulation, we
+show the capabilities of the controller to track a reference
+trajectory, while on the real robot, we present the results of
+a take-off experiment.
+A. Simulation results
+First, we show the results that we got in simulations. In
+order to test the overall software infrastructure, we chose
+to make the robot perform a take-off, increase its height by
+about 1 meter and follow a square trajectory; concerning the
+reference orientation, we chose to keep the desired orientation
+constant to the initial value. Fig. 13 shows the performance
+of the controller in tracking the trajectory; this is a quite slow
+
+Fig. 12.
+The iRonCub Area includes the iRonCub-Mk3 attached to a two-meter crane. Two concrete bollards behind the robot act as anchor points, with
+loose metal cables securing the robot to them for safety during flight tests. The lower section of the robot is covered with heat-resistant Aerogel material to
+shield it from the heat generated by the jet exhaust.
+Fig. 13.
+Simulation results depicting the tracking of the centre of mass position and base orientation performing a square trajectory.
+
+Fig. 14.
+Experimental results illustrating the tracking of the centre of mass position and orientation during take-off with the real robot. The light blue
+regions indicate the time intervals when the robot was airborne, while the dashed lines represent the frames in Fig. 15.
+Fig. 15.
+Sequence of frames capturing the real robot performing a take-off. The robot maintains a stable orientation while exhibiting slight horizontal drift.
+It then begins to ascend, stays airborne for a brief period, momentarily touches down, and subsequently lifts off again. Finally, the robot descends and is
+automatically shut down by the flight controller due to the orientation error surpassing a predefined threshold.
+
+Fig. 16.
+Estimated thrust intensities and in dotted yellow the parameter
+α that regulates the transition during the take off from the ground to the
+hovering.
+and smooth trajectory, and the robot is able to follow it quite
+well. The Mean Absolute Error (MAE)
+B. Experiment on the real robot
+This section presents the experimental results obtained
+with the physical robot platform. Fig. 16 illustrates the thrust
+profiles of the four turbines; on the same plot, the value of the
+parameter α described in II-E.1 is shown. The take-off phase
+begins approximately at t = 5 s and concludes at t = 30 s.
+After this point, the reference trajectory along the vertical (z)
+axis increases, prompting the robot to initiate lift-off from
+the ground.
+Fig. 14 presents the tracking performance of the robot’s
+centre of mass (CoM) and base orientation. Throughout the
+test, the robot maintains its roll, pitch, and yaw angles within
+approximately 5◦. Nonetheless, a noticeable drift occurs in the
+horizontal plane, with a displacement of around −20 cm along
+the x axis and approximately 60 cm along the y axis. The z
+coordinate begins to increase about 2.5 s after the reference
+command is issued, marking the onset of lift-off. The robot
+remains airborne for roughly 3 s, briefly touches down, and
+then lifts off again, overshooting the target altitude for another
+3 s. Finally, the robot loses altitude and is automatically
+powered down by the flight controller after the orientation
+error exceeds a specified limit. Fig. 15 displays a sequence
+of frames capturing this flight test. The full video of the
+experiment can be found at the link below2.
+The observed deviations from the expected behaviour are
+attributed to several factors, primarily related to the sim-to-real
+gap. Firstly, the model predictive control (MPC) framework
+relies on a simplified model of the jet dynamics, which
+fails to accurately capture the highly dynamic behaviour
+of the turbines. Secondly, the jet propulsion system induces
+vibrations that propagate through the robot structure and affect
+the onboard inertial and velocity estimation sensors, leading
+to noisy measurements that degrade control performance.
+2https://github.com/ami-iit/paper gorbani mohamed 2025 ironcub3
+Furthermore, as discussed in [15], the calibration of the
+force-torque (FT) sensors remains a challenging task, and
+inaccuracies in thrust estimation further compound the control
+difficulties.
+V. CONCLUSIONS
+This article provided a status update on the iRonCub
+project, a jet-powered humanoid robot designed to explore
+the challenges of aerial humanoid locomotion. The system
+integrates jet propulsion with a whole-body control architec-
+ture to investigate vertical flight using a humanoid structure.
+We described the design, modelling, and control pipeline of
+iRonCub-Mk3, and conducted experiments in simulation and
+with the real robot.
+We validated the proposed control and estimation architec-
+ture through both simulation and real-world experiments. In
+simulation, the robot was able to execute a vertical takeoff and
+follow a predefined square trajectory, demonstrating accurate
+tracking with low mean absolute errors. These results confirm
+the effectiveness of the control pipeline in an idealised setting
+and provide a solid foundation for real-world deployment.
+In this paper, we demonstrated a controlled liftoff from
+the ground, which represents an important step towards
+full autonomous flight. Future work will be on repeatable,
+full take-off and landing in new experimental settings that
+streamline operations. The presented tests confirmed the
+viability of the control and estimation framework in a real-
+world setting and highlighted critical challenges related to
+system dynamics, estimation, and actuation.
+Future work will focus on improving the estimation of
+the robot’s base pose and thrust, both of which are currently
+subject to uncertainty. Additionally, we aim to enhance the
+robustness of the Model Predictive Controller (MPC) to
+better handle modelling inaccuracies and external disturbances.
+These improvements are essential steps toward achieving
+stable and autonomous aerial locomotion in humanoid robots.
+REFERENCES
+[1] Fabio Ruggiero, Vincenzo Lippiello, and Anibal Ollero.
+Aerial
+manipulation: A literature review. IEEE Robotics and Automation
+Letters, 3(3):1957–1964, 2018.
+[2] Kyunam Kim, Patrick Spieler, Elena-Sorina Lupu, Alireza Ramezani,
+and Soon-Jo Chung. A bipedal walking robot that can fly, slackline,
+and skateboard. Science Robotics, 6(59):eabf8136, 2021.
+[3] Zhifeng Huang, Biao Liu, Jiapeng Wei, Qingsheng Lin, Jun Ota, and
+Yun Zhang. Jet-hr1: Two-dimensional bipedal robot step over large
+obstacle based on a ducted-fan propulsion system. In 2017 IEEE-RAS
+17th International Conference on Humanoid Robotics (Humanoids),
+pages 406–411, 2017.
+[4] Guillermo Heredia, Antonio Enrique Jimenez-Cano, I. Sanchez,
+D. Llorente, V´ıctor M. Vega, J. Braga, Jos´e ´Angel Acosta, and Anibal
+Ollero. Control of a multirotor outdoor aerial manipulator. In 2014
+IEEE/RSJ International Conference on Intelligent Robots and Systems,
+pages 3417–3422, Sep. 2014.
+[5] Mark Pitonyak and Ferat Sahin.
+A novel hexapod robot design
+with flight capability. In 2017 12th System of Systems Engineering
+Conference (SoSE), pages 1–6, June 2017.
+[6] Arash Kalantari and Matthew Spenko.
+Design and experimental
+validation of hytaq, a hybrid terrestrial and aerial quadrotor. In 2013
+IEEE International Conference on Robotics and Automation, pages
+4445–4450, May 2013.
+
+[7] Alper Bozkurt, Amit Lal, and Robert Gilmour. Aerial and terrestrial
+locomotion control of lift assisted insect biobots. In 2009 Annual
+International Conference of the IEEE Engineering in Medicine and
+Biology Society, pages 2058–2061, Sept 2009.
+[8] Ludovic Daler, Stefano Mintchev, Cesare Stefanini, and Dario Floreano.
+A bioinspired multi-modal flying and walking robot. Bioinspiration &
+Biomimetics, 10(1):016005, 2015.
+[9] Ludovic Daler, Julien Lecoeur, Patrizia Bernadette H¨ahlen, and Dario
+Floreano. A flying robot with adaptive morphology for multi-modal
+locomotion. In 2013 IEEE/RSJ Int. Conf. on Intelligent Robots and
+Systems, pages 1361–1366, Nov 2013.
+[10] Daniele Pucci, Silvio Traversaro, and Francesco Nori. Momentum
+control of an underactuated flying humanoid robot. IEEE Robotics
+and Automation Letters, 3(1):195–202, 2018.
+[11] Gabriele Nava, Luca Fiorio, Silvio Traversaro, and Daniele Pucci.
+Position and attitude control of an underactuated flying humanoid
+robot. In 2018 IEEE-RAS 18th International Conference on Humanoid
+Robots (Humanoids), pages 1–9, 2018.
+[12] Stefano Dafarra, Ugo Pattacini, Giulio Romualdi, Lorenzo Rapetti,
+Riccardo Grieco, Kourosh Darvish, Gianluca Milani, Enrico Valli,
+Ines Sorrentino, Paolo Maria Viceconte, et al. icub3 avatar system:
+Enabling remote fully immersive embodiment of humanoid robots.
+Science Robotics, 9(86):eadh3834, 2024.
+[13] Hosameldin Awadalla Omer Mohamed, Gabriele Nava, Giuseppe
+L’Erario, Silvio Traversaro, Fabio Bergonti, Luca Fiorio, Punith Reddy
+Vanteddu, Francesco Braghin, and Daniele Pucci. Momentum-based
+extended kalman filter for thrust estimation on flying multibody robots.
+IEEE Robotics and Automation Letters, 7(1):526–533, 2022.
+[14] Paul Fitzpatrick, Elena Ceseracciu, Daniele E Domenichelli, Ali Paikan,
+Giorgio Metta, and Lorenzo Natale.
+A middle way for robotics
+middleware. Journal of Software Engineering for Robotics, 5(2):42–49,
+2014.
+[15] Hosameldin Awadalla Omer Mohamed, Gabriele Nava, Punith Reddy
+Vanteddu, Francesco Braghin, and Daniele Pucci. Nonlinear in-situ
+calibration of strain-gauge force/torque sensors for humanoid robots. In
+2023 IEEE-RAS 22nd International Conference on Humanoid Robots
+(Humanoids), pages 1–8, 2023.
+[16] Giuseppe L’Erario, Luca Fiorio, Gabriele Nava, Fabio Bergonti,
+Hosameldin Awadalla Omer Mohamed, Emilio Benenati, Silvio Traver-
+saro, and Daniele Pucci. Modeling, identification and control of model
+jet engines for jet powered robotics. IEEE Robotics and Automation
+Letters, 5(2):2070–2077, 2020.
+[17] Affaf Junaid Ahamad Momin, Gabriele Nava, Giuseppe L’Erario,
+Hosameldin Awadalla Omer Mohamed, Fabio Bergonti, Punith Reddy
+Vanteddu, Francesco Braghin, and Daniele Pucci. Nonlinear model
+identification and observer design for thrust estimation of small-scale
+turbojet engines. In 2022 International Conference on Robotics and
+Automation (ICRA), pages 5879–5885, 2022.
+[18] Davide Gorbani, Giuseppe L’Erario, Hosameldin Awadalla Omer
+Mohamed, and Daniele Pucci. Unified multi-rate model predictive
+control for a jet-powered humanoid robot, 2025.
+[19] David E Orin, Ambarish Goswami, and Sung-Hee Lee. Centroidal
+dynamics of a humanoid robot. Autonomous robots, 35:161–176, 2013.
+[20] Nathan Koenig and Andrew Howard.
+Design and use paradigms
+for gazebo, an open-source multi-robot simulator. In 2004 IEEE/RSJ
+international conference on intelligent robots and systems (IROS)(IEEE
+Cat. No. 04CH37566), volume 3, pages 2149–2154. Ieee, 2004.
+[21] Enrico Mingo Hoffman, Silvio Traversaro, Alessio Rocchi, Mirko
+Ferrati, Alessandro Settimi, Francesco Romano, Lorenzo Natale,
+Antonio Bicchi, Francesco Nori, and Nikos G Tsagarakis.
+Yarp
+based plugins for gazebo simulator. In Modelling and Simulation
+for Autonomous Systems: First International Workshop, MESAS 2014,
+Rome, Italy, May 5-6, 2014, Revised Selected Papers 1, pages 333–346.
+Springer, 2014.

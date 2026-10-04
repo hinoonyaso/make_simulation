@@ -1,0 +1,8 @@
+file '/home/sang/make_simulation/topics/03_qlora/shorts/assets/audio/00.wav'
+file '/home/sang/make_simulation/topics/03_qlora/shorts/assets/audio/01.wav'
+file '/home/sang/make_simulation/topics/03_qlora/shorts/assets/audio/02.wav'
+file '/home/sang/make_simulation/topics/03_qlora/shorts/assets/audio/03.wav'
+file '/home/sang/make_simulation/topics/03_qlora/shorts/assets/audio/04.wav'
+file '/home/sang/make_simulation/topics/03_qlora/shorts/assets/audio/05.wav'
+file '/home/sang/make_simulation/topics/03_qlora/shorts/assets/audio/06.wav'
+file '/home/sang/make_simulation/topics/03_qlora/shorts/assets/audio/07.wav'

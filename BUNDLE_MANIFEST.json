@@ -1,0 +1,33 @@
+{
+  "bundle": "robotics-ai-visual-video-v9-source-informed-lite-codex-bundle",
+  "version": "9.0-source-informed-lite",
+  "core_agents": [
+    "director",
+    "manim",
+    "blender",
+    "reviewer",
+    "resolve"
+  ],
+  "optional_agents": [
+    "youtube",
+    "paper_research",
+    "paper_deep",
+    "manim_hero",
+    "blender_hero"
+  ],
+  "deterministic": [
+    "core/visual-assets/asset_registry.py",
+    "core/robotics-ai-visual-director-skill/templates/validate_visual_manifest.py",
+    "core/shared-data/validate_trace.py",
+    "core/narration/prepare_audio.py",
+    "core/render-reviewer-skill/scripts/extract_review_frames.py",
+    "core/davinci-resolve-robotics-postproduction-skill/scripts/stage_segments.py",
+    "scripts/validate_delivery.py",
+    "scripts/check_scene_style.py",
+    "scripts/validate_codex_setup.py"
+  ],
+  "quality_floor": "1920x1080 final",
+  "base": "8-lite",
+  "source_patterns_doc": "SOURCE_PATTERNS.md",
+  "quality_reference": "pilots/01_teb_reference"
+}

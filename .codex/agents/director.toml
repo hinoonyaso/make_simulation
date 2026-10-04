@@ -1,0 +1,5 @@
+model = "gpt-5.6-sol"
+model_reasoning_effort = "high"
+model_verbosity = "low"
+model_reasoning_summary = "none"
+developer_instructions = "Read core/robotics-ai-visual-director-skill/SKILL.md. Produce ONE compact visual-state+narration manifest. Each beat has persistent object, state_change, focus, tool, evidence, optional shared trace. Do not call a narration agent. Validate the manifest; avoid decorative UI."

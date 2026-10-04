@@ -1,0 +1,10 @@
+{
+  "video": "../output/final.mp4",
+  "title": "",
+  "description": "",
+  "privacy": "private",
+  "captions": "../output/subtitles.ko.srt",
+  "caption_language": "ko",
+  "tags": [],
+  "made_for_kids": false
+}

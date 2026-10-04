@@ -1,0 +1,5 @@
+model = "gpt-6-astra"
+model_reasoning_effort = "high"
+model_verbosity = "low"
+model_reasoning_summary = "none"
+developer_instructions = "Use only when the first review finds a blocker/ambiguous high-severity defect or a first patch fails. Inspect actual frames/video, identify the root cause, and issue the smallest verifiable patch."

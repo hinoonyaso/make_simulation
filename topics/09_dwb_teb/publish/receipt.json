@@ -1,0 +1,28 @@
+{
+  "hashes": {
+    "package": "9e2eaaec3f50d561b948b1dc456a62901e3c3ebb313920f07ea48661d742ed44",
+    "video": "d8364516c26fc1865092cc02122053a2fc17f7aa2531f0b98ca347fa1f0be93c",
+    "captions": "b8640a99164812230176bb12d11e020100698b239c9e5f171decac9d2742cbbe",
+    "thumbnail": "c217d80bd0222ace123a291646e1b04931a982706b427b8eb352f148b4d4bc41"
+  },
+  "channel_id": "UCKT_GQPU4i_wmtE-b_6wa8A",
+  "init_started": true,
+  "video_id": "BTvfIYZTzkA",
+  "caption_started": true,
+  "caption_id": "AUieDaY-J8aZZQc3xjk-x70kY01EsNyZZj5EhexvuxNWd6YjisXnmqnMeM1v2YE7ubwUDXifUNlPv6SVKA",
+  "thumbnail_done": true,
+  "remote_status": {
+    "uploadStatus": "processed",
+    "privacyStatus": "public",
+    "license": "youtube",
+    "embeddable": true,
+    "publicStatsViewable": true,
+    "madeForKids": false,
+    "selfDeclaredMadeForKids": false
+  },
+  "processing": "succeeded",
+  "caption_status": "serving",
+  "verified_at": "2026-09-22T00:24:55.485219+00:00",
+  "requested_privacy": "public",
+  "url": "https://www.youtube.com/watch?v=BTvfIYZTzkA"
+}

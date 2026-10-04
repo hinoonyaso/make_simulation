@@ -1,0 +1,28 @@
+{
+  "hashes": {
+    "package": "c983db104bca04ef073763c5d28272929c967371d031a92aa8d655c98d15872f",
+    "video": "090bb8aedadc2435507b6e0b13accfccebaac6ee43bf0880c687584ebeae9366",
+    "captions": "5995290545359ca63116592a9f5e8cce0a9a95371b4f3bf811e569800a4fc417",
+    "thumbnail": "8890560cb319ed9047588f1439c6f0ef236014476725ff00987e33c255edd5db"
+  },
+  "channel_id": "UCKT_GQPU4i_wmtE-b_6wa8A",
+  "init_started": true,
+  "video_id": "j5MNfkM39cc",
+  "caption_started": true,
+  "caption_id": "AUieDabvUVDDrIBrqLthjrcbL5S4foG3DYYLP6GgFxH9zIJBizNHvkJJ1DB1KBb9zr77qHyRVDAmPquROg",
+  "thumbnail_done": true,
+  "remote_status": {
+    "uploadStatus": "processed",
+    "privacyStatus": "public",
+    "license": "youtube",
+    "embeddable": true,
+    "publicStatsViewable": true,
+    "madeForKids": false,
+    "selfDeclaredMadeForKids": false
+  },
+  "processing": "succeeded",
+  "caption_status": "serving",
+  "verified_at": "2026-09-21T08:03:34.588173+00:00",
+  "requested_privacy": "public",
+  "url": "https://www.youtube.com/watch?v=j5MNfkM39cc"
+}

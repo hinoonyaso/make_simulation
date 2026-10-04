@@ -1,0 +1,38 @@
+# Environments and caches
+.venv/
+__pycache__/
+*.pyc
+
+# Generated renders, audio and data (reproducible from the scripts in each topic/pilot)
+media/
+media_*/
+output/
+renders/
+assets/audio/
+*.mp4
+*.mov
+*.wav
+*.mp3
+*.m4a
+*.blend
+*.blend1
+*.npy
+*.npz
+*.sha256
+*.png
+*.jpg
+*.jpeg
+# ...but keep source images that ship with the asset library
+!assets/**/*.png
+!assets/**/*.jpg
+
+# Third-party papers (copyright) — cite the source URL instead
+topics/*/research/*.pdf
+
+# Not redistributable or over GitHub's 100 MB limit; source URLs are in core/visual-assets/registry.json
+assets/raspberry_pi5/*.step
+assets/livox_mid360/
+assets/ouster_os0/
+assets/ouster_os1/
+assets/ouster_osdome/
+assets/zed2i/

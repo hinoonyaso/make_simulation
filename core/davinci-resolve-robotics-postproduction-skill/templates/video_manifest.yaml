@@ -1,0 +1,23 @@
+# Editor-only settings. Beats are NOT restated here: the single source of truth is the
+# Director visual_manifest.json (id/text/sec/object/state_change/focus/tool/evidence/trace/
+# sfx/bgm/caption/audio/media). Stage it with scripts/stage_segments.py.
+video:
+  title: ""
+  topic: ""
+  visual_manifest: "visual_manifest.json"
+  fps: null
+  resolution: "1920x1080"
+  working_timeline: ""
+
+assets:
+  narration: ""   # concatenated narration from core/narration/prepare_audio.py
+  captions: ""    # subtitles.<lang>.srt from the same script
+  bgm: ""
+
+review:
+  representative_beats: [B01]
+  unresolved: []
+
+delivery:
+  filename: ""
+  preset: ""

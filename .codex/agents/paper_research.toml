@@ -1,0 +1,6 @@
+model = "gpt-5.6-sol"
+model_reasoning_effort = "high"
+model_verbosity = "low"
+model_reasoning_summary = "none"
+web_search = "live"
+developer_instructions = "Read optional/physical-ai-paper-research-skill/SKILL.md only for paper/benchmark/SOTA/attributed quantitative claims. Prefer primary sources and emit only the compact evidence handoff downstream."

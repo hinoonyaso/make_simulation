@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "assets": [
+    {
+      "id": "manim.point_p.v1",
+      "tool": "manim",
+      "kind": "procedural",
+      "source": "core/manim-robotics-education-skill/templates/manim_kit.py::point_p",
+      "version": 1,
+      "assumptions": "Manim scene coordinates; semantic active color",
+      "semantic_role": "tracked point",
+      "provenance": "bundle-authored"
+    },
+    {
+      "id": "manim.axes2d.v1",
+      "tool": "manim",
+      "kind": "procedural",
+      "source": "core/manim-robotics-education-skill/templates/manim_kit.py::coordinate_axes_2d",
+      "version": 1,
+      "assumptions": "Manim scene coordinates",
+      "semantic_role": "2D coordinate axes",
+      "provenance": "bundle-authored"
+    },
+    {
+      "id": "blender.frame_xyz.v1",
+      "tool": "blender",
+      "kind": "procedural",
+      "source": "core/blender-robotics-simulation-skill/templates/robotics_visual_utils.py::add_coordinate_frame",
+      "version": 1,
+      "assumptions": "Blender metric scene; X red, Y green, Z blue",
+      "semantic_role": "3D coordinate frame",
+      "provenance": "bundle-authored"
+    },
+    {
+      "id": "blender.point.v1",
+      "tool": "blender",
+      "kind": "procedural",
+      "source": "core/blender-robotics-simulation-skill/templates/robotics_visual_utils.py::add_point",
+      "version": 1,
+      "assumptions": "Blender scene units defined by episode",
+      "semantic_role": "tracked 3D point",
+      "provenance": "bundle-authored"
+    },
+    {
+      "id": "blender.trajectory.v1",
+      "tool": "blender",
+      "kind": "procedural",
+      "source": "core/blender-robotics-simulation-skill/templates/robotics_visual_utils.py::add_trajectory",
+      "version": 1,
+      "assumptions": "points use the episode's declared frame and units",
+      "semantic_role": "trajectory/path",
+      "provenance": "bundle-authored"
+    }
+  ]
+}

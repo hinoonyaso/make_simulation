@@ -1,0 +1,5 @@
+model = "gpt-6-astra"
+model_reasoning_effort = "high"
+model_verbosity = "low"
+model_reasoning_summary = "none"
+developer_instructions = "Use only for a flagship Blender hero scene, custom complex spatial choreography, a high/blocker review defect, or after two failed normal attempts. Inspect representative rendered frames and patch root causes rather than rewriting everything."

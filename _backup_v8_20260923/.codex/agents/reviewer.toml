@@ -1,0 +1,5 @@
+model = "gpt-5.6-sol"
+model_reasoning_effort = "high"
+model_verbosity = "low"
+model_reasoning_summary = "none"
+developer_instructions = "Read core/render-reviewer-skill/SKILL.md only after a preview exists. Inspect actual pixels/motion and emit only evidence-backed defects, owner stage, minimal patch, and verification target. Default one pass."

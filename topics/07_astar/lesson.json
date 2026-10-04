@@ -1,0 +1,52 @@
+{
+  "topic": "A*",
+  "level": 1,
+  "evidence_mode": "deterministic executable grid search, not Nav2 execution",
+  "learning_objective": "g+h로 Open 후보를 선택하고 parent를 역추적해 최단 경로를 구한다",
+  "episode_brief": {
+    "hero_experiment": "same map: h=0 Dijkstra versus Manhattan A*; same optimal cost, different selected-node count",
+    "system_takeaway": "known occupancy/costmap + start/goal -> global path -> controller",
+    "limits": "static point-agent grid; no robot dynamics, inflation, tracking or Nav2 execution"
+  },
+  "prerequisites": [
+    "../05_slam",
+    "../06_amcl"
+  ],
+  "trace": "output/trace.json",
+  "metrics": {
+    "path_cost": 16,
+    "astar_selected": 41,
+    "dijkstra_selected": 89,
+    "unobstructed_cost": 10,
+    "unreachable_check": "passed",
+    "cell_example": {
+      "step": 11,
+      "current": [
+        5,
+        5
+      ],
+      "g": 5,
+      "h": 7,
+      "f": 12
+    }
+  },
+  "units": "unit edge cost, coordinates=(column,row)",
+  "model": {
+    "grid": [
+      12,
+      9
+    ],
+    "connectivity": 4,
+    "cost": 1,
+    "heuristic": "Manhattan, consistent",
+    "goal_test": "when removed from priority queue",
+    "tie_break": "lowest f, then lowest h, then insertion order; neighbors right, up, down, left",
+    "seed": null
+  },
+  "video_timeline": "output/timeline.json",
+  "render_events": "output/render_events.json",
+  "sources": [
+    "https://www.redblobgames.com/pathfinding/a-star/introduction.html",
+    "https://docs.nav2.org/rolling/configuration_and_development/configuration_guide/planners_plugins/configuring_navfn/"
+  ]
+}

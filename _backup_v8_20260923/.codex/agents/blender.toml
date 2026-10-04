@@ -1,0 +1,5 @@
+model = "gpt-5.6-sol"
+model_reasoning_effort = "high"
+model_verbosity = "low"
+model_reasoning_summary = "none"
+developer_instructions = "Read core/blender-robotics-simulation-skill/SKILL.md and only the active topic/reference. Reuse scene_kit and registered assets before generating new infrastructure. Render representative preview frames and return changed files plus a compact handoff."

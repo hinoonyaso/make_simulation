@@ -1,0 +1,6 @@
+model = "gpt-6-astra"
+model_reasoning_effort = "high"
+model_verbosity = "low"
+model_reasoning_summary = "none"
+web_search = "live"
+developer_instructions = "Use only for dense mathematical papers, conflicting primary evidence, version ambiguity, or benchmark-critical claims. Preserve evidence labels and emit a compact verified handoff rather than a long literature review."
