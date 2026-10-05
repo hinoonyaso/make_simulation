@@ -1,0 +1,30 @@
+{
+  "video": "../output/moving_obstacle_ko.mp4",
+  "title": "장애물이 움직이면 로봇 경로는 어떻게 바뀔까? | 교육용 내비게이션 모형",
+  "description": "복도 안으로 장애물이 들어왔을 때, 로봇의 비용 지도와 기존 경로는 어떻게 바뀔까요? 하나의 연속 장면에서 장애물 감지, 비용 변화, 기존 경로 무효화, 두 차례 재계획과 TurtleBot3의 주행을 따라갑니다.\n\n화면은 topics/08_nav2/output/trace.json의 기록을 시각화합니다. 원본 기록의 동적 원형 장애물은 사람 모형이며, 화면의 드럼은 같은 반지름(0.30 m)의 시각적 대역입니다. 재생 속도는 설명을 위해 시간 조정했습니다.\n\n중요: 이것은 교육용 통합 모형 trace입니다. ROS 2/Nav2 또는 Nav2 DWB를 실행한 결과가 아닙니다.\n\n챕터\n00:00 드럼이 들어오면?\n00:10 처음 경로\n00:22 장애물 감지\n00:34 비용 지도와 경로 무효화\n00:47 아래쪽으로 재계획\n01:01 로봇 주행\n01:14 교육용 모형의 경계",
+  "privacy": "public",
+  "captions": "../output/subtitles.ko.srt",
+  "caption_language": "ko",
+  "channel_id": "UCKT_GQPU4i_wmtE-b_6wa8A",
+  "tags": [
+    "로봇 내비게이션",
+    "경로 계획",
+    "Nav2 교육",
+    "ROS 2",
+    "TurtleBot3",
+    "동적 장애물",
+    "코스트맵",
+    "로보틱스 교육"
+  ],
+  "chapters": [
+    {"seconds": 0, "title": "드럼이 들어오면?"},
+    {"seconds": 10, "title": "처음 경로"},
+    {"seconds": 22, "title": "장애물 감지"},
+    {"seconds": 34, "title": "비용 지도와 경로 무효화"},
+    {"seconds": 47, "title": "아래쪽으로 재계획"},
+    {"seconds": 61, "title": "로봇 주행"},
+    {"seconds": 74, "title": "교육용 모형의 경계"}
+  ],
+  "made_for_kids": false,
+  "contains_synthetic_media": false
+}

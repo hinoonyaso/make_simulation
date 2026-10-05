@@ -1,0 +1,18 @@
+{
+  "video_id": "88cMKOPrzfY",
+  "channel_id": "UCKT_GQPU4i_wmtE-b_6wa8A",
+  "changed_at_utc": "2026-10-05T01:26:06.793635+00:00",
+  "previous_privacy": "private",
+  "requested_privacy": "public",
+  "observed_privacy": "public",
+  "result": "confirmed",
+  "update_error": null,
+  "preserved_status_fields": [
+    "privacyStatus",
+    "license",
+    "embeddable",
+    "publicStatsViewable",
+    "selfDeclaredMadeForKids"
+  ],
+  "processing_status": "succeeded"
+}

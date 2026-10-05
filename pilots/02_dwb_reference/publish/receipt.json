@@ -1,0 +1,46 @@
+{
+  "hashes": {
+    "package": "952944ff18a8a67edda66ef68ae945f14adff53cc6b706853c686613d8d4d690",
+    "video": "8314f6b2280d689cf4a63753b4f056d335bedab64bad2cff02cdf33a1477c961",
+    "captions": "9b55373884fd0ecb007ddd9729561b17cc4f231d7c6b88dfa8744f411662380a"
+  },
+  "channel_id": "UCKT_GQPU4i_wmtE-b_6wa8A",
+  "init_started": true,
+  "video_id": "88cMKOPrzfY",
+  "caption_started": true,
+  "caption_id": "AUieDabhJoMO1HoudULg0iyXFv3uxgxSjar7qNHTvhAI36LklefwgkChWWI9vKlueFqZTNC2eheLvOVdqg",
+  "remote_status": {
+    "uploadStatus": "processed",
+    "privacyStatus": "public",
+    "license": "youtube",
+    "embeddable": true,
+    "publicStatsViewable": true,
+    "madeForKids": false,
+    "selfDeclaredMadeForKids": false
+  },
+  "processing": "succeeded",
+  "caption_status": "serving",
+  "previous_privacy_status": "private",
+  "requested_privacy_status": "public",
+  "privacy_updated_at_utc": "2026-10-05T01:26:06.793635+00:00",
+  "visibility_history": [
+    {
+      "video_id": "88cMKOPrzfY",
+      "channel_id": "UCKT_GQPU4i_wmtE-b_6wa8A",
+      "changed_at_utc": "2026-10-05T01:26:06.793635+00:00",
+      "previous_privacy": "private",
+      "requested_privacy": "public",
+      "observed_privacy": "public",
+      "result": "confirmed",
+      "update_error": null,
+      "preserved_status_fields": [
+        "privacyStatus",
+        "license",
+        "embeddable",
+        "publicStatsViewable",
+        "selfDeclaredMadeForKids"
+      ],
+      "processing_status": "succeeded"
+    }
+  ]
+}

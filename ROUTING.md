@@ -46,3 +46,19 @@ Each worker reads its SKILL.md + at most one active topic/reference. Pass only c
 
 ## Quality reference
 `pilots/01_teb_reference` is the current bar: bright studio Blender (real TurtleBot3, EEVEE, 30 fps) for physical things, continuous data-driven Manim for computation, pixel-aligned crane-to-top handoff, narration-timed beats with sentence captions.
+
+## Explanation acceptance
+
+Technical gates and educational review are separate. Director supplies visible cause -> decisive evidence -> consequence in the existing manifest; renderers make those relations readable and synchronize them to measured phrases. Reviewer inspects the central decision before/during/after, including motion/audio when available. Missing evidence for the central answer or misleading causal timing is high severity. An incomplete inspection is not PASS. Purposeful close-ups/cuts preserve continuity; padded runtime and a continuously moving camera do not establish explanation quality.
+
+## Critical excerpt for full explainers
+
+Before costly full rendering: Director selects the contiguous manifest beat IDs containing the hardest inference -> render a cheap moving excerpt with measured narration (usually 15–25 seconds, adjusted to context) -> inspect comprehension, motion and voice -> patch the central cause -> full production. Reuse an equivalent already approved excerpt. This adds no second beat list or mandatory extra agent. Single-scene shortcuts remain proportional to the request.
+
+Reviewer reports comprehension, motion and audio status separately. For narrated lessons, unavailable listening/playback means incomplete educational acceptance even when frame/timing and deterministic gates pass. Recheck changed modalities after patches. No creator-parity claim follows from these gates.
+
+## Physics-backed robotics route
+
+User preference for robotics episodes: preserve the discovery explanation and add physically computed Blender setup/consequence when motion/contact is relevant. Route: Director physical question -> capable installed simulator/runner -> validated physical run + shared V9 projection -> Manim mechanism and Blender response from that same run -> critical excerpt -> reviewer (physics evidence + visual/audio) -> final assembly.
+
+Rendering may use Blender while another engine computes dynamics. Keyframed poses and kinematic integration remain explicitly labeled alternatives, not silent substitutes for requested physics. Read Blender `core/blender-robotics-simulation-skill/references/evidence.md` for the run contract. Existing evidence enums and the single manifest remain unchanged. Physics validation is separate from schema/style/media gates; missing physical evidence leaves that requirement incomplete.

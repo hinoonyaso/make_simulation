@@ -1,0 +1,29 @@
+{
+  "video": "../output/costmap_inflation_ko.mp4",
+  "title": "코스트맵 인플레이션: 로봇은 장애물에서 얼마나 떨어져 갈까?",
+  "description": "장애물에 가까운 칸에 더 높은 비용을 주면, 경로 계획은 충돌 금지 영역뿐 아니라 주변 여유 공간까지 고려할 수 있습니다. 이 영상은 0.15m 격자와 비용 변화, 기록된 전역 경로를 따라 그 원리를 설명합니다.\n\n주의: 값과 경로는 topics/08_nav2의 교육용 모델 기록입니다. 실제 Nav2 인플레이션 레이어를 실행하거나 재현한 결과가 아닙니다.\n\n챕터\n00:00 드럼 옆 공간\n00:09 격자와 거리 비용\n00:19 통과 금지 비용 255\n00:30 거리별 비용 변화\n00:41 기록된 전역 경로\n00:53 교육용 모델의 경계",
+  "privacy": "public",
+  "captions": "../output/subtitles.ko.srt",
+  "caption_language": "ko",
+  "channel_id": "UCKT_GQPU4i_wmtE-b_6wa8A",
+  "tags": [
+    "Costmap Inflation",
+    "코스트맵 인플레이션",
+    "Nav2",
+    "ROS 2",
+    "로봇 내비게이션",
+    "경로 계획",
+    "Costmap",
+    "TurtleBot3",
+    "로보틱스 교육"
+  ],
+  "chapters": [
+    {"seconds": 9, "title": "격자와 거리 비용"},
+    {"seconds": 19, "title": "통과 금지 비용 255"},
+    {"seconds": 30, "title": "거리별 비용 변화"},
+    {"seconds": 41, "title": "기록된 전역 경로"},
+    {"seconds": 53, "title": "교육용 모델의 경계"}
+  ],
+  "made_for_kids": false,
+  "contains_synthetic_media": false
+}

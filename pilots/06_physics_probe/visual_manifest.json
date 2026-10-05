@@ -1,0 +1,35 @@
+{
+  "language": "ko-KR",
+  "beats": [
+    {
+      "id": "B01",
+      "text": "같은 모터 명령의 물리 반응 비교",
+      "caption": "",
+      "sec": 4,
+      "object": "동적 차체와 바퀴",
+      "state_change": "진행",
+      "focus": "실제 계산된 차체 움직임",
+      "tool": "B",
+      "evidence": "trace_playback",
+      "trace": "data/baseline_clear.json",
+      "media": "output/physics_probe_ko.mp4",
+      "media_in": 0,
+      "media_out": 4
+    },
+    {
+      "id": "B02",
+      "text": "같은 모터 명령의 물리 반응 비교",
+      "caption": "",
+      "sec": 4,
+      "object": "동적 차체와 바퀴",
+      "state_change": "드럼 접촉 후 정지",
+      "focus": "실제 계산된 차체 움직임",
+      "tool": "B",
+      "evidence": "trace_playback",
+      "trace": "data/baseline_blocked.json",
+      "media": "output/physics_probe_ko.mp4",
+      "media_in": 4,
+      "media_out": 8
+    }
+  ]
+}

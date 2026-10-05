@@ -19,8 +19,8 @@
       "bgm": "low",
       "audio": "assets/audio/B01.wav",
       "media": "output/shots/S1.mp4",
-      "media_in": null,
-      "media_out": null
+      "media_in": 0.0,
+      "media_out": 12.2
     },
     {
       "id": "B02",
@@ -38,8 +38,8 @@
       "bgm": "low",
       "audio": "assets/audio/B02.wav",
       "media": "output/shots/S2.mp4",
-      "media_in": null,
-      "media_out": null
+      "media_in": 0.6,
+      "media_out": 10.233
     },
     {
       "id": "B03",
@@ -57,8 +57,8 @@
       "bgm": "low",
       "audio": "assets/audio/B03.wav",
       "media": "output/shots/S2.mp4",
-      "media_in": null,
-      "media_out": null
+      "media_in": 10.233,
+      "media_out": 23.933
     },
     {
       "id": "B04",
@@ -76,8 +76,8 @@
       "bgm": "low",
       "audio": "assets/audio/B04.wav",
       "media": "output/shots/S2.mp4",
-      "media_in": null,
-      "media_out": null
+      "media_in": 23.933,
+      "media_out": 35.167
     },
     {
       "id": "B05",
@@ -95,8 +95,8 @@
       "bgm": "low",
       "audio": "assets/audio/B05.wav",
       "media": "output/shots/S2.mp4",
-      "media_in": null,
-      "media_out": null
+      "media_in": 35.167,
+      "media_out": 41.1
     },
     {
       "id": "B06",
@@ -114,8 +114,8 @@
       "bgm": "low",
       "audio": "assets/audio/B06.wav",
       "media": "output/shots/S2.mp4",
-      "media_in": null,
-      "media_out": null
+      "media_in": 41.1,
+      "media_out": 47.667
     },
     {
       "id": "B07",
@@ -133,8 +133,8 @@
       "bgm": "low",
       "audio": "assets/audio/B07.wav",
       "media": "output/shots/S3.mp4",
-      "media_in": null,
-      "media_out": null
+      "media_in": 0.0,
+      "media_out": 11.9
     }
   ]
 }

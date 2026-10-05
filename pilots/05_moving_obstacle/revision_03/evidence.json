@@ -1,0 +1,83 @@
+{
+  "source_trace_sha256": "351af3d6f662ab22c57ac6e867dbed55695773ff988fda3af0a252f8930da879",
+  "analysis": "Recorded vertices at their grid nodes; not a continuous-segment collision proof or optimizer replay.",
+  "planning_forbidden_radius_m": 0.77,
+  "margin_provenance": "topics/08_nav2/model.py costmap: d <= ROBOT_R + .22",
+  "checks": [
+    {
+      "path_time": 0.0,
+      "map_time": 2.0,
+      "forbidden_vertices": 9,
+      "vertices": [
+        [
+          -0.5999999999999908,
+          -1.7763568394002505e-15
+        ],
+        [
+          -0.4499999999999904,
+          -1.7763568394002505e-15
+        ],
+        [
+          -0.29999999999999005,
+          -1.7763568394002505e-15
+        ],
+        [
+          -0.1499999999999897,
+          -1.7763568394002505e-15
+        ],
+        [
+          1.0658141036401503e-14,
+          -1.7763568394002505e-15
+        ],
+        [
+          0.150000000000011,
+          -1.7763568394002505e-15
+        ],
+        [
+          0.30000000000001137,
+          -1.7763568394002505e-15
+        ],
+        [
+          0.4500000000000117,
+          -1.7763568394002505e-15
+        ],
+        [
+          0.6000000000000121,
+          -1.7763568394002505e-15
+        ]
+      ]
+    },
+    {
+      "path_time": 2.0,
+      "map_time": 2.0,
+      "forbidden_vertices": 0,
+      "vertices": []
+    },
+    {
+      "path_time": 2.0,
+      "map_time": 3.0,
+      "forbidden_vertices": 3,
+      "vertices": [
+        [
+          -0.1499999999999897,
+          -0.7500000000000013
+        ],
+        [
+          1.0658141036401503e-14,
+          -0.7500000000000013
+        ],
+        [
+          0.150000000000011,
+          -0.7500000000000013
+        ]
+      ]
+    },
+    {
+      "path_time": 3.0,
+      "map_time": 3.0,
+      "forbidden_vertices": 0,
+      "vertices": []
+    }
+  ],
+  "next_plan_reason": "periodic_replan"
+}

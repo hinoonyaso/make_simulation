@@ -1,0 +1,23 @@
+{
+  "hashes": {
+    "package": "baf1eaabf78d1b04569e2e7e533326d8afdd9e4a40f6fc1d9a5682c87cfb297c",
+    "video": "2298346f46b0eaae7e57c8b23288aec82e35e6c27696c3ede68971b74d825e0e",
+    "captions": "d3cf4f5fb61635ce0389788a9d14bf3e883c41351449986e64d59982397a36a2"
+  },
+  "channel_id": "UCKT_GQPU4i_wmtE-b_6wa8A",
+  "init_started": true,
+  "video_id": "hbZ6d9SwIwU",
+  "caption_started": true,
+  "caption_id": "AUieDabux3w2c6FsCKZ6R8ixXUa99J0N6nhveoNwikDVebVOFxFvXGlcVRJ5dHGRzErQgyCVk-JHtuAzrQ",
+  "remote_status": {
+    "uploadStatus": "processed",
+    "privacyStatus": "public",
+    "license": "youtube",
+    "embeddable": true,
+    "publicStatsViewable": true,
+    "madeForKids": false,
+    "selfDeclaredMadeForKids": false
+  },
+  "processing": "succeeded",
+  "caption_status": "serving"
+}

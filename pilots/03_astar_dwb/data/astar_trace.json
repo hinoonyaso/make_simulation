@@ -1,0 +1,152 @@
+{
+  "schema": "robotics-visual-trace/v1",
+  "source": "topics/07_astar/output/trace.json astar only; source output read-only",
+  "units": {
+    "time": "one recorded plan (1)",
+    "width": "cells",
+    "height": "cells",
+    "start": "grid cells",
+    "goal": "grid cells",
+    "blocked": "grid cells",
+    "path": "grid cells",
+    "cost": "grid steps",
+    "expanded_before_goal": "grid cells"
+  },
+  "width": 12,
+  "height": 9,
+  "start": [
+    1,
+    4
+  ],
+  "goal": [
+    10,
+    3
+  ],
+  "blocked": [
+    [
+      3,
+      5
+    ],
+    [
+      3,
+      6
+    ],
+    [
+      3,
+      7
+    ],
+    [
+      6,
+      1
+    ],
+    [
+      6,
+      2
+    ],
+    [
+      6,
+      3
+    ],
+    [
+      6,
+      4
+    ],
+    [
+      6,
+      5
+    ],
+    [
+      6,
+      6
+    ],
+    [
+      6,
+      7
+    ],
+    [
+      9,
+      6
+    ],
+    [
+      10,
+      6
+    ]
+  ],
+  "samples": [
+    {
+      "t": 0,
+      "path": [
+        [
+          1,
+          4
+        ],
+        [
+          2,
+          4
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          4,
+          4
+        ],
+        [
+          5,
+          4
+        ],
+        [
+          5,
+          3
+        ],
+        [
+          5,
+          2
+        ],
+        [
+          5,
+          1
+        ],
+        [
+          5,
+          0
+        ],
+        [
+          6,
+          0
+        ],
+        [
+          7,
+          0
+        ],
+        [
+          8,
+          0
+        ],
+        [
+          9,
+          0
+        ],
+        [
+          10,
+          0
+        ],
+        [
+          10,
+          1
+        ],
+        [
+          10,
+          2
+        ],
+        [
+          10,
+          3
+        ]
+      ],
+      "cost": 16,
+      "expanded_before_goal": 40
+    }
+  ]
+}

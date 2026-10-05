@@ -1,0 +1,30 @@
+{
+  "video": "../output/astar_dwb_ko.mp4",
+  "title": "A*는 길을 찾고, DWB는 다음 속도를 고른다 | 전역 경로와 0.2초 제어",
+  "description": "A*가 격자에서 전역 경로를 제안하고, DWB형 국소 모형이 여러 속도 후보를 비교해 다음 0.2초 명령을 고르는 역할을 설명합니다.\n\n주의: A*와 DWB는 서로 다른 저장 trace를 사용한 교육용 사례입니다. DWB 부분은 Nav2 DWB 플러그인을 실행한 결과가 아니며, 기록 기반 단순화 모형입니다.\n\n챕터\n00:00 전역 경로와 국소 제어\n00:20 A* 전역 경로\n00:31 속도 후보 비교\n00:41 예측 비용과 선택\n00:53 첫 0.2초 적용\n01:03 핵심 정리",
+  "privacy": "public",
+  "captions": "../output/subtitles.ko.srt",
+  "caption_language": "ko",
+  "channel_id": "UCKT_GQPU4i_wmtE-b_6wa8A",
+  "tags": [
+    "A*",
+    "DWB",
+    "Nav2",
+    "ROS 2",
+    "로봇 내비게이션",
+    "전역 경로 계획",
+    "국소 제어",
+    "TurtleBot3",
+    "로보틱스 교육"
+  ],
+  "chapters": [
+    {"seconds": 0, "title": "전역 경로와 국소 제어"},
+    {"seconds": 20, "title": "A* 전역 경로"},
+    {"seconds": 31, "title": "속도 후보 비교"},
+    {"seconds": 41.1, "title": "예측 비용과 선택"},
+    {"seconds": 53.1, "title": "첫 0.2초 적용"},
+    {"seconds": 63.1, "title": "핵심 정리"}
+  ],
+  "made_for_kids": false,
+  "contains_synthetic_media": false
+}

@@ -1,0 +1,8 @@
+file '/home/sang/make_simulation/pilots/05_moving_obstacle/revision_03/assets/audio/B01.wav'
+file '/home/sang/make_simulation/pilots/05_moving_obstacle/revision_03/assets/audio/B02.wav'
+file '/home/sang/make_simulation/pilots/05_moving_obstacle/revision_03/assets/audio/B03.wav'
+file '/home/sang/make_simulation/pilots/05_moving_obstacle/revision_03/assets/audio/B04.wav'
+file '/home/sang/make_simulation/pilots/05_moving_obstacle/revision_03/assets/audio/B05.wav'
+file '/home/sang/make_simulation/pilots/05_moving_obstacle/revision_03/assets/audio/B06.wav'
+file '/home/sang/make_simulation/pilots/05_moving_obstacle/revision_03/assets/audio/B07.wav'
+file '/home/sang/make_simulation/pilots/05_moving_obstacle/revision_03/assets/audio/B08.wav'

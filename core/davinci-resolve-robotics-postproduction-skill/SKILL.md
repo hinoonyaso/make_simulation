@@ -1,7 +1,8 @@
 ---
 name: davinci-resolve-robotics-postproduction-skill
-version: 1.0
 description: Low-token, high-quality DaVinci Resolve post-production for robotics/AI educational videos. Consumes Director/Manim/Blender outputs and uses the connected davinci-resolve MCP for safe timeline assembly, narration, SFX/BGM, subtitles, review, and delivery.
+metadata:
+  version: "1.0"
 ---
 
 # DaVinci Resolve Robotics / AI Post-production
@@ -135,3 +136,13 @@ Return a compact edit report, not a transcript of every MCP call:
 Only report measured/verified output properties.
 
 If publishing is the next step, hand off only the selected final render path/version, verified duration/resolution/frame rate, subtitle/thumbnail paths, and unresolved issues to `youtube-education-publishing-skill`; do not upload from this skill.
+
+## Preserve causal timing in the final edit
+
+Check the central cause/comparison/consequence against measured speech after assembly. A trim, speed change, or crossfade must not move execution ahead of the explanation of the selected plan. Preserve purposeful inspection pauses; flag padding without a visible task to Director rather than quietly changing the lesson or filling it with BGM. Resolve-local technical PASS does not replace the Reviewer's educational status. Listen to the central narration and terminology; disclose if listening was unavailable.
+
+## Narrated lesson acceptance
+
+Before delivery, watch and listen to the central inference in the assembled export at normal speed. Verify the question, evidence, discovery and conclusion survived editing; record inspected ranges. Regenerated speech requires renewed measured timings and captions. If listening/playback is unavailable, report those checks incomplete separately from deterministic delivery PASS.
+
+Full production may use an approved critical excerpt, but final trims, retiming, overlays or audio changes reopen the affected review. Preserve supported prediction/inspection pauses rather than replacing them with an arbitrary gap or music. Do not describe a technical export as fully reviewed when its necessary educational/audio inspection is incomplete.

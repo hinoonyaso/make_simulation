@@ -1,6 +1,19 @@
 review_pass: 1
 preview: ""
 frames_dir: ""   # scripts/extract_review_frames.py --out
+technical_gates: ""   # commands/results actually checked
+inspection: ""        # exact times/excerpts; frames, timing comparison, audio playback or limitation
+central_question: ""
+visible_reasoning: "" # observed cause -> decisive evidence -> consequence; no inferred missing explanation
+interpretation_before_source: ""  # what changed / visible reason / supported transfer prediction
+inspection_status:
+  comprehension: incomplete  # PASS | FAIL | incomplete
+  motion: incomplete         # PASS | FAIL | incomplete | not_applicable
+  audio: incomplete          # actual listening; PASS | FAIL | incomplete | not_applicable
+  physics: not_applicable     # PASS | FAIL | incomplete | not_applicable; solver/run evidence, not pixels
+observations: []             # optional craft findings; not acceptance blockers
+educational_status: incomplete  # PASS | FAIL | incomplete
+limitations: []
 issues:
   - severity: high        # blocker | high
     beat: B04
@@ -9,4 +22,4 @@ issues:
     owner: Manim          # Director | Manim | Blender | Resolve
     patch: ""             # minimal root-cause change
     verify: ""            # exact frame/time/check that proves the fix
-stop_condition: "no blocker/high issues remain"
+stop_condition: "central explanation inspected; no blocker/high issues remain"

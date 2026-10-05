@@ -1,0 +1,6 @@
+file '/home/sang/make_simulation/pilots/04_costmap_inflation/assets/audio/B01.wav'
+file '/home/sang/make_simulation/pilots/04_costmap_inflation/assets/audio/B02.wav'
+file '/home/sang/make_simulation/pilots/04_costmap_inflation/assets/audio/B03.wav'
+file '/home/sang/make_simulation/pilots/04_costmap_inflation/assets/audio/B04.wav'
+file '/home/sang/make_simulation/pilots/04_costmap_inflation/assets/audio/B05.wav'
+file '/home/sang/make_simulation/pilots/04_costmap_inflation/assets/audio/B06.wav'
