@@ -2,7 +2,7 @@
 name: davinci-resolve-robotics-postproduction-skill
 description: Low-token, high-quality DaVinci Resolve post-production for robotics/AI educational videos. Consumes Director/Manim/Blender outputs and uses the connected davinci-resolve MCP for safe timeline assembly, narration, SFX/BGM, subtitles, review, and delivery.
 metadata:
-  version: "1.2-composited-cut-readability"
+  version: "1.3-reasoning-rhythm"
 ---
 
 # DaVinci Resolve Robotics / AI Post-production
@@ -154,3 +154,7 @@ Preserve the accepted explanation and recorded input/response order. Use Directo
 Check final composed labels/captions at every changed cut entry, deciding event and exit. Source frames without overlays cannot establish final label contrast: walls, trim, paths and the robot can move behind text. Reposition within readable empty space before adding boxes or extra chrome, and reinspect the assembled range after the patch.
 
 Keep a final comparison long enough for its measured sentence and inspection task, then end. If it only repeats an outcome already demonstrated, return the specific interval to Director for a shorter script and regenerated audio/captions. Do not silently cut spoken narration, stretch static states to a target duration, or rush the explanatory middle to preserve a redundant ending. Use existing manifest ranges; retain separate solver-to-presentation time mappings through retiming.
+
+## Preserve reasoning rhythm
+
+Preserve the time needed to locate a component, connect representations and inspect a consequence. Do not trim useful holds to meet a cut quota or pad an ending with repeated results. For reference comparison, match the explanatory task and inspect both clips with sound at normal speed; language metadata, ASR and timestamp tables do not establish voice naturalness. Record the actual audio language of the selected reference track before comparing Korean narration.

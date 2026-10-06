@@ -10,7 +10,7 @@ Build the final relation in layers: phenomenon/geometry -> marked quantity -> la
 When a real algorithm/model/trace exists, load its values first and drive plots, numbers, edge widths, poses, and colors from those values. Keep computation outside the scene when it is reusable or expensive.
 
 ## Density control
-For dense edges/attention/correspondence, show only top-k or values above a threshold first. Reveal additional structure only when it changes the explanation. Do not render a hairball merely because the full matrix exists.
+For dense edges/attention/correspondence, start with the cell, pair, row, column or subset needed for the current inference. Expand to the whole when its structure matters. A display subset must preserve the full computation: do not renormalize probabilities over visible top-k terms unless that is the implemented algorithm. Indicate omitted terms or mass when relevant. Do not render a hairball merely because the full matrix exists.
 
 ## Layout and camera
 Prefer `.arrange()`, `.next_to()`, grouping, and reusable layout helpers over manual coordinate arithmetic. Move camera for viewpoint/scale changes, not as decoration.
@@ -39,3 +39,15 @@ Inspect the transition's beginning, midpoint and end at delivery size, plus norm
 For requested narrative refinement, carry the prior conclusion as visible input to the next rule: a selected reference becomes the source of the target point; the target and current heading become the direction difference; that difference becomes a correcting command; measured response then replaces the illustrative command cue. Source each relation from the implemented model. Keep the relevant object anchored while locally dimming context and revealing the next relation. Use an orienting cut when coordinates or evidence time change, with the existing source-time disclosure.
 
 Distinguish a drawn relation from a sentence that names it. If removing the explanatory sentence makes the decisive relation invisible, expose the target selection, comparison, direction or measured consequence in geometry before adding more text. Local labels may establish meaning; subtitles should not be the only evidence for the central inference. At each handoff, inspect the previous resolved state and the next input together at delivery size. Avoid piling all earlier relations into the final view; retire emphasis after its role is complete while retaining orientation anchors.
+
+## Carry one example into notation
+
+Keep the same sample, axes, roles and units across geometry, components and equations. Map each equation term to a quantity the viewer has already seen; highlight its source before compressing the relation into notation. Preserve semantic color across views, with only the currently competing relations emphasized. Avoid morphing unrelated shapes merely to appear continuous.
+
+Use one sourced numerical example after establishing spatial meaning, then a supported different condition to reveal the general rule. Displayed command targets and measured response must have distinct labels/time anchors. Subtitles may name a relation but should not be its only visible evidence. For reference-level work, inspect the central inference with subtitles hidden and check the resulting diagram against the source before adding detail.
+
+## Animate a quantity into its equation term
+
+For requested correspondence repair, build a formula from addressable term mobjects rather than one paragraph of text. Keep source labels/values attached to their geometry. `TransformFromCopy(source_value, term_slot)` preserves the measured example; reveal the operator after its operands are located, then the computed result. A copied value retains units and semantic role; only omit repeated units when the surrounding expression establishes them. Use geometric correspondence rather than unrelated glyph morphs.
+
+For wheel conversion, reuse the same left/right numeric tokens in both `(vL + vR)/2` and `(vR − vL)/b`. Show the measured/configured spacing b as an axle span before moving its value into the denominator. The second formula reverses operand order; keep left/right identification explicit. When the condition changes, update the source tokens and dependent term/result objects together from one calculation. Do not tween through values as if they were additional recorded samples; label hypothetical conversion states. Inspect source, moving-copy midpoint and completed formula after captions are composited. A still equation or animated result alone is insufficient evidence of this repair.

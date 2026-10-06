@@ -54,3 +54,9 @@ Evidence: R09's final review and README record successful local sentence replace
 Tradeoff: adjacent-link previews and same-state surface candidates add focused preparation, while preserving the single manifest, measured narration, solver geometry and defined stopping criteria. Shared kits and topics are unchanged. This skill-only follow-up does not rerender R09 or prove future narrative/surface improvement; the next requested production must supply that evidence. Format/wiring validation results are recorded after the checks below.
 
 Validation of this follow-up: five skill folders pass `quick_validate.py`; review-template YAML parses; all 10 Codex agent configurations pass `validate_codex_setup.py`; `git diff --check` passes. No new render or learner evaluation was run for this instruction update.
+
+## Reference-level mechanism update (2026-10-06)
+
+bRd/3Blue1BrownKR 각4편의 공개 자료와 원본1080p 핵심 발췌를 조사했다. [조사·결정 근거](research/channel_craft_2026_10/STUDY.md), [검사 범위](research/channel_craft_2026_10/evidence.json)에 접근 한계까지 기록했다. Director는 같은 입력의 부품→도형→수식→응답을 설계하고, Manim은 표현 간 값/역할 대응을 보존하며, Blender는 충실한 부품의 작동 관계를 국소적으로 드러낸다. Finishing은 연결된 설명의 리듬을 보존하고 Reviewer는 여섯 비교 항목의 양쪽 증거를 기록한다.
+
+스킬5개 형식,10개 에이전트 설정,리뷰 YAML 및8개 발췌 증거 경로/1080p/음성 검증 PASS. 공용 키트와 topics/기존 파일럿은 변경하지 않았다. 이번 변경은 제작 지침 개선이며 새 영상의 동급 판정은 아니다. 연속 재생·청취와 첫 이해의 검증은 다음 실제 렌더에서 남은 항목이다.

@@ -2,7 +2,7 @@
 name: manim-robotics-education-skill
 description: High-polish, low-token Manim reasoning scenes using persistent visual states, data-driven visuals, selective density, rapid preview, and 1080p+ delivery.
 metadata:
-  version: "5.6-visual-discovery-links"
+  version: "5.8-quantity-to-term-motion"
 ---
 
 # Manim Robotics Education
@@ -74,3 +74,7 @@ When useful, isolate a brief comparison with direction already aligned or the er
 ## Carry the discovered relation forward
 
 For narrative refinement, keep the object or relation that the previous inference established as the next inference's visual input. Use `references/production.md` to distinguish geometry that explains the mechanism from text that merely names it. Retain useful anchors while changing focus locally; do not add another diagram or repeat a conclusion solely to connect beats.
+
+For reference-level work, use `references/production.md` to carry one sourced example from geometry into notation and back to consequences. Choose the smallest meaningful matrix/graph view rather than automatically applying top-k; displaying a subset never licenses changing the underlying computation.
+
+For a demonstrated picture-to-formula gap, `references/production.md` specifies operand-level `TransformFromCopy` and condition updates; a whole-formula fade does not satisfy that repair.

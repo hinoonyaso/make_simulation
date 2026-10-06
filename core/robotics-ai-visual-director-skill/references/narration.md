@@ -36,3 +36,7 @@ Use the existing `text` and phrase anchors in `focus` to distinguish a question,
 Before full production, listen to the critical excerpt with its picture. Check terminology pronunciation, clause boundaries, unnatural stress, whether the deciding reveal has time to register, and whether the conclusion lands after its evidence. Record listened ranges and fixes. Use phonetic `text` with standard `caption` for notation, including A* = 에이스타 and DWB = 디더블유비; add episode-specific exceptions to the episode's existing documentation. Do not duplicate a global pronunciation list across skills.
 
 Regenerating speech invalidates its previous measured timing and alignment: rerun audio/caption preparation and affected visual timing before final checks. Loudness, silence detection and ASR alignment are signal evidence; none certifies pronunciation or delivery. When listening is unavailable, mark voice review incomplete.
+
+## Connected reasoning rather than clipped phrases
+
+Let a sentence complete a causal thought. Multiple connected clauses may accompany successive local reveals; do not turn every reveal or cut into a new short sentence. Introduce the concrete relation before its technical name, then speak notation consistently. Preserve the user's accepted explanation pace and pronunciation dictionary. A pause must support inspection or inference; silence duration and cut count are not quality scores. Evaluate natural phrasing by actual normal-speed listening, not sentence counts or automatic transcription.

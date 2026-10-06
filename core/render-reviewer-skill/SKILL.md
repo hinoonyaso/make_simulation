@@ -2,7 +2,7 @@
 name: render-reviewer-skill
 description: One-pass QA of real rendered previews, focused on comprehension, state continuity, subject scale, and production defects.
 metadata:
-  version: "1.9-discovery-and-surface-evidence"
+  version: "2.1-mechanism-and-token-proof"
 ---
 
 # Render Reviewer
@@ -76,3 +76,7 @@ End the craft pass when the defined targets are met and blocker/high defects are
 ## Review the link and the surface separately
 
 When narrative or studio refinement is requested, use `references/visual.md` to inspect whether one discovery provides the next question's evidence and whether the deciding physical view resolves its named surface/framing weakness. Keep understandable, technically correct and polished as separate findings. Record candidate benefit at its exact range; neither a checklist nor zero high issues establishes creator parity.
+
+## Requested creator comparison
+
+When the user requests creator-level comparison, load `references/benchmark.md` as the active comparison reference. Compare matched explanatory functions and record exact evidence in optional `reference_comparison` fields. Zero blocker/high defects and stronger instructions cannot establish parity. Preserve previously met targets; broaden the comparison only when the user's scope changes.

@@ -39,3 +39,12 @@ issues:
     patch: ""             # minimal root-cause change
     verify: ""            # exact frame/time/check that proves the fix
 stop_condition: "required explanation/modalities inspected; no blocker/high issues; requested craft targets met; unavailable evidence reported separately"
+
+reference_comparison:        # optional, only when requested
+  scope: ""
+  reference_clips: []        # public URL + original time range + explanatory function
+  dimensions: []            # name, reference_evidence, candidate_evidence, inspection_mode, status, reason
+  reviewer_kind: ""
+  normal_speed_ranges: []   # actual audiovisual inspections, not downloaded clips or ASR
+  verdict: unassessed       # comparable_within_scope | gap | unassessed
+  claim_scope: ""

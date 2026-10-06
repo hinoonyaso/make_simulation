@@ -2,7 +2,7 @@
 name: blender-robotics-simulation-skill
 description: Build Blender robotics spatial explanations and physics-backed scenes, using actual solver outputs, shared traces, reusable assets, studio rendering, and faithful 2D handoffs.
 metadata:
-  version: "5.7-mechanism-and-surface-craft"
+  version: "5.9-measured-component-motion"
 ---
 
 # Blender Robotics Spatial
@@ -84,3 +84,7 @@ Choose material response from object identity and teaching hierarchy; tune light
 ## Refine the deciding physical view
 
 For requested surface/camera craft, use the task-led comparison in `references/production.md`: identify the feature the shot must expose, diagnose whether the limit is geometry, shading, lighting or framing, then render a faithful local candidate at the same solver state. A readable route overview alone does not establish close-view surface quality. Preserve physical evidence and stop at the defined target.
+
+For requested reference-level mechanisms, use `references/production.md` to isolate the deciding component and connect it to the mathematical view. Keep command, achieved motion and qualitative contact explanation distinct; faithful cutaways are explanatory render views, not new physics evidence.
+
+For a static-part gap, `references/production.md` specifies recorded articulation, swept framing and an optional phase annotation; a larger still or command-driven fake response does not satisfy that repair.

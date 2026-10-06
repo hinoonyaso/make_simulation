@@ -2,7 +2,7 @@
 name: robotics-ai-visual-director-skill
 description: Low-overhead visual director for robotics/AI explainers using state-transition storytelling, shared computed traces, progressive disclosure, and strong screen composition.
 metadata:
-  version: "5.7-linked-discoveries"
+  version: "5.9-observable-actuation"
 ---
 
 # Robotics / AI Visual Director
@@ -82,3 +82,9 @@ For requested flagship refinement, use `references/director-qa.md` to select a s
 ## Connect discoveries across the episode
 
 When improving narrative depth, read `references/director-qa.md` for the link between adjacent discoveries. The outcome of one inference should supply the evidence or question for the next. Preserve the accepted central explanation and requested runtime; deepen a supported relation before adding new topics, cuts or jargon. Treat narrative changes as candidates until a voiced excerpt demonstrates the benefit.
+
+## Reference-level mechanism design
+
+For requested reference-level craft, use `references/director-qa.md` to design one concrete example across physical parts, simplified relations and notation before specifying surface polish. Keep these correspondences in the existing manifest, not another beat list. Choose the deciding feature's readable bounds rather than imposing a fixed whole-subject area. A title naming a controller is insufficient evidence of its operation.
+
+Mechanism and quantity-to-term repairs are specified in `references/director-qa.md`; define moving-part and moving-token evidence before production.

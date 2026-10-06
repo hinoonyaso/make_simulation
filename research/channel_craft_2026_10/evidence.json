@@ -1,0 +1,265 @@
+{
+  "date": "2026-10-06",
+  "method": "Public selected excerpts; overview/detail storyboard and excerpt contact-sheet inspection. ASR is unverified content assistance. No normal-speed listening/playback claim.",
+  "videos": [
+    {
+      "name": "brd_drone",
+      "url": "https://www.youtube.com/watch?v=d7RfB4Gf02Y",
+      "title": "드론은 어떻게 작동할까?",
+      "original_range_s": [
+        45,
+        95
+      ],
+      "overview_inspected": true,
+      "detail_storyboard_sheets_inspected": [],
+      "excerpt_contact_sheet_inspected": true,
+      "native_clip": "research/channel_craft_2026_10/output/brd_drone/mechanism_excerpt.mp4",
+      "streams": [
+        {
+          "type": "video",
+          "width": 1920,
+          "height": 1080,
+          "sample_rate": null
+        },
+        {
+          "type": "audio",
+          "width": null,
+          "height": null,
+          "sample_rate": "44100"
+        }
+      ],
+      "automatic_transcription_language": "ko",
+      "normal_speed_playback_listening": "not_inspected"
+    },
+    {
+      "name": "brd_motor",
+      "url": "https://www.youtube.com/watch?v=OcYdo3-Tx_o",
+      "title": "전기자동차 모터는 어떻게 작동할까?",
+      "original_range_s": [
+        495,
+        555
+      ],
+      "overview_inspected": true,
+      "detail_storyboard_sheets_inspected": [
+        2,
+        5,
+        11,
+        17
+      ],
+      "excerpt_contact_sheet_inspected": true,
+      "native_clip": "research/channel_craft_2026_10/output/brd_motor/mechanism_excerpt.mp4",
+      "streams": [
+        {
+          "type": "video",
+          "width": 1920,
+          "height": 1080,
+          "sample_rate": null
+        },
+        {
+          "type": "audio",
+          "width": null,
+          "height": null,
+          "sample_rate": "44100"
+        }
+      ],
+      "automatic_transcription_language": "ko",
+      "normal_speed_playback_listening": "not_inspected"
+    },
+    {
+      "name": "brd_train",
+      "url": "https://www.youtube.com/watch?v=eW5JF-AA-uY",
+      "title": "기차는 어떻게 방향을 바꿀까? 기차가 선로를 바꾸는 방법과 원리",
+      "original_range_s": [
+        45,
+        95
+      ],
+      "overview_inspected": true,
+      "detail_storyboard_sheets_inspected": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "excerpt_contact_sheet_inspected": true,
+      "native_clip": "research/channel_craft_2026_10/output/brd_train/mechanism_excerpt.mp4",
+      "streams": [
+        {
+          "type": "video",
+          "width": 1920,
+          "height": 1080,
+          "sample_rate": null
+        },
+        {
+          "type": "audio",
+          "width": null,
+          "height": null,
+          "sample_rate": "44100"
+        }
+      ],
+      "automatic_transcription_language": "ko",
+      "normal_speed_playback_listening": "not_inspected"
+    },
+    {
+      "name": "brd_cpu",
+      "url": "https://www.youtube.com/watch?v=Fg00LN30Ezg",
+      "title": "CPU는 어떻게 작동할까?",
+      "original_range_s": [
+        900,
+        960
+      ],
+      "overview_inspected": true,
+      "detail_storyboard_sheets_inspected": [
+        2,
+        5,
+        10
+      ],
+      "excerpt_contact_sheet_inspected": true,
+      "native_clip": "research/channel_craft_2026_10/output/brd_cpu/mechanism_excerpt.mp4",
+      "streams": [
+        {
+          "type": "video",
+          "width": 1920,
+          "height": 1080,
+          "sample_rate": null
+        },
+        {
+          "type": "audio",
+          "width": null,
+          "height": null,
+          "sample_rate": "44100"
+        }
+      ],
+      "automatic_transcription_language": "ko",
+      "normal_speed_playback_listening": "not_inspected"
+    },
+    {
+      "name": "kr_gradient",
+      "url": "https://www.youtube.com/watch?v=8861RzFOFs8",
+      "title": "AI가 궁금하다면 봐야할 기초영상 경사하강법 - DL2",
+      "original_range_s": [
+        360,
+        420
+      ],
+      "overview_inspected": true,
+      "detail_storyboard_sheets_inspected": [],
+      "excerpt_contact_sheet_inspected": true,
+      "native_clip": "research/channel_craft_2026_10/output/kr_gradient/mechanism_excerpt.mp4",
+      "streams": [
+        {
+          "type": "video",
+          "width": 1920,
+          "height": 1080,
+          "sample_rate": null
+        },
+        {
+          "type": "audio",
+          "width": null,
+          "height": null,
+          "sample_rate": "44100"
+        }
+      ],
+      "automatic_transcription_language": "ko",
+      "normal_speed_playback_listening": "not_inspected"
+    },
+    {
+      "name": "kr_linear",
+      "url": "https://www.youtube.com/watch?v=35ESC-g49fY",
+      "title": "제3장: 선형변환과 행렬 | 선형대수학의 본질",
+      "original_range_s": [
+        270,
+        400
+      ],
+      "overview_inspected": true,
+      "detail_storyboard_sheets_inspected": [
+        4,
+        6,
+        8,
+        11
+      ],
+      "excerpt_contact_sheet_inspected": true,
+      "native_clip": "research/channel_craft_2026_10/output/kr_linear/mechanism_excerpt.mp4",
+      "streams": [
+        {
+          "type": "video",
+          "width": 1920,
+          "height": 1080,
+          "sample_rate": null
+        },
+        {
+          "type": "audio",
+          "width": null,
+          "height": null,
+          "sample_rate": "44100"
+        }
+      ],
+      "automatic_transcription_language": "en",
+      "normal_speed_playback_listening": "not_inspected"
+    },
+    {
+      "name": "kr_attention",
+      "url": "https://www.youtube.com/watch?v=_Z3rXeJahMs",
+      "title": "그 이름도 유명한 어텐션, 이 영상만 보면 이해 완료! - DL6",
+      "original_range_s": [
+        480,
+        670
+      ],
+      "overview_inspected": true,
+      "detail_storyboard_sheets_inspected": [
+        5,
+        7,
+        9
+      ],
+      "excerpt_contact_sheet_inspected": true,
+      "native_clip": "research/channel_craft_2026_10/output/kr_attention/mechanism_excerpt.mp4",
+      "streams": [
+        {
+          "type": "video",
+          "width": 1920,
+          "height": 1080,
+          "sample_rate": null
+        },
+        {
+          "type": "audio",
+          "width": null,
+          "height": null,
+          "sample_rate": "44100"
+        }
+      ],
+      "automatic_transcription_language": "ko",
+      "normal_speed_playback_listening": "not_inspected"
+    },
+    {
+      "name": "kr_clt",
+      "url": "https://www.youtube.com/watch?v=SoKjCUcDBf0",
+      "title": "무작위 속 질서, 중심극한정리 | 확률과 통계",
+      "original_range_s": [
+        540,
+        640
+      ],
+      "overview_inspected": true,
+      "detail_storyboard_sheets_inspected": [
+        6,
+        8,
+        16
+      ],
+      "excerpt_contact_sheet_inspected": true,
+      "native_clip": "research/channel_craft_2026_10/output/kr_clt/mechanism_excerpt.mp4",
+      "streams": [
+        {
+          "type": "video",
+          "width": 1920,
+          "height": 1080,
+          "sample_rate": null
+        },
+        {
+          "type": "audio",
+          "width": null,
+          "height": null,
+          "sample_rate": "44100"
+        }
+      ],
+      "automatic_transcription_language": "en",
+      "normal_speed_playback_listening": "not_inspected"
+    }
+  ]
+}

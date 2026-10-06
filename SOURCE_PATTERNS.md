@@ -69,3 +69,11 @@ Compatibility finding: the existing top-level `version` frontmatter is rejected 
 Validation: Codex quick_validate passed for all five changed skills; the review YAML parsed with educational status defaulting to incomplete; `uv run python scripts/validate_codex_setup.py` passed for 10 agent configs; `git diff --check` passed. These are format/wiring checks, not a rendered-video demonstration of better teaching. No new render, behavioral agent evaluation, or upload was performed in this update.
 
 Follow-up from actual pilot re-review: plans and poses can come from one trace yet show different source times. Director/Manim/Blender now require time coherence or explicit historical-snapshot labeling. The moving-obstacle revision uses the latter because it preserves the encoded playback and makes its existing presentation truthful. This addresses the tested timing ambiguity; it does not reconstruct missing candidate-cost evidence.
+
+## Deeper mechanism study (2026-10-06)
+
+`research/channel_craft_2026_10/STUDY.md` records eight selected bRd/3Blue1BrownKR works, actual storyboard inspection and 1080p audiovisual excerpts. The new route succeeded where earlier web access was limited; this does not retrospectively establish normal-speed listening. Production references now connect faithful components, one sourced example, notation and recorded response. Reviewer comparison distinguishes mechanism depth, correspondence, visual craft, rhythm/voice and transfer instead of deriving creator parity from technical gates.
+
+## R11 gap-driven production repair
+
+R11 added a faithful static part inset and wheel command equations, but did not yet show the part operating or move source quantities into equation terms. The production references now specify trace-driven articulation with observable phase and operand-level correspondence animation. These are requested craft targets; normal-speed playback and first-view learner evidence remain separate. See `pilots/05_moving_obstacle/revision_11/COMPARISON.md` locally for the baseline finding.
