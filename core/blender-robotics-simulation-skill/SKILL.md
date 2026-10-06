@@ -2,7 +2,7 @@
 name: blender-robotics-simulation-skill
 description: Build Blender robotics spatial explanations and physics-backed scenes, using actual solver outputs, shared traces, reusable assets, studio rendering, and faithful 2D handoffs.
 metadata:
-  version: "5.3-physics-evidence"
+  version: "5.7-mechanism-and-surface-craft"
 ---
 
 # Blender Robotics Spatial
@@ -19,7 +19,7 @@ Use Blender only when 3D space materially improves understanding. Story/timing c
 - `raw_mesh_set` assets (imported STL/DAE) are static geometry only, no joints — rig them via the matching `reference.*` urdf/xacro origin/axis/limit before posing. Procedural primitives (e.g. `add_stylized_robot_arm`) are already posable out of the box.
 - Auto-frame hero subjects from their world bounds before hand-tuning camera; avoid small objects floating in empty space.
 - Default look = bright studio floor via `templates/studio_utils.py` (EEVEE, AgX Punchy, concrete tiles, soft area lights, native 30 fps, full frame). Reference: `pilots/01_teb_reference` (S1/S3). `scene_kit.py` remains for dark technical shots.
-- Mobile-robot episodes use the real TurtleBot3 mesh (`studio_utils.load_turtlebot3`) and compute wheel spin for the shown geometry with `diff_drive_wheel_angles`; state when the planner's footprint differs from the shown robot.
+- Mobile-robot episodes use the real TurtleBot3 mesh (`studio_utils.load_turtlebot3`) and use solver wheel orientations for physical replay, or `diff_drive_wheel_angles` for a declared kinematic illustration; state when the planner's footprint differs from the shown robot.
 - Never Workbench for delivery, never render below 24 fps and time-stretch; `scripts/check_scene_style.py` fails both.
 - Final >=1920x1080; use 2560x1440 for flagship/overlay masters when practical.
 - Dense equations stay in Manim. No photoreal detail that does not teach.
@@ -64,3 +64,23 @@ For this user's robotics episodes, combine the approved discovery explanation wi
 Compute and validate the physical run before final animation. Export measured solver state, controller commands and relevant contacts; both Blender and Manim consume this run. A robot driven by motor/force/torque inputs may deviate from a planned path. Preserve that difference rather than teleporting it onto the reference. The planner may be a simplified educational model; physics execution does not turn it into Nav2/DWB.
 
 Kinematic props, externally prescribed obstacle motion, pose-replayed robots and solver-driven bodies must be distinguished. A dynamic falling prop beside a pose-keyframed robot is not proof of physically simulated robot navigation. Geometry, collision shapes, wheels/joints and planner footprints need explicit matching or documented approximations. Keep missing features local when shared kits are protected.
+
+## Frame the physical response
+
+Choose the view from the event being taught: a wide view establishes route/goal; a closer oblique or top view can expose turning, wheel actuation, clearance or contact. Use a purposeful cut or short settled move when the decisive event is too small in the wide view. Preserve landmarks and travel direction; do not impose a fixed number of shots or add camera motion without explanatory value.
+
+Judge scale from the deciding feature at delivery resolution. A small robot can establish a corridor, but cannot be the only view if wheel/contact detail explains the result. Keep reference/actual lines legible without covering the robot or contact point. Reveal actual history only up to the displayed solver time; show the final full history when comparing completed runs.
+
+Replay solver wheel orientations when available; kinematic wheel-angle helpers are an explicitly scoped fallback, not a replacement for measured wheel response. For final held states, set pose and curve reveal from the intended source sample explicitly. Blender curve datablocks may retain animation after object animation is cleared: verify the actual held comparison render, not just the moving preview. Keep any new close-up/replay helpers local when kits are protected.
+
+## Refine the studio image before expensive rendering
+
+For requested visual polish, read `references/production.md` for material/light/camera diagnosis. Use a cheap comparison at the same recorded pose and source time: baseline versus a candidate that fixes a named visual weakness. Choose from rendered evidence, then check the moving excerpt and renderer handoff. Do not change physical geometry, outcomes or the established bright studio identity to make a shot prettier.
+
+Check all changed camera cuts at entry, the deciding event and exit, not only a flattering settled frame. Use `references/production.md` for imported-surface diagnosis and consistency across the selected views.
+
+Choose material response from object identity and teaching hierarchy; tune lights to expose silhouette and surface form without washing out semantic paths. Compose the robot and deciding clearance/contact/goal together. Depth of field, extra lights and camera motion are optional tools with a specific visual purpose, not quality requirements. Record the chosen candidate and reason in the episode's existing README; keep protected-kit additions local.
+
+## Refine the deciding physical view
+
+For requested surface/camera craft, use the task-led comparison in `references/production.md`: identify the feature the shot must expose, diagnose whether the limit is geometry, shading, lighting or framing, then render a faithful local candidate at the same solver state. A readable route overview alone does not establish close-view surface quality. Preserve physical evidence and stop at the defined target.

@@ -2,7 +2,7 @@
 name: davinci-resolve-robotics-postproduction-skill
 description: Low-token, high-quality DaVinci Resolve post-production for robotics/AI educational videos. Consumes Director/Manim/Blender outputs and uses the connected davinci-resolve MCP for safe timeline assembly, narration, SFX/BGM, subtitles, review, and delivery.
 metadata:
-  version: "1.0"
+  version: "1.2-composited-cut-readability"
 ---
 
 # DaVinci Resolve Robotics / AI Post-production
@@ -146,3 +146,11 @@ Check the central cause/comparison/consequence against measured speech after ass
 Before delivery, watch and listen to the central inference in the assembled export at normal speed. Verify the question, evidence, discovery and conclusion survived editing; record inspected ranges. Regenerated speech requires renewed measured timings and captions. If listening/playback is unavailable, report those checks incomplete separately from deterministic delivery PASS.
 
 Full production may use an approved critical excerpt, but final trims, retiming, overlays or audio changes reopen the affected review. Preserve supported prediction/inspection pauses rather than replacing them with an arbitrary gap or music. Do not describe a technical export as fully reviewed when its necessary educational/audio inspection is incomplete.
+
+## Finish the mechanism, not just the runtime
+
+Preserve the accepted explanation and recorded input/response order. Use Director's event-focused views to show decisive physical response; do not create a cosmetic zoom that crops out clearance, direction or evidence. A change from Manim to Blender should retain landmarks, reference/actual color meaning and the declared source time or replay reset.
+
+Check final composed labels/captions at every changed cut entry, deciding event and exit. Source frames without overlays cannot establish final label contrast: walls, trim, paths and the robot can move behind text. Reposition within readable empty space before adding boxes or extra chrome, and reinspect the assembled range after the patch.
+
+Keep a final comparison long enough for its measured sentence and inspection task, then end. If it only repeats an outcome already demonstrated, return the specific interval to Director for a shorter script and regenerated audio/captions. Do not silently cut spoken narration, stretch static states to a target duration, or rush the explanatory middle to preserve a redundant ending. Use existing manifest ranges; retain separate solver-to-presentation time mappings through retiming.

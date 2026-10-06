@@ -2,7 +2,7 @@
 name: manim-robotics-education-skill
 description: High-polish, low-token Manim reasoning scenes using persistent visual states, data-driven visuals, selective density, rapid preview, and 1080p+ delivery.
 metadata:
-  version: "5.2-discovery-preview"
+  version: "5.6-visual-discovery-links"
 ---
 
 # Manim Robotics Education
@@ -29,9 +29,9 @@ Use Manim for reasoning. The manifest already owns story/timing; do not re-plan 
 1. Read only active beat(s) + optional trace path.
 2. Load at most one topic/reference.
 3. Build the densest reasoning beat first.
-4. Use named sections and cheap preview before final render.
+4. Use named sections and cheap preview before final render. For typography/transition refinement, read `references/production.md` and inspect transition frames as well as held states.
 5. Preserve visual identity across beats; stagger secondary reveals.
-6. Review key frames once; apply only blocker/high patch.
+6. Review key frames once; patch blocker/high defects and the defined craft targets when refinement was requested. Verify changed intervals without redesigning unrelated beats.
 7. After FINAL render, write each beat's output path into `visual_manifest.json` `beats[].media` (relative to the manifest) so Resolve staging can find it.
 
 ## On-demand references
@@ -58,3 +58,19 @@ After helper/material changes, verify the rendered result rather than trusting c
 ## Explanation of physical execution
 
 When paired with physics-backed Blender, consume the same physical run and source timestamps. Derive position, velocity, contacts and execution comparisons from actual solver output. Display the reference plan separately from the actual trajectory; identify any historical plan or prescribed input. Do not reuse an old idealized trajectory as the physical result. Match shared landmarks/orientation at the handoff, and disclose presentation pauses/interpolation. Physics provenance and validity are checked separately from trace schema and visual style.
+
+## Show one control cycle when control is the question
+
+Make one concrete recorded relation visible: current pose relative to reference -> heading/lookahead error -> selected forward/turn command -> actual response -> next pose. Use a local direction arrow, wheel/turn cue or short numeric annotation only where it exposes that relation. A feedback diagram labels the loop but does not by itself explain why a command changes.
+
+Keep reference and actual history distinct and preserve measured tracking error. For a simplified tracker, visualize its implemented rule; do not imply a DWB candidate-cost calculation or invent controller values. Distinguish command from achieved velocity, and keep observed deviations when returning to Blender. Use one cycle to establish the mechanism, then let the robot action carry the explanation rather than filling the frame with telemetry.
+
+## Make the steering reason visible to a newcomer
+
+Establish robot-forward direction and the actual selected target point/direction before drawing their difference. A lookahead target, path tangent and final goal are different inputs; show the one the implementation uses. Pair the visible difference with plain-language meaning (for example, turn toward the target on the robot's left) before introducing a signed command or units. An error value beside a command is not sufficient unless the correcting rule is understandable.
+
+When useful, isolate a brief comparison with direction already aligned or the error sign reversed, keeping other controller inputs fixed. Derive its command from the actual rule and respect stopping/saturation; label hypothetical geometry/commands as an illustration, not a second physical run. Distinguish predicted correction from observed motion, inertia and contact. After a novice misunderstanding is reported, change the missing relation/order/local label and recheck that interval rather than adding a larger telemetry panel.
+
+## Carry the discovered relation forward
+
+For narrative refinement, keep the object or relation that the previous inference established as the next inference's visual input. Use `references/production.md` to distinguish geometry that explains the mechanism from text that merely names it. Retain useful anchors while changing focus locally; do not add another diagram or repeat a conclusion solely to connect beats.

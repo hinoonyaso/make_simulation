@@ -2,7 +2,7 @@
 name: robotics-ai-visual-director-skill
 description: Low-overhead visual director for robotics/AI explainers using state-transition storytelling, shared computed traces, progressive disclosure, and strong screen composition.
 metadata:
-  version: "5.3-physics-evidence"
+  version: "5.7-linked-discoveries"
 ---
 
 # Robotics / AI Visual Director
@@ -60,3 +60,25 @@ Load `narration.md` when drafting or revising `text`/`sec`/`sfx`/`bgm` for a nar
 For this user's robotics episodes with a physical motion/contact question, preserve the current discovery-first explanation and plan physics-backed Blender setup/consequence around it. The physical behavior must answer the same question; do not add a decorative 3D interlude. Route computation to a capable installed simulator before rendering, then hand the same run/trace to both renderers. Consult Blender's `core/blender-robotics-simulation-skill/references/evidence.md` when defining the physical experiment; it owns the run/evidence contract.
 
 In the existing `state_change`/`focus`, identify the controlled input, physical response and decisive measurable relation, and specify source-time handoffs. Include a relevant physics portion in the critical excerpt. Distinguish planned/reference path from actual engine trajectory. Do not force an expected outcome or call pose playback a physical run. Preserve educational-model/Nav2 boundaries. If physical execution is unavailable, report that unmet portion explicitly rather than silently delivering a keyframed substitute.
+
+## Make physical evidence carry the explanation
+
+For planning/control lessons, use the same run to connect reference choice -> controller input -> physical response -> measured feedback. A selected path alone is not execution evidence. Put the decisive link and its source/phrase anchors in the existing `state_change` / `focus`; do not add a parallel shot list. If the trace supports only part of this chain, narrow the claim.
+
+Keep the explanation the user has accepted; improve the view of the mechanism before adding narration or terminology. Read `references/director-qa.md` for physical emphasis and duration decisions. Choose a view where the relevant robot/clearance/component is readable, rather than keeping a whole-room view by habit. Include the hardest plan-to-response link in the critical excerpt, not only route selection.
+
+For a recap, name what new comparison, measurement or limitation the viewer will inspect. Shorten repeated outcome narration before TTS when the preceding execution already established it. Runtime follows the requested range and the explanation; neither a longer video nor more cuts establishes quality.
+
+## First-view understanding
+
+For an introductory control lesson, make the reason understandable in ordinary language before showing degrees, signs or rad/s: the implemented target direction differs from the robot's current direction, so the controller chooses a corrective turn; physics determines the response. Show how that target is selected from the reference, rather than letting an arrow appear without a reason. Explain the actual controller rule, including relevant stop/saturation limits; do not imply that the obstacle alone commands a particular turn.
+
+In existing `focus`, name the intended explanation and a plausible wrong interpretation to distinguish. Give the viewer the inputs before announcing the correcting command; when prediction helps, let the visible relation settle before revealing its answer. Plan a supported change-of-condition question when it helps diagnose understanding. Read `references/director-qa.md` for the first-view check. A technical review or informed agent answer is not evidence that a novice understood. Keep production moving if novice feedback is unavailable and report that learner evidence separately.
+
+## Finish a defined quality target
+
+For requested flagship refinement, use `references/director-qa.md` to select a small set of visible weaknesses from actual media and define their completion criteria in the existing episode README before changing the scene. Focus on the weakest necessary inference/shot rather than redesigning every beat. Keep the accepted explanation and evidence boundary; carry those targets through the existing `focus` and review report. Completed targets stay completed unless new media regresses them or the user changes the request. Production completion, craft completion and unavailable learner/playback evidence are separate outcomes.
+
+## Connect discoveries across the episode
+
+When improving narrative depth, read `references/director-qa.md` for the link between adjacent discoveries. The outcome of one inference should supply the evidence or question for the next. Preserve the accepted central explanation and requested runtime; deepen a supported relation before adding new topics, cuts or jargon. Treat narrative changes as candidates until a voiced excerpt demonstrates the benefit.

@@ -42,3 +42,45 @@ The reviewer first sees only the excerpt and opening question, without the scrip
 Then verify these answers against the evidence. Correct labels memorized from a caption do not prove understanding of the relation. Record a concrete misunderstanding and its time rather than an unexplained quality score. This is a diagnostic exercise, not a controlled learner study or proof of creator parity. No mandatory extra agent is implied.
 
 Keep the same visual subjects across abstraction changes. Plan shared landmarks, orientation, scale, and color meaning at a 3D/2D handoff; specify a cut if a spatial transform would misrepresent geometry. Provide the decisive view before camera or robot motion resumes.
+
+## Physical emphasis and duration decisions
+
+For planning/control episodes, keep the successful chain visible: the constraint changes the reference, a controller uses actual state to choose an input, the physical robot responds, and feedback updates the next command. Preserve reference-versus-actual differences instead of smoothing them away for appearance. If plan and control are both enabled/disabled in a comparison, attribute the difference to that combined change; do not claim the experiment isolates either component.
+
+Before assigning the physical view, identify the deciding feature and the viewer's task. Corridor context may need a wide view; direction error, wheel motion, near contact or stopping may need a closer settled view. A single wide view is sufficient when that relation remains readable. Keep close-up timing tied to recorded events and measured phrases, with enough stable landmarks to orient the viewer.
+
+For a control-focused question, prefer one intelligible example cycle over an abstract loop alone: pose/heading differs from reference -> the implemented rule selects a turn/forward command -> actual heading/position changes. Source command values and achieved motion separately. A plausible visual arrow cannot substitute for missing execution data.
+
+Allocate time by what the viewer needs to infer or inspect. Keep one concrete question within the requested runtime; add supported mechanism detail before extending runtime. The recap should resolve the opening question, expose a useful comparison and state the relevant scope. If the completed action already answers it, compress repeated outcome prose rather than showing a long static conclusion. No fixed ending percentage, camera count or universal duration is required.
+
+These refinements follow the revision_06 frame/evidence review and user approval of its explanation pace. Whole-video normal-speed playback remained incomplete; the preference for closer physical emphasis and a tighter ending is a craft direction, not a measured learner-performance result.
+
+## First-view learner check
+
+For an introductory episode, state the assumed prior knowledge briefly in the existing manifest/episode document; avoid testing vocabulary the lesson has not introduced. Use the actual voiced critical excerpt with enough setup, not the script or source code. Obtain voluntary feedback from an available first-time human viewer without giving an explanation or answer beforehand. A familiar creator/user or an agent can provide useful review, but is a different evidence category.
+
+For the steering example, use open prompts such as “Why did this robot turn here?” and “If it already pointed toward the selected target, what turn command would this rule choose?” Ask about the controller command, not a guarantee that the physical robot instantly stops turning. Adapt the changed condition to the implemented rule; near-goal stop or saturation may change the answer.
+
+Record the initial answer before offering a hint, with a confusing timestamp if the viewer can identify one. Compare it against a private evidence-based interpretation: which direction/target is read, which difference leads to which correcting command, and what is measured after actuation. Merely repeating “31 degrees means +1” does not explain the relation. Distinguish “the drum forces a left turn,” “the line moves the robot,” and “command equals achieved motion” from the intended mechanism.
+
+If a relation is missing or misunderstood, patch its cause: show target selection, establish robot-relative left/right, put plain meaning before units, or separate command from physical response. Recheck the changed interval on new media. A repeat with the same viewer is a repair check, not independent first-view evidence. One successful viewer is limited evidence, not a universal comprehension claim or learner study.
+
+If no novice is available, record `not_assessed` and the specific question still unverified, while continuing independently authorized production. Do not recruit/contact people automatically or fabricate a novice response. Keep answers anonymous and limited to what diagnoses the lesson.
+
+## Define refinement and finish it
+
+For a requested quality upgrade, choose a small set of demonstrated weaknesses from the current render; put `weakness -> owner -> completion criterion -> evidence range` in the episode's existing README. Use existing manifest `focus` for the teaching intent and the optional review `craft_targets` for results; do not create another beat list, quality bureaucracy or overall parity score. Set the criteria before the candidate is rendered and carry them through handoffs.
+
+For this control lesson, a useful target is that the viewer sees enough input to predict the turn before the answer is announced, then sees a supported condition change and the actual response. Inspectable geometry should do the explanatory work; prediction does not require a longer narrated question or a new simulation. Scope first-view human evidence as described above.
+
+Choose refinement where it materially improves the inference or deciding view. Fix failed transitions, surface treatment and cut boundaries inside that scope; retain accepted beats and voice unless the target requires a change. End the iteration when the stated criteria and necessary gates are met. Reopen for a demonstrated regression, unresolved necessary defect or new user request, not merely because another style could be imagined. Missing learner/listening evidence is an unverified question and must not be described as a demonstrated comprehension/voice failure.
+
+## Linked discoveries for a deeper short lesson
+
+Use this for a requested narrative upgrade, rather than imposing a longer story on every lesson. Read the current episode as a sequence of inferences: after each result, identify what the viewer now knows and what necessary question remains. Put that relationship in the next existing beat's `state_change` / `focus`. A useful link reuses the previous result as input; a new heading that merely announces the next topic does not supply the link. Keep this audit in the episode's existing decision notes, not a second beat list.
+
+For the planning/control example: the old path crosses a forbidden region, so a new reference is needed; a new reference alone cannot move the body, so a controller must read the current direction and target; its command is an input, so measured physical response and feedback are needed to judge execution. Choose the connections the opening question actually needs. Do not extend the lesson into every stage of robotics or force a fixed number of discoveries.
+
+Give a supported changed-condition comparison a purpose: distinguish a plausible wrong rule from the implemented one, or explain a limit. Use an available recorded comparison or a clearly labeled command-level illustration; never invent a solver result, candidate cost or rejected trajectory. After it, return to the original physical case and resolve the opening question in the same visible terms. A comparison that only repeats the same answer adds runtime without explanatory depth.
+
+Before changing accepted narration, define the precise missing link and the observable benefit. Reuse successful sentences, replace repetition when possible, and remeasure only changed speech. The voiced critical excerpt must include the adjacent discovery/handoff being changed. Judge whether the viewer can follow why the next question arises, not whether there are more cuts, equations or a longer runtime. Without fresh learner/playback evidence, keep that effect unverified.

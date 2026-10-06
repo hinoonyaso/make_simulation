@@ -11,6 +11,22 @@ inspection_status:
   motion: incomplete         # PASS | FAIL | incomplete | not_applicable
   audio: incomplete          # actual listening; PASS | FAIL | incomplete | not_applicable
   physics: not_applicable     # PASS | FAIL | incomplete | not_applicable; solver/run evidence, not pixels
+learner_check:                # optional; separate from expert frame/comprehension inspection
+  status: not_assessed        # supported | needs_revision | not_assessed; scoped, not a study
+  respondent_kind: ""        # human_novice | informed_user | agent
+  clip_range: ""
+  first_view: null            # self-reported; a repeat is a repair check
+  prompts: []
+  answers_before_hint: []     # anonymous, minimal diagnostic evidence
+  interpretation: ""         # correct causal link / concrete misunderstanding / source check
+  changed_interval_recheck: ""
+studio_craft:                 # optional when aesthetic refinement is requested
+  status: not_assessed        # acceptable | needs_revision | not_assessed within inspected scope
+  inspected_states: []        # same source state for material/light candidate comparisons
+  selection_evidence: ""      # baseline weakness -> candidate -> visible improvement
+craft_targets: []           # optional for requested refinement; use defined episode targets
+# Each target: id, owner, baseline, criterion, status (met | needs_revision | uninspected), evidence.
+craft_status: not_applicable # met | needs_revision | incomplete | not_applicable; separate from educational_status
 observations: []             # optional craft findings; not acceptance blockers
 educational_status: incomplete  # PASS | FAIL | incomplete
 limitations: []
@@ -22,4 +38,4 @@ issues:
     owner: Manim          # Director | Manim | Blender | Resolve
     patch: ""             # minimal root-cause change
     verify: ""            # exact frame/time/check that proves the fix
-stop_condition: "central explanation inspected; no blocker/high issues remain"
+stop_condition: "required explanation/modalities inspected; no blocker/high issues; requested craft targets met; unavailable evidence reported separately"
