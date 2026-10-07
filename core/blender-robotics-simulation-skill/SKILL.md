@@ -90,3 +90,5 @@ For requested reference-level mechanisms, use `references/production.md` to isol
 For a static-part gap, `references/production.md` specifies recorded articulation, swept framing and an optional phase annotation; a larger still or command-driven fake response does not satisfy that repair.
 
 For small components surrounded by unused floor, use `references/production.md` to frame the necessary swept mechanism, contact and orientation cues, then compare a local candidate at the same solver state.
+
+For requested connected-mechanism and surface repairs, use `references/production.md` to preserve sourced axle/body/ground context through cutaways and compare fixed-pose material/light candidates. Annotate removed geometry and render-only guides explicitly.

@@ -120,3 +120,16 @@ For a requested craft upgrade, vary composition when the viewer's task changes: 
 In a differential-drive derivation, expose the distance difference before introducing angular speed: in an explicitly ideal no-slip construction, equal-time wheel travel satisfies Δs = sR − sL = bθ, then divide by elapsed time to obtain ω = (vR − vL)/b. Show axle span, wheel travel arcs and body heading changing together; straight displacement bars alone leave the origin of θ unexplained. Handle equal travel as straight motion and opposing travel as a supported spin case. This construction explains geometry, not the Bullet run's slip/contact response; preserve that boundary and never force recorded trajectories onto ideal arcs.
 
 For prediction shots, use one readable prompt outside the mechanism's swept arrows and final caption area. Retire redundant question text once the title establishes the task. Inspect the prompt before the answer is revealed. Define completion as readable arrows/labels plus the supported geometric link; video length and layout variety alone do not satisfy it.
+
+## Mechanism relations and a complete worked example
+
+Apply these decisions to demonstrated comparison gaps; adapt to the topic instead of imposing an episode template.
+
+- Connected mechanism: removing housing must leave the deciding relation readable. For differential drive, retain wheel pair, an explicitly annotated axle/body center, local ground and heading. Source anchors and travel history from recorded transforms; do not invent hardware or forces.
+- Derivation: expose the missing equality before adding notation. In ideal no-slip turning, show a common center/angle, both radii, their difference b, then sR=rRθ and sL=rLθ; visible subtraction gives (rR−rL)θ=bθ. Center midpoint travel explains the average and denominator 2. Reveal only the active relation within measured phrase time; revise speech if the necessary inference cannot fit.
+- Worked feedback: follow one recorded run through pose/target comparison, command, observed response and next comparison. Keep world landmarks and source times. A separate stopping experiment can explain command/response, but must not masquerade as this feedback cycle.
+- Changed condition: change geometry, not just its conclusion label. Hold wheel travel/time fixed and compare narrower/wider ideal bodies and their angles before highlighting b. This is a geometric prediction, not a new physical run.
+- Surface: assign a diagnosed material/light weakness to Blender with fixed-pose candidates. Plate layers, rubber/metal separation and contact matter more than generic gloss. Preserve the bright studio and faithful meshes.
+- Progression: the first experiment establishes how to read the evidence; later cases focus on differences. Choose context, mechanism, comparison, derivation or feedback composition by task while retaining identity. No cut quota or automatic runtime extension; accepted speech stays intact while picture uses its duration for supported inspection.
+
+Keep applicable targets, source boundaries and verification ranges in the existing episode README/manifest focus. Actual rendered relations, rather than added instructions, establish completion. Direct playback/listening and novice evidence remain separate.

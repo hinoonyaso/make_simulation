@@ -84,3 +84,5 @@ When the user requests creator-level comparison, load `references/benchmark.md` 
 When survey responses exist, use `references/motion.md` to separate demonstrated misunderstanding, an unanswered distinction and divided preference. Attribute human feedback to its exact version/range; report sample/background limits and recheck the changed relation.
 
 For the R14 craft follow-up, use `references/visual.md` to inspect component scale, prompt/arrow separation, distance-to-angle geometry and intermediate formula glyphs within the defined target ranges.
+
+For the relation-level comparison targets, use `references/benchmark.md` to inspect connected parts, the intermediate equality, one-run feedback, changed geometry, fixed-pose surface evidence and task-led progression. Keep completed earlier targets closed unless there is an observed regression.

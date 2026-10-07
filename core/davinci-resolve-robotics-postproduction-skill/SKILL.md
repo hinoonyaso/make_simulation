@@ -2,7 +2,7 @@
 name: davinci-resolve-robotics-postproduction-skill
 description: Low-token, high-quality DaVinci Resolve post-production for robotics/AI educational videos. Consumes Director/Manim/Blender outputs and uses the connected davinci-resolve MCP for safe timeline assembly, narration, SFX/BGM, subtitles, review, and delivery.
 metadata:
-  version: "1.4-composed-reading-time"
+  version: "1.5-worked-example-continuity"
 ---
 
 # DaVinci Resolve Robotics / AI Post-production
@@ -160,3 +160,5 @@ Keep a final comparison long enough for its measured sentence and inspection tas
 Preserve the time needed to locate a component, connect representations and inspect a consequence. Do not trim useful holds to meet a cut quota or pad an ending with repeated results. For reference comparison, match the explanatory task and inspect both clips with sound at normal speed; language metadata, ASR and timestamp tables do not establish voice naturalness. Record the actual audio language of the selected reference track before comparing Korean narration.
 
 For reported reading/pace difficulty, check the assembled caption plus active diagram in the specific interval using `references/review.md`. For divided voice ratings, use `references/audio.md` to locate a concrete phrase before choosing an audio patch.
+
+For requested worked-example refinement, use `references/review.md` to verify source identity across representation cuts, distinguish separate experiments and inspect composed derivation/transfer/feedback captions. Preserve accepted speech; runtime and cut counts do not establish rhythm.

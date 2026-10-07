@@ -24,3 +24,18 @@ Research provenance: `research/channel_craft_2026_10/STUDY.md` documents eight s
 For a static-component repair, compare actual before/during/after joint states and their source mapping. Locate the moving part relative to the body/ground, identify whether its motion is recorded response or illustrative input, and check visibility through the interval. A moving camera, spinning command cue or enlarged still does not establish component operation. If a phase mark is used, verify attachment to the actual recorded pivot and its annotation disclosure.
 
 For quantity-to-term repair, inspect the source labels, copies in transit and completed expression. Verify operand roles/order, units, the origin of the denominator and consistent updates in the alternate condition. Count neither a FadeIn of the whole formula nor a changing result number as geometric-to-algebraic correspondence. Sample the composited transition midpoint to catch duplicate/overlapping tokens; a clean held state is insufficient. Preserve uninspected motion/voice and novice-transfer status without treating unavailable evidence as proof of a visual gap.
+
+## Relation-level comparison after R15
+
+When these observed weaknesses are the requested scope, inspect the following actual evidence, preserving completed earlier targets:
+
+| Target | Decisive evidence |
+|---|---|
+| Connected parts | Both recorded wheels, axle/body-center annotation, heading and ground remain interpretable during housing removal; annotations are disclosed. |
+| Derived equality | The common angle and radius difference visibly yield bθ; midpoint travel supplies the average. Source quantities precede notation. |
+| Same-run feedback | Identifiable pose/target/command passes into actual response and the next comparison in one source frame/time convention. Separate experiments are labeled. |
+| Geometric transfer | Held travel/time with altered spacing visibly changes heading, before the conclusion label. Ideal construction is distinct from solver evidence. |
+| Surface separation | Fixed-pose baseline/candidates visibly distinguish plate layers and rubber/metal/contact; faithful geometry remains unchanged. |
+| Task-led progression | Later experiment/comparison/derivation/feedback views expose different reading tasks without redundant setup or lost identity. Runtime alone is not evidence. |
+
+Record baseline/candidate times, owner, observed benefit and met/needs_revision/uninspected in the existing report. Inspect intermediate and composed frames, not just attractive held states. Neither a label naming feedback nor an equation beside arcs satisfies the relevant relation target. Do not score uninspected rhythm/audio or novice transfer as poor quality or PASS.
