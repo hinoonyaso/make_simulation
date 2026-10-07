@@ -2,7 +2,7 @@
 name: robotics-ai-visual-director-skill
 description: Low-overhead visual director for robotics/AI explainers using state-transition storytelling, shared computed traces, progressive disclosure, and strong screen composition.
 metadata:
-  version: "5.9-observable-actuation"
+  version: "5.10-viewer-informed-clarity"
 ---
 
 # Robotics / AI Visual Director
@@ -88,3 +88,7 @@ When improving narrative depth, read `references/director-qa.md` for the link be
 For requested reference-level craft, use `references/director-qa.md` to design one concrete example across physical parts, simplified relations and notation before specifying surface polish. Keep these correspondences in the existing manifest, not another beat list. Choose the deciding feature's readable bounds rather than imposing a fixed whole-subject area. A title naming a controller is insufficient evidence of its operation.
 
 Mechanism and quantity-to-term repairs are specified in `references/director-qa.md`; define moving-part and moving-token evidence before production.
+
+For viewer-reported difficulty, use `references/director-qa.md` to repair the missing causal link, define unfamiliar command terms and allocate local reading time from the actual responses. Preserve demonstrated strengths and the requested runtime; small-sample scores are diagnostic evidence.
+
+For observed composition/geometric gaps, use `references/director-qa.md` to select task-led views and expose distance-to-angle reasoning before angular-speed notation. Preserve ideal-geometry versus measured-response boundaries.

@@ -2,7 +2,7 @@
 name: render-reviewer-skill
 description: One-pass QA of real rendered previews, focused on comprehension, state continuity, subject scale, and production defects.
 metadata:
-  version: "2.1-mechanism-and-token-proof"
+  version: "2.2-viewer-feedback-diagnosis"
 ---
 
 # Render Reviewer
@@ -80,3 +80,7 @@ When narrative or studio refinement is requested, use `references/visual.md` to 
 ## Requested creator comparison
 
 When the user requests creator-level comparison, load `references/benchmark.md` as the active comparison reference. Compare matched explanatory functions and record exact evidence in optional `reference_comparison` fields. Zero blocker/high defects and stronger instructions cannot establish parity. Preserve previously met targets; broaden the comparison only when the user's scope changes.
+
+When survey responses exist, use `references/motion.md` to separate demonstrated misunderstanding, an unanswered distinction and divided preference. Attribute human feedback to its exact version/range; report sample/background limits and recheck the changed relation.
+
+For the R14 craft follow-up, use `references/visual.md` to inspect component scale, prompt/arrow separation, distance-to-angle geometry and intermediate formula glyphs within the defined target ranges.

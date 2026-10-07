@@ -2,7 +2,7 @@
 name: manim-robotics-education-skill
 description: High-polish, low-token Manim reasoning scenes using persistent visual states, data-driven visuals, selective density, rapid preview, and 1080p+ delivery.
 metadata:
-  version: "5.8-quantity-to-term-motion"
+  version: "5.9-inference-reading-time"
 ---
 
 # Manim Robotics Education
@@ -78,3 +78,7 @@ For narrative refinement, keep the object or relation that the previous inferenc
 For reference-level work, use `references/production.md` to carry one sourced example from geometry into notation and back to consequences. Choose the smallest meaningful matrix/graph view rather than automatically applying top-k; displaying a subset never licenses changing the underlying computation.
 
 For a demonstrated picture-to-formula gap, `references/production.md` specifies operand-level `TransformFromCopy` and condition updates; a whole-formula fade does not satisfy that repair.
+
+When viewers struggle with the equation section, use `references/production.md` to separate locating the source, following its copy and reading the result. Ask Director to revise measured speech when the inference cannot fit; keep the manifest as timing authority.
+
+For missing distance-to-angle intuition or fragmented formula transitions, use `references/production.md` for ideal arc geometry, addressable term updates and swept-overlay inspection.

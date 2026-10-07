@@ -24,3 +24,7 @@ Silence is valid. Do not place an effect on every animation.
 
 ## Loudness
 Do not guess numerical loudness targets unless the user/project provides a delivery spec. Measure and report actual output when supported by the Resolve workflow.
+
+## Divided viewer voice ratings
+
+When ratings disagree without a named defect, retain the current voice as a candidate and collect the awkward word/phrase, time and playback conditions before changing it. Separate pronunciation, phrase boundaries, prosody, intelligibility and explanation density. Patch the identified cause at the smallest useful scope; a voice replacement or global rate change needs evidence that it helps. Regenerated speech requires new measured timing/captions and listening review of the changed range. With no listening access, state that naturalness remains unverified rather than inferring it from a score, ASR or waveform.

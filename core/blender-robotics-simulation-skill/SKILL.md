@@ -88,3 +88,5 @@ For requested surface/camera craft, use the task-led comparison in `references/p
 For requested reference-level mechanisms, use `references/production.md` to isolate the deciding component and connect it to the mathematical view. Keep command, achieved motion and qualitative contact explanation distinct; faithful cutaways are explanatory render views, not new physics evidence.
 
 For a static-part gap, `references/production.md` specifies recorded articulation, swept framing and an optional phase annotation; a larger still or command-driven fake response does not satisfy that repair.
+
+For small components surrounded by unused floor, use `references/production.md` to frame the necessary swept mechanism, contact and orientation cues, then compare a local candidate at the same solver state.

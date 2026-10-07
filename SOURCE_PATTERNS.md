@@ -77,3 +77,9 @@ Follow-up from actual pilot re-review: plans and poses can come from one trace y
 ## R11 gap-driven production repair
 
 R11 added a faithful static part inset and wheel command equations, but did not yet show the part operating or move source quantities into equation terms. The production references now specify trace-driven articulation with observable phase and operand-level correspondence animation. These are requested craft targets; normal-speed playback and first-view learner evidence remain separate. See `pilots/05_moving_obstacle/revision_11/COMPARISON.md` locally for the baseline finding.
+
+## R12 viewer feedback adaptation (2026-10-06)
+
+Authorized skill refinement from four submitted evaluations of `pilots/05_moving_obstacle/revision_12/output/planner_physics_ko_v12.mp4`. All finished; backgrounds: novice1, partly familiar2, experienced1. Component-help scores4/4/5/4 supported retaining physical operation. Two reported fast pace; reading median2.5 and cut median3 supported inspecting the wheel/equation section. Answers left the target→command→wheel-difference chain and command/response distinction only partly established. Voice scores3/3/1/5 did not identify a specific audio defect. Raw submissions remain in the pilot; aggregate analysis and manual-scoring caveats: `pilots/05_moving_obstacle/revision_12/forms/EVALUATION_RESULTS.md`.
+
+Adapted Director audience/term/causal-link decisions, Manim composed reading tasks, finishing local timing and targeted voice diagnosis, Reviewer small-sample interpretation. These are candidate production improvements based on this lesson, not validated universal learning rules. No mandatory runtime increase, score threshold, voice replacement or creator-parity guarantee. Effect awaits a new rendered excerpt and viewer feedback; prior technical/frame PASS remains valid within its scope. Shared kits and existing media are unchanged.

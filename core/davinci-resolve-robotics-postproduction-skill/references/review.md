@@ -26,3 +26,7 @@ Use this after the first complete preview, not before assembly.
 - Correct project/timeline frame rate and resolution.
 - No offline media, gaps, accidental black frames, clipped audio, or duplicate subtitles.
 - Validate render configuration before queueing final output.
+
+## Reported equation-section reading pressure
+
+Inspect the final export where a viewer must read captions, locate component values and follow an equation transition. A technically timed caption can still compete with the active visual task. Sequence the focus: source → correspondence → settled relation/result. Retain meaningful holds and shorten repeated outcome prose when needed. Return insufficient measured speech/duration to Director and narration; new utterances require refreshed timing/captions, and moving tokens require renderer changes. Do not fix reading pressure by globally slowing the export, trimming speech or adding music. Record the interval and whether the repair was actually watched/listened to at normal speed.
