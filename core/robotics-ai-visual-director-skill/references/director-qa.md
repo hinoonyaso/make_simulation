@@ -133,3 +133,7 @@ Apply these decisions to demonstrated comparison gaps; adapt to the topic instea
 - Progression: the first experiment establishes how to read the evidence; later cases focus on differences. Choose context, mechanism, comparison, derivation or feedback composition by task while retaining identity. No cut quota or automatic runtime extension; accepted speech stays intact while picture uses its duration for supported inspection.
 
 Keep applicable targets, source boundaries and verification ranges in the existing episode README/manifest focus. Actual rendered relations, rather than added instructions, establish completion. Direct playback/listening and novice evidence remain separate.
+
+### Rebudget time when adding intermediate reasoning
+
+Approved narration does not fix the reading budget for newly added algebra. Before keeping an old beat duration, count the new inferential steps and reserve settled reading time between them. If actual viewer feedback identifies a rushed derivation, reopen that beat's speech/event timing; preserve successful adjacent material and recover time from demonstrated repetition when appropriate. Local sentence-boundary pauses/cuts are eligible when they preserve meaning, avoid cutting words, and are disclosed; regenerate the audio manifest, sentence cues and all downstream offsets. Validate the new voiced excerpt and retain the user's pace answer with its exact scope. R16's 18.47→26.47-second derivation and shortened repeated recap are one observed repair, not a universal duration rule.
