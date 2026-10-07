@@ -2,7 +2,7 @@
 name: robotics-ai-visual-director-skill
 description: Low-overhead visual director for robotics/AI explainers using state-transition storytelling, shared computed traces, progressive disclosure, and strong screen composition.
 metadata:
-  version: "5.11-connected-mechanisms"
+  version: "5.12-guided-reasoning"
 ---
 
 # Robotics / AI Visual Director
@@ -93,4 +93,4 @@ For viewer-reported difficulty, use `references/director-qa.md` to repair the mi
 
 For observed composition/geometric gaps, use `references/director-qa.md` to select task-led views and expose distance-to-angle reasoning before angular-speed notation. Preserve ideal-geometry versus measured-response boundaries.
 
-For requested relation-level refinement, use `references/director-qa.md` to expose the intermediate equality, preserve connected parts, follow one recorded feedback example and show changed-condition geometry. Choose composition by task and assign fixed-pose surface candidates; retain accepted speech and evidence boundaries.
+For requested relation-level refinement, use `references/director-qa.md` to expose the intermediate equality, preserve connected parts, follow one recorded feedback example and show changed-condition geometry. Choose composition by task and assign fixed-pose surface candidates. Preserve accepted pace; when new notation introduces an unexplained relation, revise only the speech that needs to guide it. The same reference covers decisive command changes and source-state handoffs.

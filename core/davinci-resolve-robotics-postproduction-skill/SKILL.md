@@ -2,7 +2,7 @@
 name: davinci-resolve-robotics-postproduction-skill
 description: Low-token, high-quality DaVinci Resolve post-production for robotics/AI educational videos. Consumes Director/Manim/Blender outputs and uses the connected davinci-resolve MCP for safe timeline assembly, narration, SFX/BGM, subtitles, review, and delivery.
 metadata:
-  version: "1.5-worked-example-continuity"
+  version: "1.6-source-state-handoffs"
 ---
 
 # DaVinci Resolve Robotics / AI Post-production
@@ -161,4 +161,4 @@ Preserve the time needed to locate a component, connect representations and insp
 
 For reported reading/pace difficulty, check the assembled caption plus active diagram in the specific interval using `references/review.md`. For divided voice ratings, use `references/audio.md` to locate a concrete phrase before choosing an audio patch.
 
-For requested worked-example refinement, use `references/review.md` to verify source identity across representation cuts, distinguish separate experiments and inspect composed derivation/transfer/feedback captions. Preserve accepted speech; runtime and cut counts do not establish rhythm.
+For requested worked-example refinement, use `references/review.md` to verify source identity across representation cuts, distinguish separate experiments and inspect composed derivation/transfer/feedback captions. Preserve accepted pace; updated speech needs new timing/captions. The same reference checks source-state continuity versus an explicit replay reset at renderer cuts. Runtime and cut counts do not establish rhythm.

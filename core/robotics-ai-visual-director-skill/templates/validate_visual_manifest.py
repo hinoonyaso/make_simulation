@@ -17,6 +17,9 @@ def validate(path: str, require_media: bool=False):
     manifest=Path(path).resolve(); base=manifest.parent
     data=json.loads(manifest.read_text(encoding="utf-8"))
     beats=data.get("beats") or []
+    long_form=data.get("format") == "long_form"
+    max_beat_sec=60 if long_form else 20
+    max_beats=48 if long_form else 16
     errors=[]; warnings=[]; checked_traces={}
     if not beats: errors.append("beats is empty")
     ids=set()
@@ -29,7 +32,7 @@ def validate(path: str, require_media: bool=False):
         if not str(b.get("text","")).strip(): errors.append(f"{tag}: missing narration text")
         try:
             sec=float(b.get("sec",0))
-            if not 0.4 <= sec <= 20: errors.append(f"{tag}: sec should usually be 0.4..20")
+            if not 0.4 <= sec <= max_beat_sec: errors.append(f"{tag}: sec must be 0.4..{max_beat_sec}")
         except Exception: errors.append(f"{tag}: invalid sec")
         if not str(b.get("object","")).strip(): errors.append(f"{tag}: missing persistent object")
         if not str(b.get("state_change","")).strip(): errors.append(f"{tag}: missing state_change")
@@ -57,7 +60,7 @@ def validate(path: str, require_media: bool=False):
             except Exception: pass
         if require_media and b.get("tool") in {"M","B"} and not str(b.get("media","")).strip():
             errors.append(f"{tag}: tool={b.get('tool')} beat has no rendered media path")
-    if len(beats)>16: errors.append("too many beats for a compact short-form manifest; merge non-essential beats")
+    if len(beats)>max_beats: errors.append(f"too many beats for this format (maximum {max_beats}); merge non-essential beats")
     return errors, warnings
 
 if __name__=="__main__":

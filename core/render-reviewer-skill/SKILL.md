@@ -2,7 +2,7 @@
 name: render-reviewer-skill
 description: One-pass QA of real rendered previews, focused on comprehension, state continuity, subject scale, and production defects.
 metadata:
-  version: "2.2-viewer-feedback-diagnosis"
+  version: "2.4-surface-refinement-evidence"
 ---
 
 # Render Reviewer
@@ -86,3 +86,8 @@ When survey responses exist, use `references/motion.md` to separate demonstrated
 For the R14 craft follow-up, use `references/visual.md` to inspect component scale, prompt/arrow separation, distance-to-angle geometry and intermediate formula glyphs within the defined target ranges.
 
 For the relation-level comparison targets, use `references/benchmark.md` to inspect connected parts, the intermediate equality, one-run feedback, changed geometry, fixed-pose surface evidence and task-led progression. Keep completed earlier targets closed unless there is an observed regression.
+
+
+For requested follow-up on spoken geometry, correction reversals or renderer-state cuts, use `references/benchmark.md` to inspect the specific relation and matched source states. Keep accepted pace, prior repairs and uninspected voice/learner evidence separate.
+
+For a material/lighting-only refinement, use the surface comparison procedure in `references/visual.md`. Judge whether the named boundary or highlight treatment visibly improved from the baseline; keep acceptable readability and achieved refinement separate.

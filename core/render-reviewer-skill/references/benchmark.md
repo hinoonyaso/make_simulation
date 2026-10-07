@@ -32,10 +32,17 @@ When these observed weaknesses are the requested scope, inspect the following ac
 | Target | Decisive evidence |
 |---|---|
 | Connected parts | Both recorded wheels, axle/body-center annotation, heading and ground remain interpretable during housing removal; annotations are disclosed. |
-| Derived equality | The common angle and radius difference visibly yield bθ; midpoint travel supplies the average. Source quantities precede notation. |
-| Same-run feedback | Identifiable pose/target/command passes into actual response and the next comparison in one source frame/time convention. Separate experiments are labeled. |
+| Derived equality | The common angle and visible radius subtraction yield bθ; midpoint travel supplies the average. Source quantities precede notation, and necessary unfamiliar relations are guided by the actual utterance. |
+| Same-run feedback | Identifiable pose/target/command passes into actual response and the next comparison in one source frame/time convention. A meaningful recorded sign/branch reversal exposes its reason rather than only updating numbers. Separate experiments are labeled. |
 | Geometric transfer | Held travel/time with altered spacing visibly changes heading, before the conclusion label. Ideal construction is distinct from solver evidence. |
 | Surface separation | Fixed-pose baseline/candidates visibly distinguish plate layers and rubber/metal/contact; faithful geometry remains unchanged. |
 | Task-led progression | Later experiment/comparison/derivation/feedback views expose different reading tasks without redundant setup or lost identity. Runtime alone is not evidence. |
 
 Record baseline/candidate times, owner, observed benefit and met/needs_revision/uninspected in the existing report. Inspect intermediate and composed frames, not just attractive held states. Neither a label naming feedback nor an equation beside arcs satisfies the relevant relation target. Do not score uninspected rhythm/audio or novice transfer as poor quality or PASS.
+
+
+## Additional targets from the R16 comparison
+
+For requested follow-up, sample (1) both arcs/radii before notation, shared-length subtraction and completed bθ; (2) the recorded input comparison immediately before/after a correction changes, including the requested wheel/turn relation; (3) final frames on both sides of the 2D/3D cut with their source times and landmarks. Check actual utterance content against the newly visible relation; frame-readable algebra can still lack spoken guidance. Keep a user's accepted pace closed unless changed media regresses it. Direct listening remains necessary for voice/rhythm claims, and novice explanation remains separate from informed review.
+
+Review rolling/contact detail only when it is a selected explanatory target. Distinguish wheel-pair operation from inspectable local contact, and pose-derived travel from measured contact/slip/force. For surface polish, compare the specific plate/tyre/ground boundary at matched pose/camera; a changed material parameter is not evidence of improvement. Keep these additional craft observations separate from accepted prior repairs and blocker/high checks. Record each proposed repair as untested until new media demonstrates it.

@@ -40,3 +40,10 @@ Regenerating speech invalidates its previous measured timing and alignment: reru
 ## Connected reasoning rather than clipped phrases
 
 Let a sentence complete a causal thought. Multiple connected clauses may accompany successive local reveals; do not turn every reveal or cut into a new short sentence. Introduce the concrete relation before its technical name, then speak notation consistently. Preserve the user's accepted explanation pace and pronunciation dictionary. A pause must support inspection or inference; silence duration and cut count are not quality scores. Evaluate natural phrasing by actual normal-speed listening, not sentence counts or automatic transcription.
+
+
+## Spoken guidance for new geometry and notation
+
+Compare each central reveal with the measured utterance before preserving old speech. Say what the unfamiliar quantity means and why the decisive operation follows, in connected ordinary language: for ideal wheel geometry, both arcs share an angle, arc travel is radius times angle, and the difference of radii is the wheel spacing. These are examples to adapt, not mandatory vocabulary for every video. A held completed formula or longer silence cannot supply a missing explanation. Replace only the needed clause, preserve approved pace/pronunciation, and regenerate timing/captions for changed audio. A pace approval applies to pace; check understanding separately when needed.
+
+For a corrective command changing direction, name the changed input relation and resulting request at that event. Keep request versus actual body response distinct. Existing TTS authorization/permissions still apply to changed script transmission; skill changes do not grant external-service authorization.

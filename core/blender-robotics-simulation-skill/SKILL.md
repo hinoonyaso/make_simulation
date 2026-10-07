@@ -2,7 +2,7 @@
 name: blender-robotics-simulation-skill
 description: Build Blender robotics spatial explanations and physics-backed scenes, using actual solver outputs, shared traces, reusable assets, studio rendering, and faithful 2D handoffs.
 metadata:
-  version: "5.9-measured-component-motion"
+  version: "5.11-surface-light-response"
 ---
 
 # Blender Robotics Spatial
@@ -75,7 +75,7 @@ Replay solver wheel orientations when available; kinematic wheel-angle helpers a
 
 ## Refine the studio image before expensive rendering
 
-For requested visual polish, read `references/production.md` for material/light/camera diagnosis. Use a cheap comparison at the same recorded pose and source time: baseline versus a candidate that fixes a named visual weakness. Choose from rendered evidence, then check the moving excerpt and renderer handoff. Do not change physical geometry, outcomes or the established bright studio identity to make a shot prettier.
+For requested material/lighting refinement, read `references/surface-lighting.md` for surface diagnosis, effective light/material candidates and visible improvement criteria. For camera/asset refinement, use `references/production.md`. Use a cheap comparison at the same recorded pose and source time: baseline versus a candidate that fixes a named visual weakness. Choose from rendered evidence, then check the moving excerpt and renderer handoff. Do not change physical geometry, outcomes or the established bright studio identity to make a shot prettier.
 
 Check all changed camera cuts at entry, the deciding event and exit, not only a flattering settled frame. Use `references/production.md` for imported-surface diagnosis and consistency across the selected views.
 
@@ -91,4 +91,4 @@ For a static-part gap, `references/production.md` specifies recorded articulatio
 
 For small components surrounded by unused floor, use `references/production.md` to frame the necessary swept mechanism, contact and orientation cues, then compare a local candidate at the same solver state.
 
-For requested connected-mechanism and surface repairs, use `references/production.md` to preserve sourced axle/body/ground context through cutaways and compare fixed-pose material/light candidates. Annotate removed geometry and render-only guides explicitly.
+For requested connected-mechanism and surface repairs, use `references/production.md` to preserve sourced axle/body/ground context through cutaways and compare fixed-pose material/light candidates. Annotate removed geometry and render-only guides explicitly. The same reference distinguishes pair-motion and contact-detail views and limits contact claims to available evidence.

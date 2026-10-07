@@ -2,7 +2,7 @@
 name: manim-robotics-education-skill
 description: High-polish, low-token Manim reasoning scenes using persistent visual states, data-driven visuals, selective density, rapid preview, and 1080p+ delivery.
 metadata:
-  version: "5.10-derived-relations"
+  version: "5.11-decision-emphasis"
 ---
 
 # Manim Robotics Education
@@ -83,4 +83,4 @@ When viewers struggle with the equation section, use `references/production.md` 
 
 For missing distance-to-angle intuition or fragmented formula transitions, use `references/production.md` for ideal arc geometry, addressable term updates and swept-overlay inspection.
 
-For requested derivation/feedback repairs, use `references/production.md` to show the missing equality and altered geometry, and carry actual pose→command→response→next comparison through one world transform. Keep ideal prediction distinct from recorded response.
+For requested derivation/feedback repairs, use `references/production.md` to show the missing equality and altered geometry, and carry actual pose→command→response→next comparison through one world transform. Keep ideal prediction distinct from recorded response. The same reference covers visible radius subtraction and meaningful correction reversals; return unexplained new symbols to Director for spoken guidance.
