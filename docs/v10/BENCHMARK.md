@@ -24,3 +24,20 @@ The Asset Factory cache test uses a deterministic test converter, not a real URD
 ## Next useful benchmark
 
 Instrument separate render-stage wall times and cache hit/miss counts for a baseline and repeated render with one controlled change at a time. For simulation comparisons, use identical model, solver settings, timestep and initial state. For Three.js/Remotion, compare only after a working local capture path can render the same trace at the same output specification.
+
+
+## MuJoCo arm PoC (2026-10)
+
+| Item | Observed result |
+|---|---:|
+| Engine / model | MuJoCo 3.7.0 / Unitree H1 with hand, fixed pelvis |
+| Physics step / duration | 0.002 sec / 2.0 simulated sec |
+| Trace | 101 samples, 20 joints, 19 actuators |
+| End-effector start-to-end travel | 0.06004 m |
+| FK replay max hand-position difference | 0 m at stored precision |
+| Repeat-run difference | ≤1e-12 absolute tolerance for qpos and hand position |
+| 2 ms vs 1 ms max paired hand-position difference | 0.000106713 m (1 mm tolerance) |
+| Self contacts | 3–4 per sampled state; not the teaching claim |
+| Render | 9.8 sec, 1920×1080, 30 fps, H.264, video-only, 298,183 bytes |
+
+The controller's target is not treated as the achieved result: peak target error is 0.120 rad at the shoulder and 0.209 rad at the elbow. The fixed pelvis and ideal PD motor law are modeling choices. No added floor, contact lesson, hardware controller, ROS2 runtime or Blender mesh render is claimed. System-level Blender/SoX installation is blocked by the container's `no new privileges` restriction; the existing Manim path produced and decoded the video successfully.

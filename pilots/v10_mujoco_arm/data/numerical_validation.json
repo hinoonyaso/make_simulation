@@ -1,0 +1,15 @@
+{
+  "model": "unitree_h1_with_hand",
+  "source_sha256": "fc13661e828ac49ab7032f358b38e77de8dd48a72910aeb1f5913da25dd858fd",
+  "duration_s": 2.0,
+  "base_timestep_s": 0.002,
+  "refined_timestep_s": 0.001,
+  "sample_period_s": 0.02,
+  "sample_count": 101,
+  "max_paired_end_effector_deviation_m": 0.00010671272702342053,
+  "final_end_effector_deviation_m": 1.2973986229934317e-05,
+  "tolerance_m": 0.001,
+  "status": "PASS",
+  "contact_is_lesson_evidence": false,
+  "note": "Same fixed-base model and PD target schedule; this is a timestep sensitivity check, not a controller accuracy claim."
+}

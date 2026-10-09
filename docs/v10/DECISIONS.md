@@ -34,8 +34,8 @@
 
 ## D5 — Pin MuJoCo; keep the episode adapter scoped separately
 
-**Decision:** pin the official Python bindings at 3.7.0 and keep a small headless model-load/step smoke command. Defer the robotics episode adapter until control input, state recording and trace validation are implemented.
+**Decision:** pin the official Python bindings at 3.7.0 and implement a fixed-base H1 arm physics adapter with a reproducible trace and Manim playback. Keep the system-level GUI/Blender path separate.
 
-**Evidence:** MuJoCo 3.7.0 loads the repository's Unitree H1 MJCF and advances 1,000 fixed steps (2 simulated seconds) with finite `qpos`/`qvel`. The asset README records the upstream source and BSD-3-Clause license. No actuator command was applied in this smoke run.
+**Evidence:** MuJoCo 3.7.0 runs the repository's H1-with-hand MJCF for 2 simulated seconds with PD torque commands. The V9 robotics trace validator passes; recorded hand poses match a separate FK pass; repeated runs match to 1e-12; the 2 ms/1 ms sensitivity difference peaks at 0.107 mm. The asset README records upstream provenance and BSD-3-Clause license.
 
-**Tradeoff:** the runtime is ready for adapter work, but Robot-arm scenario B and a trace-backed physical animation remain NOT_RUN. The H1 smoke run confirms engine/model compatibility only; it does not verify dynamic fidelity or a controller.
+**Tradeoff:** the fixed pelvis, ideal PD motor control and absent floor/contact objective limit the physical claim. Blender mesh rendering and hardware/controller fidelity remain unverified. The Manim scene is an explicit stylized replay of the actual trace.
