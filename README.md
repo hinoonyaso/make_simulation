@@ -37,6 +37,16 @@ The detailed run contract is in [Blender evidence rules](core/blender-robotics-s
 
 Physics skill update validation: four affected skill folders pass `quick_validate.py`; updated agent TOML and review YAML parse; `validate_codex_setup.py` passes all 10 agent configs; `git diff --check` passes. Cross-skill evidence links were corrected to their actual bundle paths after the wiring check identified unresolved references. These checks validate instructions/configuration only, not a physics engine or runtime experiment.
 
+## MuJoCo local environment
+
+The project pins the official MuJoCo Python bindings to `3.7.0` in `pyproject.toml` and `uv.lock`. Install or synchronize with `uv sync`, then verify an included MJCF model with:
+
+```bash
+uv run python scripts/smoke_mujoco.py assets/unitree_h1/mjcf/h1.xml --steps 1000
+```
+
+This headless smoke test loads the existing Unitree H1 model, advances MuJoCo's physics state, and checks finite joint position/velocity values. It does not validate an actuator policy or V10 trace adapter. The bundled H1 asset is attributed and licensed BSD-3-Clause in `assets/unitree_h1/README.md`.
+
 ## Defined craft completion (revision_08 feedback)
 
 Requested flagship refinement now starts with a small set of observed weaknesses and completion criteria in the existing episode README. Director retains accepted beats and exposes inputs before a prediction/answer; Manim checks changing text through its transition; Blender diagnoses imported surfaces and checks cut entry/event/exit; finishing checks composed overlays; Reviewer records optional target results separately from technical, educational and learner evidence. Met targets reopen for regressions or changed scope, rather than an ever-expanding aesthetic standard.

@@ -32,10 +32,10 @@
 
 **Tradeoff:** conversion is not automatic and source/target semantic equivalence is not yet validated.
 
-## D5 — Defer MuJoCo execution
+## D5 — Pin MuJoCo; keep the episode adapter scoped separately
 
-**Decision:** do not claim a physics-backed robotic PoC in the current environment.
+**Decision:** pin the official Python bindings at 3.7.0 and keep a small headless model-load/step smoke command. Defer the robotics episode adapter until control input, state recording and trace validation are implemented.
 
-**Evidence:** MuJoCo is not installed; selecting an asset also requires checking its MJCF dependencies and physical assumptions. A fabricated or keyframed trace would violate the request for actual solver output.
+**Evidence:** MuJoCo 3.7.0 loads the repository's Unitree H1 MJCF and advances 1,000 fixed steps (2 simulated seconds) with finite `qpos`/`qvel`. The asset README records the upstream source and BSD-3-Clause license. No actuator command was applied in this smoke run.
 
-**Tradeoff:** Robot-arm scenario B remains NOT_RUN. Install and pin a version, select one model, and verify its physical parameters before implementing the first adapter.
+**Tradeoff:** the runtime is ready for adapter work, but Robot-arm scenario B and a trace-backed physical animation remain NOT_RUN. The H1 smoke run confirms engine/model compatibility only; it does not verify dynamic fidelity or a controller.
