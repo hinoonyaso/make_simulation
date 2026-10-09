@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
+import shlex
 import subprocess
 import sys
 
@@ -22,7 +23,10 @@ def render_plan(plan: dict, manifest_path: Path, output: Path, mode: str = "prev
     env = os.environ.copy()
     env["V11_VISUAL_PLAN"] = str(plan_path)
     env["V11_VISUAL_MANIFEST"] = str(Path(manifest_path).resolve())
-    subprocess.run(["uv", "run", "manim", quality, "--fps", "30", "--resolution", resolution,
+    runner = shlex.split(os.environ.get("V11_MANIM_BIN", "uv run manim"))
+    if not runner:
+        raise ValueError("V11_MANIM_BIN must name a Manim executable")
+    subprocess.run([*runner, quality, "--fps", "30", "--resolution", resolution,
                     "--disable_caching", "--media_dir", str(media_dir),
                     str(ROOT / "core/mechanism/manim_scene.py"), "MechanismTraceScene"],
                    cwd=ROOT, env=env, check=True)

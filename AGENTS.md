@@ -29,3 +29,12 @@ Ignore `_backup_*/`, `CHANGELOG_V7.md`, `CHANGELOG_V8*.md`: superseded history, 
 For full narrated explainers, validate the hardest inference in a cheap moving excerpt with measured narration before costly full rendering. Use the existing manifest IDs. Final educational acceptance includes actual motion and voice inspection when relevant; sampled frames and signal checks alone leave those checks incomplete.
 
 For this user’s robotics episodes where physical motion/contact is relevant, retain the discovery explanation and use an actual capable physics engine for Blender setup/consequence. Share the same run with Manim; keep reference plans distinct from physical response. Do not relabel old trace playback or prescribed robot poses as physical simulation. Verify run provenance and physical checks separately from schema/media validation.
+
+## V11.2 mechanism runs
+
+- Use `scripts/produce_video.py` only after checking the Mechanism Registry. Ready topics support `--mode executable`; validated traces can use `--mode replay --trace <path>` where the registry schema matches.
+- Each invocation writes to `output/runs/<topic>-<run-id>/`. The run ID includes input/config/trace, renderer mode, code fingerprint, adapter contract, and model provenance. Completed matching media is reused only after full decode; failed/colliding run folders stay intact. `--force` creates a timestamped sibling; it never overwrites.
+- Replay must validate the schema, topic or legacy model identity, and the topic-specific equations before storyboard or render. Do not execute the mechanism again to replace replayed values.
+- The storyboard is derived from trace content. Estimated visual timing and measured narration timing are distinct. `--narration-duration` distributes an existing measured duration; it does not generate audio.
+- Production reports separate technical decode from visual and educational review. Silent preview decode does not imply audio, caption, reviewer, learner, 3D mesh, or L4 completion.
+- Existing robotics/AI assets and traces are preferred. Do not change old pilot outputs to make run management pass. Do not acquire new maps/worlds in this V11.2 scope.

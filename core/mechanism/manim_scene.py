@@ -98,20 +98,50 @@ class MechanismTraceScene(Scene):
             error_text += f"   활성값 최대 오차 = {p['activation_max_absolute_error']:.5g}"
         error_label = text(error_text, 18 if p.get("activation_max_absolute_error") is not None else 21,
                            P.result, 12.5).move_to([0, -2.15, 0])
+        code_labels = VGroup(*[text(f"{int(value)}", 12, P.active).next_to(mob, DOWN, buff=.06)
+                               for value, mob in zip(quantized, quant_dots)])
+        activation_group = VGroup()
+        activation = p.get("activation_quantization")
+        if activation:
+            activation_values = list(zip(flat_values(activation["original"]),
+                                         flat_values(activation["quantized"]),
+                                         flat_values(activation["dequantized"])))[:7]
+            rows = [text(f"활성값 {i+1}: {x:.3f} → {int(q)} → {restored:.3f}", 17, P.sensor, 8.8)
+                    for i, (x, q, restored) in enumerate(activation_values)]
+            activation_group = VGroup(text("별도 보정 범위로 활성값을 변환", 20, P.sensor), *rows,
+                text(f"weight 최대 오차={p['max_absolute_error']:.5g}", 16, P.result),
+                text(f"activation scale={np.asarray(activation['scale']).reshape(-1)[0]:.5g} · "
+                     f"zero point={np.asarray(activation['zero_point']).reshape(-1)[0]:g} · "
+                     f"최대 오차={activation['max_absolute_error']:.5g}", 16, P.sensor, 11))
+            activation_group.arrange(DOWN, buff=.17).move_to([0, 0, 0])
         graphic = VGroup(axis, axis_labels, original_dots, quant_dots, restored_dots, value_labels,
-                         scale_label, error_label)
+                         scale_label, error_label, code_labels)
+        if activation:
+            graphic.add(activation_group)
         return graphic, [[Create(axis), FadeIn(axis_labels), FadeIn(original_dots), FadeIn(value_labels)],
-                         [FadeIn(quant_dots), FadeIn(scale_label)],
-                         [FadeIn(restored_dots), FadeIn(error_label)]]
+                         [FadeIn(quant_dots), FadeIn(code_labels), FadeIn(scale_label)],
+                         [FadeIn(restored_dots), FadeIn(error_label)]] + ([[
+                             FadeOut(axis), FadeOut(axis_labels), FadeOut(original_dots), FadeOut(quant_dots),
+                             FadeOut(restored_dots), FadeOut(value_labels), FadeOut(code_labels),
+                             FadeOut(scale_label), FadeOut(error_label), FadeIn(activation_group)] ] if activation else [])
 
     def _nms(self):
         p = self.plan
         boxes = np.asarray(p["boxes_xyxy"], dtype=float)
+        if not len(boxes):
+            canvas = Rectangle(width=7.8, height=4.0, color=P.faint).move_to([-2.3, -.1, 0])
+            threshold = text(f"confidence ≥ {p['confidence_threshold']:.2f}    IoU threshold = {p['iou_threshold']:.2f}",
+                             20, P.muted).move_to([2.7, 2.3, 0])
+            empty = text("비교할 검출 후보가 없습니다.", 23, P.active, 6.5).move_to([-2.3, 0, 0])
+            result = text("유지 상자: 없음", 20, P.result).move_to([2.7, -2.45, 0])
+            return VGroup(canvas, threshold, empty, result), [
+                [Create(canvas), FadeIn(threshold), FadeIn(empty)], [FadeIn(result)]]
         lo, hi = boxes[:, :2].min(axis=0), boxes[:, 2:].max(axis=0)
         span = np.maximum(hi - lo, 1.0)
         canvas = Rectangle(width=7.8, height=4.0, color=P.faint).move_to([-2.3, -.1, 0])
         palette = [P.sensor, P.active, P.result, P.error, P.muted]
         candidates = VGroup()
+        candidate_groups = {}
         labels = VGroup()
         box_mobs = {}
         center = canvas.get_center()
@@ -123,7 +153,8 @@ class MechanismTraceScene(Scene):
             color = palette[i % len(palette)]
             rect = Rectangle(width=width, height=height, color=color, stroke_width=3).move_to(pos)
             label = text(f"{item_id}  {score:.2f}", 15, color, 2.0).next_to(rect, UP, buff=.04)
-            candidates.add(VGroup(rect, label)); box_mobs[item_id] = rect
+            candidate = VGroup(rect, label)
+            candidates.add(candidate); candidate_groups[item_id] = candidate; box_mobs[item_id] = rect
             labels.add(label)
         threshold = text(f"confidence ≥ {p['confidence_threshold']:.2f}    IoU threshold = {p['iou_threshold']:.2f}",
                          20, P.muted).move_to([2.7, 2.3, 0])
@@ -131,6 +162,10 @@ class MechanismTraceScene(Scene):
         comparison_label = text("confidence 통과 후보를 점수 순서로 비교", 17, P.active, 5.0).move_to([3.55, .3, 0])
         graphic = VGroup(canvas, candidates, threshold, result, comparison_label)
         steps = p["steps"]
+        confidence_pass = set(p["confidence_pass_ids"])
+        filtered = [FadeOut(group) for item_id, group in candidate_groups.items() if item_id not in confidence_pass]
+        filter_label = text(f"confidence 통과 {len(confidence_pass)} / {len(p['ids'])}개",
+                            20, P.active).move_to([2.7, 1.35, 0])
         comparisons = []
         for step in steps:
             winner = step["selected_id"]
@@ -148,7 +183,7 @@ class MechanismTraceScene(Scene):
             comparisons.insert(0, FadeIn(comparison_label))
         comparison_sequence = Succession(*comparisons).set_run_time(3.3) if comparisons else Wait(.1)
         return graphic, [[Create(canvas), FadeIn(threshold), FadeIn(candidates)],
-                         [comparison_sequence],
+                         [*filtered, FadeIn(filter_label)], [comparison_sequence],
                          [*[mob.animate.set_stroke(color=P.result if item in p["kept_ids"] else P.muted)
                             for item, mob in box_mobs.items()], FadeIn(result)]]
 
@@ -177,17 +212,45 @@ class MechanismTraceScene(Scene):
                       for i, value in enumerate(pwm)]
         pwm_line = polyline(pwm_points, P.active, 3)
         time_cursor = ValueTracker(0.0)
+        def cursor_sample():
+            index = min(len(rows)-1, int(time_cursor.get_value()/max_t*(len(rows)-1)))
+            return rows[index], index
         cursor = always_redraw(lambda: Line(
             [x0+width*time_cursor.get_value()/max_t, y0-.12, 0],
             [x0+width*time_cursor.get_value()/max_t, y0+height+.12, 0],
             color=P.active, stroke_width=2))
-        label = text(f"이산 PID · 주기 {p['duration_s'] / max(1,len(rows)-1):.3f}s · PWM 범위 [-1, 1]",
+        label = text(f"이산 PID · 주기 {p['duration_s'] / max(1,len(rows)-1):.3f}s · PWM [-1, 1]",
                      16, P.muted).move_to([0, 1.95, 0])
-        graphic = VGroup(axes, target, speed, encoder_line, legend, pwm_line, label, cursor)
+        gains = p.get("pid", {"kp": 0, "ki": 0, "kd": 0})
+        initial = rows[0]
+        p_term = gains["kp"] * initial["error_rad_s"]
+        i_term = gains["ki"] * initial["integral_state"]
+        d_term = gains["kd"] * initial["derivative_rad_s2"]
+        term_panel = VGroup(text("첫 표본 t=0의 PID 항", 16, P.active),
+            text(f"P = Kp × e = {gains['kp']:g} × {initial['error_rad_s']:.2f} = {p_term:.2f}", 14, P.fg, 3.8),
+            text(f"I = Ki × Σe·dt = {gains['ki']:g} × {initial['integral_state']:.2f} = {i_term:.2f}", 13, P.fg, 3.8),
+            text(f"D = Kd × de/dt = {gains['kd']:g} × {initial['derivative_rad_s2']:.2f} = {d_term:.2f}", 13, P.fg, 3.8))
+        term_panel.arrange(DOWN, buff=.24, aligned_edge=LEFT).move_to([4.9, .25, 0])
+        cursor_note = text("점과 수직선은 같은 시각 표본", 14, P.muted, 3.5).move_to([4.9, -2.3, 0])
+        def measured_dot():
+            row, _ = cursor_sample()
+            x = x0 + width * row["time_s"] / max_t
+            y = y0 + height*.5 + height*.42*row["encoder_speed_rad_s"]/max_speed
+            return Dot([x, y, 0], radius=.09, color=P.sensor)
+        def pwm_dot():
+            row, _ = cursor_sample()
+            x = x0 + width * row["time_s"] / max_t
+            y = -2.5 + float(row["pwm_duty"])*.42
+            return Dot([x, y, 0], radius=.09, color=P.active)
+        measured_marker, pwm_marker = always_redraw(measured_dot), always_redraw(pwm_dot)
+        graphic = VGroup(axes, target, speed, encoder_line, legend, pwm_line, label, cursor,
+                         term_panel, cursor_note, measured_marker, pwm_marker)
         return graphic, [[Create(axes), Create(target), FadeIn(legend)],
                          [Create(speed).set_run_time(2.6), Create(encoder_line).set_run_time(2.6),
-                          FadeIn(cursor), time_cursor.animate.set_value(max_t).set_run_time(2.6)],
-                         [Create(pwm_line), FadeIn(label)]]
+                          Create(pwm_line).set_run_time(2.6), FadeIn(cursor),
+                          FadeIn(measured_marker), FadeIn(pwm_marker), FadeIn(cursor_note),
+                          time_cursor.animate.set_value(max_t).set_run_time(2.6)],
+                         [FadeIn(label), FadeIn(term_panel)]]
 
     def _mujoco_arm(self):
         p = self.plan
@@ -219,6 +282,14 @@ class MechanismTraceScene(Scene):
     def _self_attention(self):
         p = self.plan
         n = len(p["tokens"])
+        projected_rows = []
+        for index, token in enumerate(p["tokens"]):
+            vector_text = lambda values: "[" + ", ".join(f"{float(v):.2f}" for v in values) + "]"
+            projected_rows.append(text(f"토큰 {index+1}  {vector_text(token)}   →   "
+                f"Q {vector_text(p['q'][index])}   K {vector_text(p['k'][index])}   V {vector_text(p['v'][index])}",
+                17, P.fg, 12.2))
+        projection = VGroup(text("입력 벡터를 세 경로로 투영", 24, P.active), *projected_rows)
+        projection.arrange(DOWN, buff=.32).move_to([0, .1, 0])
         def matrix(values, title, color):
             values = np.asarray(values, dtype=float)
             group = VGroup()
@@ -236,11 +307,21 @@ class MechanismTraceScene(Scene):
             col_tags = VGroup(*[text(f"K{i+1}", 14, P.muted).move_to([-.39*(n-1)+i*.82, 1.45, 0]) for i in range(n)])
             return VGroup(title_mob, row_tags, col_tags, group)
         raw = matrix(p["raw_scores"], "질문 Q × 키 Kᵀ : 내적 점수", P.active)
-        scaled = matrix(p["scaled_scores"], f"차원으로 나눈 점수 · ÷ {p['scale_factor']:.2f}", P.sensor)
+        has_mask = any(any(bool(value) for value in row) for row in p.get("causal_mask", []))
+        scaled_title_text = f"차원으로 나눈 점수 · ÷ {p['scale_factor']:.2f}"
+        if has_mask:
+            scaled_title_text += " · 미래 위치 가림"
+        scaled = matrix(p["scaled_scores"], scaled_title_text, P.sensor)
         weights = matrix(p["attention_weights"], "행마다 정규화한 softmax 가중치", P.result)
         raw_title, row_tags, col_tags, score_cells = raw.submobjects
         scaled_title, _, _, scaled_cells = scaled.submobjects
         weights_title, _, _, weight_cells = weights.submobjects
+        mask_marks = VGroup()
+        if has_mask:
+            for row in range(n):
+                for col in range(n):
+                    if p["causal_mask"][row][col]:
+                        mask_marks.add(Cross(scaled_cells[row*n+col], stroke_color=P.error, stroke_width=3))
         output = VGroup(*[text("출력 토큰 " + str(i+1) + "  →  " + ", ".join(f"{v:.2f}" for v in row), 21, P.result)
                           for i, row in enumerate(p["output"])])
         output.arrange(DOWN, buff=.3).move_to([0, .55, 0])
@@ -257,8 +338,12 @@ class MechanismTraceScene(Scene):
             move_cells = Transform(cells, next_cells).set_run_time(.65)
             change_title = AnimationGroup(FadeOut(old_title), FadeIn(next_title)).set_run_time(.65)
             return AnimationGroup(move_cells, change_title, lag_ratio=0).set_run_time(.65)
-        return VGroup(raw, scaled, weights, output, note), [
-            [reveal(raw)], [matrix_update(score_cells, scaled_cells, raw_title, scaled_title)],
-            [matrix_update(score_cells, weight_cells, scaled_title, weights_title)],
+        return VGroup(projection, raw, scaled, weights, output, note), [
+            [FadeIn(projection)],
+            [FadeOut(projection), reveal(raw)],
+            [matrix_update(score_cells, scaled_cells, raw_title, scaled_title),
+             *([FadeIn(mask_marks)] if has_mask else [])],
+            [*([FadeOut(mask_marks)] if has_mask else []),
+             matrix_update(score_cells, weight_cells, scaled_title, weights_title)],
             [FadeOut(score_cells), FadeOut(row_tags), FadeOut(col_tags), FadeOut(weights_title),
              FadeIn(note), FadeIn(output), FadeIn(value_rows)]]

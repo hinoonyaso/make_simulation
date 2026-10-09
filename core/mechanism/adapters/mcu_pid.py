@@ -136,7 +136,10 @@ class MCUPIDAdapter:
     def build_visual_plan(self, trace):
         p = trace["payload"]
         return {"kind": "mcu_pid", "samples": p["samples"], "target_rad_s": p["target_rad_s"],
-                "pwm_range": p["pwm_range"], "duration_s": p["duration_s"]}
+                "pwm_range": p["pwm_range"], "duration_s": p["duration_s"],
+                "pid": p["pid"], "motor_time_constant_s": p["motor_time_constant_s"],
+                "max_speed_rad_s": p["max_speed_rad_s"],
+                "encoder_ticks_per_rev": p["encoder_ticks_per_rev"]}
 
     def render(self, plan, manifest, output: Path):
         from core.mechanism.renderer import render_plan

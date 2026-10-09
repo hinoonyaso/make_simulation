@@ -143,7 +143,10 @@ class QuantizationAdapter:
                 if not np.allclose(np.abs(original - restored), np.asarray(item["absolute_error"])):
                     errors.append(f"{name} absolute error does not match the restored values")
                 expected_saturation = (np.rint(original / scale + zero) < qmin) | (np.rint(original / scale + zero) > qmax)
-                if not np.array_equal(expected_saturation, np.asarray(item.get("saturation_mask"), dtype=bool)):
+                # Earlier mechanism-envelope/v1 traces predate optional clipping metadata.
+                # Their integer codes and dequantization remain fully recomputed above.
+                if ("saturation_mask" in item and
+                        not np.array_equal(expected_saturation, np.asarray(item["saturation_mask"], dtype=bool))):
                     errors.append(f"{name} saturation mask does not match the clipping boundaries")
                 if not np.isclose(float(item["max_absolute_error"]), float(np.max(np.abs(original-restored)))):
                     errors.append(f"{name} maximum absolute error summary mismatch")
@@ -158,9 +161,14 @@ class QuantizationAdapter:
         activation = p.get("activation_quantization")
         return {"kind": "quantization", "original": p["original"], "quantized": p["quantized_integer"],
                 "dequantized": p["dequantized"], "bits": p["bits"], "scheme": p["scheme"],
-                "qmin": p["qmin"], "qmax": p["qmax"], "scale": p["scale"], "zero_point": p["zero_point"], "scope": p["scope"],
+                "qmin": p["qmin"], "qmax": p["qmax"], "scale": p["scale"], "zero_point": p["zero_point"],
+                "scope": p.get("scope", "weight_only"),
                 "max_absolute_error": p["max_absolute_error"],
-                "activation_max_absolute_error": activation["max_absolute_error"] if activation else None}
+                "activation_max_absolute_error": activation["max_absolute_error"] if activation else None,
+                "activation_quantization": ({"original": activation["original"],
+                    "quantized": activation["quantized_integer"], "dequantized": activation["dequantized"],
+                    "max_absolute_error": activation["max_absolute_error"], "scale": activation["scale"],
+                    "zero_point": activation["zero_point"]} if activation else None)}
 
     def render(self, plan, manifest, output: Path):
         from core.mechanism.renderer import render_plan

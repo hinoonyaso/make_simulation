@@ -17,6 +17,24 @@ Key upgrades:
 
 Start with `ROUTING.md`.
 
+## V11.2 run isolation and trace replay
+
+The V11 mechanism CLI now writes each run under `output/runs/<topic>-<run-id>/` with the request, adapter config, validated trace, visual plan, V9-compatible manifest, media and production report. The ID partitions by topic, normalized input/config, validated trace, renderer mode, adapter/code fingerprint and the trace's asset provenance. A completed matching run is reused by default only after its media passes full decode again. Incomplete or conflicting directories are kept intact and rejected; `--force` creates a timestamped sibling. `--run-id` is an explicit directory name and will never overwrite an existing run.
+
+```bash
+# Execute a numerical adapter and render a 540p30 technical preview.
+uv run python scripts/produce_video.py --topic quantization --preview
+
+# Replay the exact saved trace without generating a new mechanism result.
+uv run python scripts/produce_video.py --topic quantization --mode replay \
+  --trace output/runs/quantization-<run-id>/trace.json --preview
+
+# Use the completed run cache; use --no-reuse to refuse a cache hit.
+uv run python scripts/produce_video.py --topic quantization --preview
+```
+
+The replay validator checks schema, topic (including legacy V9 asset/family identity), and the domain equations before planning or rendering. Beat count follows the validated topic stages and trace content; duration is estimated from trace complexity unless an already measured narration duration is supplied with `--narration-duration`. This value only allocates visual beat time; it does not create speech or captions. V11.2 currently emits silent technical previews/renders. It does not claim full production.
+
 ## V10 RAG production
 
 The current runnable V10 AI path supports RAG only. Replay a checked-in AI trace, or execute a new local lexical TF-IDF run from a document and question. It does not claim semantic embeddings or LLM generation. `--render auto` includes the trace-matched Three.js projection when local browser tooling is available and records a Manim fallback otherwise.

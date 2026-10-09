@@ -75,7 +75,8 @@ class SelfAttentionAdapter:
         p=trace["payload"]
         return {"kind":"self_attention","tokens":p["tokens"],"raw_scores":p["raw_scores"],
                 "scaled_scores":p["scaled_scores"],"attention_weights":p["attention_weights"],
-                "v":p["v"],"output":p["output"],"scale_factor":p["scale_factor"],"causal_mask":p["causal_mask"]}
+                "q":p["q"],"k":p["k"],"v":p["v"],"output":p["output"],
+                "scale_factor":p["scale_factor"],"causal_mask":p["causal_mask"]}
 
     def render(self, plan, manifest, output: Path):
         from core.mechanism.renderer import render_plan

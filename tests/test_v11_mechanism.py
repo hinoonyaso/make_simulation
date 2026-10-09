@@ -86,6 +86,18 @@ class MechanismAdapterTests(unittest.TestCase):
         trace["payload"]["quantized_integer"][1] = 17
         self.assertTrue(adapter.validate(trace))
 
+    def test_quantization_validator_rejects_tampered_scale(self):
+        adapter = QuantizationAdapter()
+        trace = adapter.execute({"weights": [-1.0, 0.0, 1.0]})
+        trace["payload"]["scale"] *= 2
+        self.assertTrue(adapter.validate(trace))
+
+    def test_quantization_accepts_legacy_trace_without_optional_saturation_metadata(self):
+        adapter = QuantizationAdapter()
+        trace = adapter.execute({})
+        del trace["payload"]["saturation_mask"]
+        self.assertEqual(adapter.validate(trace), [])
+
     def test_registry_resolves_korean_aliases_and_reports_ambiguous(self):
         registry = MechanismRegistry()
         for alias, topic in (("양자화", "quantization"), ("INT8 양자화", "quantization"),
@@ -109,6 +121,21 @@ class MechanismAdapterTests(unittest.TestCase):
         trace["payload"]["steps"][0]["comparisons"][0]["iou"] = .01
         self.assertTrue(adapter.validate(trace))
 
+    def test_nms_threshold_edges_ties_and_empty_singleton_inputs(self):
+        adapter = NMSAdapter()
+        trace = adapter.execute({"boxes": [[0, 0, 2, 2], [1, 0, 3, 2], [4, 4, 5, 5]],
+            "scores": [.8, .8, .7], "ids": ["a", "b", "c"],
+            "confidence_threshold": .7, "iou_threshold": 1/3})
+        self.assertEqual(trace["payload"]["confidence_pass_ids"], ["a", "b", "c"])
+        self.assertEqual(trace["payload"]["steps"][0]["selected_id"], "a")
+        self.assertAlmostEqual(trace["payload"]["steps"][0]["comparisons"][0]["iou"], 1/3)
+        self.assertFalse(trace["payload"]["steps"][0]["comparisons"][0]["suppressed"])
+        self.assertEqual(adapter.validate(trace), [])
+        empty = adapter.execute({"boxes": np.empty((0, 4)).tolist(), "scores": [], "ids": []})
+        self.assertEqual(adapter.validate(empty), [])
+        single = adapter.execute({"boxes": [[0, 0, 1, 1]], "scores": [.5], "ids": ["one"]})
+        self.assertEqual(single["payload"]["kept_ids"], ["one"])
+
     def test_pid_samples_are_monotonic_and_pwm_bounded(self):
         adapter = MCUPIDAdapter(); trace = adapter.execute({"duration": .2, "dt": .02})
         self.assertEqual(adapter.validate(trace), [])
@@ -123,6 +150,13 @@ class MechanismAdapterTests(unittest.TestCase):
         trace["payload"]["samples"][2]["motor_speed_rad_s"] += .2
         self.assertTrue(adapter.validate(trace))
 
+    def test_pid_rejects_invalid_encoder_resolution_and_unbounded_run_length(self):
+        adapter = MCUPIDAdapter()
+        with self.assertRaisesRegex(ValueError, "ticks"):
+            adapter.execute({"encoder_ticks_per_rev": 0})
+        with self.assertRaisesRegex(ValueError, "10000 steps"):
+            adapter.execute({"duration": 1000, "dt": .02})
+
     def test_self_attention_trace_computes_qk_softmax_and_weighted_values(self):
         adapter = SelfAttentionAdapter()
         trace = adapter.execute({"causal_mask": True})
@@ -132,6 +166,14 @@ class MechanismAdapterTests(unittest.TestCase):
         self.assertEqual(weights[0, 1:].tolist(), [0.0, 0.0])
         trace["payload"]["output"][0][0] += 1
         self.assertTrue(adapter.validate(trace))
+
+    def test_self_attention_softmax_is_stable_for_large_finite_logits(self):
+        adapter = SelfAttentionAdapter()
+        trace = adapter.execute({"tokens": [[1000.0, 0.0], [0.0, 1000.0]]})
+        self.assertEqual(adapter.validate(trace), [])
+        weights = np.asarray(trace["payload"]["attention_weights"])
+        self.assertTrue(np.isfinite(weights).all())
+        self.assertTrue(np.allclose(weights.sum(axis=1), 1.0))
 
     def test_environment_registry_never_claims_unrun_backend_as_ready(self):
         registry = EnvironmentRegistry()

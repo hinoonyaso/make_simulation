@@ -25,7 +25,27 @@ jobs:
       - name: Render and full-decode the V11 Attention smoke preview
         run: |
           output="$(mktemp -d)"
-          python scripts/produce_video.py --topic self_attention --preview --output-dir "$output"
+          export V11_MANIM_BIN=manim
+          python scripts/produce_video.py --topic self_attention --preview --output-dir "$output/runs"
+          python scripts/produce_video.py --topic quantization --preview --output-dir "$output/runs"
+          trace="$(find "$output/runs" -path '*/quantization-*/trace.json' -print -quit)"
+          test -n "$trace"
+          python scripts/produce_video.py --topic quantization --mode replay --trace "$trace" \
+            --preview --output-dir "$output/replay-runs"
+          mkdir -p "$output/artifacts"
+          quant_preview="$(find "$output/runs" -path '*/quantization-*/preview.mp4' -print -quit)"
+          attention_preview="$(find "$output/runs" -path '*/self_attention-*/preview.mp4' -print -quit)"
+          replay_preview="$(find "$output/replay-runs" -path '*/quantization-*/preview.mp4' -print -quit)"
+          test -n "$quant_preview" && test -n "$attention_preview" && test -n "$replay_preview"
+          cp "$quant_preview" "$output/artifacts/quantization.mp4"
+          cp "$attention_preview" "$output/artifacts/self_attention.mp4"
+          cp "$replay_preview" "$output/artifacts/quantization_replay.mp4"
+          echo "V11_OUTPUT_DIR=$output/artifacts" >> "$GITHUB_ENV"
+      - name: Upload generated mechanism previews
+        uses: actions/upload-artifact@v4
+        with:
+          name: v11-mechanism-previews
+          path: ${{ env.V11_OUTPUT_DIR }}/*.mp4
 
   threejs-browser:
     runs-on: ubuntu-latest

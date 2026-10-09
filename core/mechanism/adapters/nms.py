@@ -31,6 +31,8 @@ class NMSAdapter:
 
     def execute(self, config: dict[str, Any]) -> dict[str, Any]:
         boxes = np.asarray(config.get("boxes", DEFAULT_BOXES), dtype=np.float64)
+        if boxes.size == 0:
+            boxes = boxes.reshape((0, 4))
         scores = np.asarray(config.get("scores", DEFAULT_SCORES), dtype=np.float64)
         ids = list(config.get("ids", [f"box-{i+1:02d}" for i in range(len(scores))]))
         confidence = float(config.get("confidence_threshold", .25))
@@ -110,7 +112,8 @@ class NMSAdapter:
         p = trace["payload"]
         return {"kind": "nms", "boxes_xyxy": p["boxes_xyxy"], "scores": p["scores"],
                 "ids": p["ids"], "confidence_threshold": p["confidence_threshold"],
-                "iou_threshold": p["iou_threshold"], "kept_ids": p["kept_ids"], "steps": p["steps"]}
+                "iou_threshold": p["iou_threshold"], "confidence_pass_ids": p["confidence_pass_ids"],
+                "kept_ids": p["kept_ids"], "steps": p["steps"]}
 
     def render(self, plan, manifest, output: Path):
         from core.mechanism.renderer import render_plan

@@ -29,6 +29,13 @@ Do not preload the bundle. Route from the artifact that exists now.
 - `self_attention` is a NumPy single-head educational calculation: Q/K/V → QKᵀ → scaling → optional causal mask → softmax → weighted values. It is not trained Transformer or LLM inference. NMS is synthetic candidate arithmetic, not YOLO inference. Quantization is NumPy reference arithmetic, not an accelerator kernel. MCU PID is a numerical plant, not firmware or hardware execution.
 - Ready means the declared adapter can execute its stated scope; it does not imply L4 full production. General narration, captions, reviewer and delivery workflow remain separate from the current silent technical renderer. A missing or planned adapter is refused by name rather than sent to RAG or a generic slide renderer.
 
+## V11.2 run directories and replay
+- Default output root is `output/runs/`; every execution or replay writes a separate content-addressed child directory containing request/config, validated source trace, visual plan, V9-compatible manifest, media and production report.
+- Same run identity is reused by default only when the stored media passes another 30 fps full-decode check. Incomplete or conflicting outputs are preserved and rejected. `--force` makes a timestamped sibling; `--run-id` is an explicit directory name that cannot overwrite an existing run.
+- Replay examples: `uv run python scripts/produce_video.py --topic quantization --mode replay --trace <trace.json> --preview`; RAG and legacy H1 traces are accepted through their existing schema/model identity checks.
+- Storyboard beats follow validated trace stages and content. `--narration-duration` only applies a supplied measured audio duration to beat timing; TTS, caption rendering, Reviewer and final narrated delivery are still separate and must not be reported complete from a silent render.
+- For robot kinematics, the current common renderer replays the H1 trace as a Manim plot; use a separately validated Blender mesh path when 3D is required, and report unavailable Blender honestly.
+
 ## Skip rules
 - no preview -> no Reviewer
 - no edit request/assets -> no Resolve
