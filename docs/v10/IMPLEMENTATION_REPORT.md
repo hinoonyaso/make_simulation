@@ -10,7 +10,7 @@ Phase 2 Asset Factory: **PARTIAL**. Safe local registry resolution, file hashing
 
 Phase 3 MuJoCo: **PARTIAL PASS**. MuJoCo 3.7.0 is pinned. A fixed-base Unitree H1 left-arm run uses closed-loop PD torque control, records 101 samples, checks actual hand body poses through a separate FK pass, compares repeated runs, and passes a 2 ms/1 ms timestep sensitivity check. Manim renders the recorded trace. Blender CLI remains unavailable, so the imported H1 mesh is not rendered. The elbow target tracking error peaks at 0.209 rad; the target and actual curves are both shown.
 
-Phase 4 Three.js/Remotion: **DEFERRED**. Node.js is available, but no local browser/capture runtime is installed. Manim renders the current 2D trace relationship, so no alternative framework was added without a demonstrated benefit.
+Phase 4 Three.js: **PARTIAL PASS**. A 3D PCA view of 11 actual chunk vectors plus the actual query renders in Playwright Chromium/WebGL; browser checks verify 12 points, 29 draw calls and actual top-three IDs. An independent 8-second 1080p30 MP4 passes full decode. Remotion is **DEFERRED** because this fixed composition has no React timeline requirement and Three.js + FFmpeg already produces the file.
 
 Phase 5 integration: **PARTIAL / NOT_RUN**. No changes to Director/renderer skills, routing, manifest schema or cross-stage caching. Existing V9 is preserved while compatibility coverage is built around the additive trace.
 
@@ -34,13 +34,15 @@ Phase 5 integration: **PARTIAL / NOT_RUN**. No changes to Director/renderer skil
 - `uv run python scripts/smoke_mujoco.py assets/unitree_h1/mjcf/h1.xml --steps 1000`: **PASS**, MuJoCo 3.7.0, 21 bodies, 20 joints, 19 actuators, 2.0 simulated seconds, finite joint state.
 - `uv run python scripts/validate_delivery.py pilots/v10_rag_poc/output/rag_mechanism_poc.mp4 --require-audio --fps 30 --audio-manifest pilots/v10_rag_poc/output/audio_manifest.json --caption-timing pilots/v10_rag_poc/output/caption_timing.json --full-decode`: **PASS**, 1920×1080 H.264, 30fps, one audio stream, 34.00 sec, 11 captions, full decode.
 - Representative final frames were extracted and reviewed. A card text overflow was found and fixed before the final render. Frame inspection does not establish normal-speed full-video pacing or educational comprehension.
-- MuJoCo-controlled robot-arm run/trace, FK check, repeatability, timestep sensitivity and Manim render: **PASS** (see `pilots/v10_mujoco_arm/README.md`). The model has 3–4 self contacts; they are recorded but are not part of the lesson claim. Blender mesh render, Three.js/Remotion capture, fresh RAG execution, full normal-speed listening, and learner comprehension: **NOT_RUN**.
+- MuJoCo-controlled robot-arm run/trace, FK check, repeatability, timestep sensitivity and Manim render: **PASS** (see `pilots/v10_mujoco_arm/README.md`). Three.js browser capture and video decode: **PASS**. The model has 3–4 self contacts; they are recorded but are not part of the lesson claim. Blender mesh render, Remotion, fresh RAG execution, full normal-speed listening and learner comprehension: **NOT_RUN**.
 
 ## Generated artifacts
 
 - Video: `pilots/v10_rag_poc/output/rag_mechanism_poc.mp4`
 - MuJoCo arm trace-driven video: `pilots/v10_mujoco_arm/output/mujoco_h1_arm.mp4` (9.8 sec, video-only)
 - MuJoCo execution data: `pilots/v10_mujoco_arm/data/trace.json` and `numerical_validation.json`
+- Three.js 3D RAG video: `pilots/v10_threejs_rag/output/threejs_rag_3d.mp4` (8 sec, video-only)
+- Three.js projected points: `pilots/v10_threejs_rag/data/embedding_space_3d.json`
 - Preview: `pilots/v10_rag_poc/output/rag_mechanism_poc_preview.mp4`
 - Trace: `pilots/v10_rag_poc/data/ai_trace.json`
 - Captions: `pilots/v10_rag_poc/output/caption_timing.json` and `subtitles.ko.srt`

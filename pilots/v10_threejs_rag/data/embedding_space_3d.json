@@ -1,0 +1,145 @@
+{
+  "schema": "ai-embedding-display-projection/v1",
+  "source_trace_sha256": "f3c6e8a880b8bd6f1434b66fdb44b2cd7c376203062da99887b17c8a0fd13844",
+  "method": "PCA by deterministic NumPy SVD over 11 stored chunk vectors and the stored query vector",
+  "source_dimension": 384,
+  "display_dimension": 3,
+  "explained_variance_ratio": [
+    0.19721681497057933,
+    0.14741445210105458,
+    0.14183432000081356
+  ],
+  "projection_is_lossy": true,
+  "geometry_semantics": "display coordinates only; retrieval rankings and distances remain from original 384D vectors",
+  "retrieval": {
+    "metric": "squared L2",
+    "top_k_ids": [
+      "C08",
+      "C11",
+      "C07"
+    ],
+    "scores_and_ranks_source": "ai_trace.json"
+  },
+  "points": [
+    {
+      "id": "C01",
+      "xyz": [
+        -2.11982379821913,
+        -0.8588260169268611,
+        -1.7045787536084012
+      ],
+      "rank": null,
+      "kind": "chunk"
+    },
+    {
+      "id": "C02",
+      "xyz": [
+        -2.5730019018802897,
+        -0.43015830226053575,
+        -0.6734452254541893
+      ],
+      "rank": null,
+      "kind": "chunk"
+    },
+    {
+      "id": "C03",
+      "xyz": [
+        -1.280252204092063,
+        -0.4324888335895094,
+        -0.9742776062233852
+      ],
+      "rank": null,
+      "kind": "chunk"
+    },
+    {
+      "id": "C04",
+      "xyz": [
+        -2.4484281883126475,
+        -0.6102053762661016,
+        -0.12872631245961183
+      ],
+      "rank": null,
+      "kind": "chunk"
+    },
+    {
+      "id": "C05",
+      "xyz": [
+        -0.8935776560439991,
+        -0.4827924744492119,
+        1.5870160522784273
+      ],
+      "rank": null,
+      "kind": "chunk"
+    },
+    {
+      "id": "C06",
+      "xyz": [
+        -0.3341900660042789,
+        0.2788145356343139,
+        2.9065934730253784
+      ],
+      "rank": null,
+      "kind": "chunk"
+    },
+    {
+      "id": "C07",
+      "xyz": [
+        0.4253952374350697,
+        1.8702191805002588,
+        2.54288641084752
+      ],
+      "rank": 3,
+      "kind": "chunk"
+    },
+    {
+      "id": "C08",
+      "xyz": [
+        2.088456090486482,
+        1.248998342663184,
+        -0.8850810717253493
+      ],
+      "rank": 1,
+      "kind": "chunk"
+    },
+    {
+      "id": "C09",
+      "xyz": [
+        2.380418315693249,
+        -2.446925955942755,
+        -0.2514256846279244
+      ],
+      "rank": null,
+      "kind": "chunk"
+    },
+    {
+      "id": "C10",
+      "xyz": [
+        2.916211740607275,
+        -2.2464185492124824,
+        -0.5301527355612647
+      ],
+      "rank": null,
+      "kind": "chunk"
+    },
+    {
+      "id": "C11",
+      "xyz": [
+        0.964066474821577,
+        0.7097834498497023,
+        0.4952186747602866
+      ],
+      "rank": 2,
+      "kind": "chunk"
+    },
+    {
+      "id": "query:Q0",
+      "xyz": [
+        0.8747259555087538,
+        3.4,
+        -2.3840272212514866
+      ],
+      "rank": null,
+      "kind": "query"
+    }
+  ]
+}

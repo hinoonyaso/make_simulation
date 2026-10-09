@@ -41,5 +41,5 @@ Narration is cut from the previously approved Naive RAG episode. Captions are se
 ## Deferred target modules
 
 - MuJoCo environment is pinned at 3.7.0 and a headless Unitree H1 model smoke run is available through `scripts/smoke_mujoco.py`. The local adapter records joint/body state and emits a V9-compatible robotics trace projection; a fixed-base H1 arm PoC and Manim trace playback are implemented. Blender mesh replay, hardware/control-system fidelity and full manifest integration remain future work.
-- Three.js/Remotion: optional rendering experiments behind adapters. Not added because the current 2D data story is covered by Manim; browser capture/video integration is not available for a measured comparison.
+- Three.js: an optional 3D PCA embedding view consumes the same validated AI trace vectors and recorded top-three IDs. A Playwright-managed headless Chromium capture is assembled into a standalone MP4 by FFmpeg. Remotion is deferred because a fixed 8-second composition did not require its React timeline and the existing FFmpeg path already writes the requested media.
 - Director integration, cross-stage cache keys, end-to-end manifest routing and reviewer skill updates: Phase 5 follow-up. Existing V9 behavior remains authoritative until compatibility tests exist.

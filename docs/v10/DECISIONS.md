@@ -18,11 +18,11 @@
 
 ## D3 — Manim for this RAG slice
 
-**Decision:** use Manim for the 2D chunk, ranking and context transitions; keep Three.js and Remotion optional.
+**Decision:** use Manim for the 2D chunk, ranking and context transitions, then add a separate Three.js 3D PCA view for the embedding-space experiment. Defer Remotion.
 
-**Evidence:** the key state changes and ranked values are two-dimensional and the local project already has a tested Manim environment. Three.js would add a browser capture dependency without addressing a demonstrated need in this example. Remotion would overlap the existing composition pipeline before a measurable advantage is established.
+**Evidence:** Manim is effective for the main data flow and exact score display. Three.js adds a genuine 3D spatial view of 384D data projected into 3D, which supports depth/orbit exploration. The real browser render produced 29 WebGL draw calls and an 8-second 1080p30 MP4 from the same trace.
 
-**Tradeoff:** no 3D embedding-space or cross-renderer benchmark is included.
+**Tradeoff:** Three.js needs Node, browser and capture tooling; its 3D distances cannot stand in for original 384D retrieval. This is a short video-only experiment. Remotion would duplicate a fixed composition already produced by browser capture and FFmpeg.
 
 ## D4 — Inject converters into Asset Factory
 
@@ -39,3 +39,12 @@
 **Evidence:** MuJoCo 3.7.0 runs the repository's H1-with-hand MJCF for 2 simulated seconds with PD torque commands. The V9 robotics trace validator passes; recorded hand poses match a separate FK pass; repeated runs match to 1e-12; the 2 ms/1 ms sensitivity difference peaks at 0.107 mm. The asset README records upstream provenance and BSD-3-Clause license.
 
 **Tradeoff:** the fixed pelvis, ideal PD motor control and absent floor/contact objective limit the physical claim. Blender mesh rendering and hardware/controller fidelity remain unverified. The Manim scene is an explicit stylized replay of the actual trace.
+
+
+## D7 — Use a deterministic Three.js capture for the 3D projection PoC
+
+**Decision:** pin Three.js and Playwright in a pilot-local Node project; compute PCA from the saved vectors in Python; render fixed timestamps in headless Chromium; assemble frames with the repository's FFmpeg.
+
+**Evidence:** the browser loads the locally generated projection tied to the AI trace hash, renders all 12 points and the actual top-three links, and reports 29 draw calls. `validate_delivery.py` passes the generated 1920×1080, 30 fps H.264 file.
+
+**Tradeoff:** this produces a video-only 8-second component test, not a narrated episode or a substitute for the 34-second Manim explanation. Browser capture requires a user-level Playwright Chromium download and a host that permits Chromium to start. Remotion is held until a variable React timeline/composition is needed.

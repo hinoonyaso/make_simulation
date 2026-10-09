@@ -1,0 +1,22 @@
+{
+  "name": "make-simulation-v10-threejs-rag",
+  "version": "0.1.0",
+  "description": "Trace-driven Three.js 3D PCA visualization for the V10 RAG PoC",
+  "main": "index.js",
+  "scripts": {
+    "build:data": "uv run python scripts/build_projection.py",
+    "test:browser": "node scripts/verify_browser.js",
+    "render:video": "node scripts/capture_video.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "playwright": "1.64.0",
+    "three": "0.186.1"
+  },
+  "private": true,
+  "engines": {
+    "node": ">=22"
+  }
+}

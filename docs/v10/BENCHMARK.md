@@ -41,3 +41,17 @@ Instrument separate render-stage wall times and cache hit/miss counts for a base
 | Render | 9.8 sec, 1920×1080, 30 fps, H.264, video-only, 298,183 bytes |
 
 The controller's target is not treated as the achieved result: peak target error is 0.120 rad at the shoulder and 0.209 rad at the elbow. The fixed pelvis and ideal PD motor law are modeling choices. No added floor, contact lesson, hardware controller, ROS2 runtime or Blender mesh render is claimed. System-level Blender/SoX installation is blocked by the container's `no new privileges` restriction; the existing Manim path produced and decoded the video successfully.
+
+## Three.js 3D RAG PoC (2026-10)
+
+| Item | Observed result |
+|---|---:|
+| Runtime | Node 22.23.2, Three.js 0.186.1, Playwright 1.64.0, Chromium Headless Shell 156 |
+| Input points | 11 recorded E5 chunk vectors + 1 recorded query, all 384D |
+| Display | PCA/SVD 3D, first-three component explained variance 0.4865 |
+| Browser render | WebGL PASS, 12 points, 29 draw calls; top3 exactly C08 → C11 → C07 |
+| MP4 | 8.00 sec, 1920×1080, 30fps, H.264, video-only, 883,804 bytes |
+| Decode | `validate_delivery.py --fps 30 --full-decode`: PASS |
+| npm audit | 0 vulnerabilities at run time |
+
+The PCA variance describes only the first three components; the projection is lossy. The 3D geometry does not calculate retrieval. Three.js and browser frame-render time were not separately instrumented, so this experiment makes no speed or cost comparison against Manim. Remotion was not added because the fixed composition rendered through Three.js frame capture + FFmpeg without needing a React timeline.

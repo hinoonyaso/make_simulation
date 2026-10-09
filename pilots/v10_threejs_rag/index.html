@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>RAG 384D Embedding → 3D PCA</title>
+  <link rel="stylesheet" href="/src/style.css">
+  <script type="importmap">
+  {"imports":{"three":"/node_modules/three/build/three.module.js","three/addons/":"/node_modules/three/examples/jsm/"}}
+  </script>
+</head>
+<body>
+  <canvas id="scene" aria-label="3D PCA embedding space"></canvas>
+  <header>
+    <h1>문서와 질문의 임베딩 공간</h1>
+    <p>384차원 임베딩을 3차원 PCA로 투영 · 차원 축소 설명 장면</p>
+  </header>
+  <aside>
+    <div class="legend"><i class="query"></i><span>질문 벡터</span></div>
+    <div class="legend"><i class="candidate"></i><span>문서 청크</span></div>
+    <div class="legend"><i class="selected"></i><span>실제 검색 Top 3</span></div>
+    <div id="status">실제 384차원 거리 순위: C08 → C11 → C07</div>
+  </aside>
+  <footer>
+    <strong>주의</strong> 화면의 3D 거리는 설명용 PCA 좌표입니다. 검색 순위·점수는 원본 384차원 벡터의 제곱 L2 결과를 그대로 사용합니다.
+  </footer>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
