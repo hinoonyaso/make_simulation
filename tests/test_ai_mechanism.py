@@ -184,6 +184,23 @@ class AssetFactoryTests(unittest.TestCase):
         self.assertTrue(self.factory.invalidate_asset_cache("arm"))
         self.assertIsNone(self.factory.get_cached_asset("arm", "glb"))
 
+    def test_converter_identity_version_and_configuration_partition_cache(self):
+        calls = []
+        def converter(source, staging, metadata):
+            calls.append(1)
+            result = staging / "arm.glb"
+            result.write_text("converted")
+            return result
+        first = self.factory.convert_asset("arm", "glb", converter, converter_id="mesh-converter",
+                                           converter_version="1", converter_config={"scale": 1})
+        reused = self.factory.convert_asset("arm", "glb", converter, converter_id="mesh-converter",
+                                            converter_version="1", converter_config={"scale": 1})
+        changed = self.factory.convert_asset("arm", "glb", converter, converter_id="mesh-converter",
+                                             converter_version="2", converter_config={"scale": 2})
+        self.assertEqual(first, reused)
+        self.assertNotEqual(first, changed)
+        self.assertEqual(len(calls), 2)
+
     def test_blocks_source_escape_and_converter_escape(self):
         data = json.loads(self.registry.read_text())
         data["assets"][0]["source"] = "../outside"

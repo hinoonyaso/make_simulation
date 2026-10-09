@@ -9,6 +9,7 @@ from pathlib import Path
 import shutil
 import subprocess
 import sys
+import tempfile
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
@@ -51,7 +52,7 @@ def load_manifest(path: Path, trace_path: Path) -> tuple[dict, list[float]]:
         raise SystemExit("RAG scene currently requires four manifest beats: chunking, vectors, retrieval, context")
     declared = {(path.parent / beat["trace"]).resolve()
                 for beat in data["beats"] if beat.get("trace")}
-    if declared and declared != {trace_path.resolve()}:
+    if len(declared) != 1 or declared != {trace_path.resolve()} or any(not beat.get("trace") for beat in data["beats"]):
         raise SystemExit("manifest trace path does not resolve to the selected --trace input")
     return data, [float(beat["sec"]) for beat in data["beats"]]
 
@@ -98,28 +99,38 @@ def scene_digest() -> str:
 
 
 def render_threejs(trace_path: Path, duration: float, out_dir: Path, mode: str) -> Path:
+    out_dir.mkdir(parents=True, exist_ok=True)
     projection_path = out_dir / "embedding_space_3d.json"
     video_path = out_dir / "embedding_threejs.mp4"
+    served_dir = THREE / "output"
+    served_dir.mkdir(parents=True, exist_ok=True)
+    fd, served_name = tempfile.mkstemp(prefix="rag-projection-", suffix=".json", dir=served_dir)
+    os.close(fd)
+    served_projection = Path(served_name)
     env = os.environ.copy()
     env.update({"V10_AI_TRACE": str(trace_path.resolve()),
-                "V10_THREE_PROJECTION": str(projection_path.resolve()),
+                "V10_THREE_PROJECTION": str(served_projection.resolve()),
                 "V10_THREE_VIDEO": str(video_path.resolve()),
                 "V10_THREE_DURATION": str(duration), "V10_THREE_FPS": "30"})
-    run(["npm", "run", "build:data"], cwd=THREE, env=env)
-    projection = json.loads(projection_path.read_text(encoding="utf-8"))
-    manifest = video_path.with_suffix(".manifest.json")
-    current = json.loads(manifest.read_text(encoding="utf-8")) if manifest.is_file() else {}
-    expected = {"source_trace_sha256": projection["source_trace_sha256"],
-                "scene_sha256": scene_digest(), "duration_sec": duration,
-                "fps": 30, "width": 1920, "height": 1080}
-    fresh = video_path.is_file() and all(current.get(key) == value for key, value in expected.items())
-    if fresh:
-        print("Reusing Three.js capture with matching trace, scene code and render options")
-    else:
-        run(["npm", "run", "render:video"], cwd=THREE, env=env)
-    if not video_path.is_file():
-        raise RuntimeError(f"Three.js capture did not produce {video_path}")
-    return video_path
+    try:
+        run(["npm", "run", "build:data"], cwd=THREE, env=env)
+        projection = json.loads(served_projection.read_text(encoding="utf-8"))
+        shutil.copyfile(served_projection, projection_path)
+        manifest = video_path.with_suffix(".manifest.json")
+        current = json.loads(manifest.read_text(encoding="utf-8")) if manifest.is_file() else {}
+        expected = {"source_trace_sha256": projection["source_trace_sha256"],
+                    "scene_sha256": scene_digest(), "duration_sec": duration,
+                    "fps": 30, "width": 1920, "height": 1080}
+        fresh = video_path.is_file() and all(current.get(key) == value for key, value in expected.items())
+        if fresh:
+            print("Reusing Three.js capture with matching trace, scene code and render options")
+        else:
+            run(["npm", "run", "render:video"], cwd=THREE, env=env)
+        if not video_path.is_file():
+            raise RuntimeError(f"Three.js capture did not produce {video_path}")
+        return video_path
+    finally:
+        served_projection.unlink(missing_ok=True)
 
 
 def has_vectors(trace: dict) -> bool:
@@ -245,33 +256,56 @@ def main() -> None:
 
     use_three = args.with_threejs
     selection_reason = "Three.js explicitly required" if args.with_threejs else "Manim only"
+    attempts = []
     if args.auto_threejs and has_vectors(trace) and threejs_available():
         use_three = True
         selection_reason = "recorded query/chunk vectors and local browser runtime available"
     elif args.auto_threejs:
         selection_reason = ("recorded vector representation unavailable" if not has_vectors(trace)
                             else "local Three.js/browser dependency unavailable")
+        attempts.append({"renderer": "threejs", "status": "skipped", "reason": selection_reason})
         print("Three.js fallback: useful vector view unavailable or browser dependencies missing; using Manim")
     if use_three and not has_vectors(trace):
         if args.with_threejs:
             raise SystemExit("Three.js requires recorded query and chunk vectors; use the Manim score view")
         use_three = False
         selection_reason = "trace has no query/chunk vectors"
+        attempts.append({"renderer": "threejs", "status": "skipped", "reason": selection_reason})
         print("Three.js fallback: trace has no vector representation; using Manim")
 
-    manim_video = render_manim(args.mode, trace_path, manifest_path, durations, args.output_dir)
-    if not manim_video.is_file():
-        raise SystemExit(f"Manim render missing: {manim_video}")
+    manim_attempt = {"renderer": "manim", "status": "started"}
+    attempts.append(manim_attempt)
+    try:
+        manim_video = render_manim(args.mode, trace_path, manifest_path, durations, args.output_dir)
+        if not manim_video.is_file():
+            raise RuntimeError(f"Manim render missing: {manim_video}")
+        manim_attempt.update({"status": "success", "output": str(manim_video)})
+    except (OSError, RuntimeError, subprocess.CalledProcessError) as exc:
+        manim_attempt.update({"status": "failed", "error_type": type(exc).__name__, "error": str(exc)})
+        (args.output_dir / "renderer_selection.json").write_text(json.dumps({
+            "requested": "threejs_required" if args.with_threejs else "auto" if args.auto_threejs else "manim_only",
+            "selected": None, "reason": "base Manim render failed", "trace_id": trace["trace_id"],
+            "renderer_attempts": attempts,
+        }, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        raise
     video = manim_video
     if use_three:
         beat_start = sum(durations[:1])
         segment = None
         try:
+            attempts.append({"renderer": "threejs", "status": "started"})
             segment = render_threejs(trace_path, durations[1], args.output_dir, args.mode)
             video = integrate_threejs(manim_video, segment, args.mode, beat_start,
                                       durations[1], total, args.output_dir)
+            attempts[-1].update({"status": "success", "output": str(video)})
         except (OSError, RuntimeError, subprocess.CalledProcessError) as exc:
+            attempts[-1].update({"status": "failed", "error_type": type(exc).__name__, "error": str(exc)})
             if args.with_threejs:
+                (args.output_dir / "renderer_selection.json").write_text(json.dumps({
+                    "requested": "threejs_required", "selected": None,
+                    "reason": "required Three.js renderer failed", "trace_id": trace["trace_id"],
+                    "renderer_attempts": attempts,
+                }, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
                 raise
             selection_reason = f"Three.js failed ({type(exc).__name__}: {exc}); full Manim timeline retained"
             print(f"Three.js fallback: {type(exc).__name__}: {exc}; keeping complete Manim render")
@@ -284,6 +318,7 @@ def main() -> None:
         "trace_id": trace["trace_id"],
         "threejs_interval_sec": {"start": durations[0], "end": durations[0]+durations[1]}
             if use_three else None,
+        "renderer_attempts": attempts,
     }, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
     audio_args = (args.audio_source, args.audio_manifest, args.caption_timing)

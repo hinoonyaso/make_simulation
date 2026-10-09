@@ -1,0 +1,69 @@
+{
+  "schema": "mechanism-capability-catalog/v1",
+  "levels": {
+    "L1": "Explainable illustration; no execution evidence",
+    "L2": "Trace Replay; recorded data validated and replayable",
+    "L3": "Executable Simulation; new computation/model/physics data generated",
+    "L4": "Full Production; execution or validated trace through render, review and delivery workflow"
+  },
+  "domains": {
+    "robotics": ["ros2", "tf2", "urdf_xacro", "robot_kinematics", "forward_kinematics", "inverse_kinematics", "jacobian", "joint_control", "motion_planning", "moveit2", "ompl", "navigation2", "dwb", "mppi", "teb", "a_star", "dijkstra", "theta_star", "slam", "localization", "amcl", "ekf_ukf", "sensor_fusion", "lidar", "odometry", "occupancy_grid", "costmap", "collision_detection", "manipulation", "grasping", "robot_arm", "mobile_robot", "amr_agv", "humanoid", "quadruped", "mobile_manipulator"],
+    "physical_ai": ["vla", "vision_language_model", "world_model", "reinforcement_learning", "imitation_learning", "behavior_cloning", "diffusion_policy", "robot_learning", "sim2real", "robot_perception", "object_6d_pose", "grasp_planning", "motion_prediction", "contact_dynamics", "robot_simulation"],
+    "ai_deep_learning": ["neural_network", "mlp", "cnn", "rnn", "transformer", "self_attention", "cross_attention", "multi_head_attention", "tokenization", "embedding", "softmax", "backpropagation", "gradient_descent", "optimizers", "lora", "qlora", "llm_inference", "prefill_decode", "kv_cache", "rag", "hybrid_retrieval", "reranking", "vector_search", "ai_agents", "tool_calling", "mcp", "multi_agent_systems", "quantization", "nms_numeric"],
+    "computer_vision": ["image_preprocessing", "convolution", "object_detection", "yolo", "classification", "segmentation", "pose_estimation", "depth_estimation", "object_tracking", "optical_flow", "stereo_vision", "camera_calibration", "feature_extraction", "feature_matching", "ocr", "vlm_perception", "vision_manipulation", "nms"],
+    "edge_ai": ["onnx", "onnx_runtime", "tensorrt", "tensorrt_llm", "cuda", "gpu_npu", "jetson", "raspberry_pi_ai", "rk3588", "model_quantization", "int8", "int4", "fp16", "bf16", "fp8", "ptq_qat", "pruning", "distillation", "memory_optimization", "model_conversion", "edge_inference", "latency_throughput", "power_memory_constraints"],
+    "mcu_embedded": ["stm32", "esp32", "arduino", "arm_cortex_m", "interrupts", "timers", "pwm", "adc_dac", "dma", "uart_spi_i2c_can", "encoder", "motor_control", "mcu_pid", "pid", "state_machines", "freertos", "rtos_scheduling", "memory_layout", "communication_protocols", "micro_ros", "robotics_firmware", "realtime_control"],
+    "systems_infrastructure": ["linux", "networking", "ipc", "distributed_systems", "docker", "gpu_scheduling", "inference_serving", "mlops", "llmops", "ai_workflow", "rag_infrastructure", "vector_databases", "benchmarking", "performance_profiling"]
+  },
+  "aliases": {
+    "rag": ["retrieval augmented generation", "naive rag", "advanced rag"],
+    "quantization": ["model quantization", "int8 quantization", "int4 quantization"],
+    "nms": ["non maximum suppression", "non-maximum suppression"],
+    "mcu_pid": ["motor pid", "embedded pid", "pwm pid"],
+    "robot_kinematics": ["mujoco h1 arm", "unitree h1 arm"]
+  },
+  "overrides": {
+    "rag": {
+      "domain": "ai_deep_learning", "support_level": "L3", "implementation_status": "ready",
+      "adapter": "core.mechanism.adapters.rag:RAGAdapter", "execution_backend": "local TF-IDF/cosine or saved trace",
+      "trace_schema": "ai-mechanism-trace/v1", "renderers": ["manim", "threejs"],
+      "software_requirements": ["Python 3.12", "Manim", "optional Node/Playwright/Chromium"],
+      "known_limitations": ["Fresh execution is lexical only; no semantic embedding model or answer LLM.", "Default production is a silent technical render; narration/reviewer evidence is not automatically completed by the CLI."]
+    },
+    "quantization": {
+      "domain": "ai_deep_learning", "support_level": "L3", "implementation_status": "ready",
+      "adapter": "core.mechanism.adapters.quantization:QuantizationAdapter", "execution_backend": "NumPy",
+      "trace_schema": "mechanism-envelope/v1", "renderers": ["manim"],
+      "supported_features": ["weight-only", "weight+activation", "symmetric/asymmetric", "per-tensor/per-channel", "INT8/INT4", "dequantization/error"],
+      "software_requirements": ["Python 3.12", "NumPy"],
+      "known_limitations": ["Reference arithmetic simulation only; no accelerator kernel or model-quality benchmark."]
+    },
+    "nms": {
+      "domain": "computer_vision", "support_level": "L3", "implementation_status": "ready",
+      "adapter": "core.mechanism.adapters.nms:NMSAdapter", "execution_backend": "NumPy",
+      "trace_schema": "mechanism-envelope/v1", "renderers": ["manim"],
+      "supported_features": ["confidence filtering", "IoU", "greedy NMS"],
+      "software_requirements": ["Python 3.12", "NumPy"],
+      "known_limitations": ["Synthetic candidates; no YOLO model inference, image preprocessing, or dataset accuracy claim."]
+    },
+    "mcu_pid": {
+      "domain": "mcu_embedded", "support_level": "L3", "implementation_status": "ready",
+      "adapter": "core.mechanism.adapters.mcu_pid:MCUPIDAdapter", "execution_backend": "deterministic discrete-time motor model",
+      "trace_schema": "mechanism-envelope/v1", "renderers": ["manim"],
+      "supported_features": ["sampled PID", "PWM saturation", "first-order motor response", "encoder feedback"],
+      "known_limitations": ["Numerical toy plant only; no firmware, peripheral simulator, or physical board measurement."]
+    },
+    "robot_kinematics": {
+      "domain": "robotics", "support_level": "L3", "implementation_status": "ready",
+      "adapter": "core.mechanism.adapters.mujoco_arm:MuJoCoArmAdapter", "execution_backend": "MuJoCo 3.7.0",
+      "trace_schema": "robotics-visual-trace/v1", "renderers": ["manim"],
+      "asset_requirements": ["blender.unitree_h1.v1"], "software_requirements": ["Python 3.12", "MuJoCo 3.7.0"],
+      "hardware_requirements": [], "benchmark_requirements": ["fixed-base H1 model, timestep, controller settings"],
+      "known_limitations": ["Fixed-pelvis H1 arm experiment; no ROS2/hardware claim. Existing V10 renderer is a silent technical PoC."]
+    },
+    "mppi": {"domain": "robotics", "support_level": "L2", "implementation_status": "pilot_replay_only", "trace_schema": "robotics-visual-trace/v1", "renderers": ["manim", "blender"], "known_limitations": ["Existing topic material only; no general Nav2 MPPI execution adapter."]},
+    "dwb": {"domain": "robotics", "support_level": "L2", "implementation_status": "pilot_replay_only", "trace_schema": "robotics-visual-trace/v1", "renderers": ["manim", "blender"], "known_limitations": ["Existing topic material only; no general Nav2 DWB execution adapter."]},
+    "teb": {"domain": "robotics", "support_level": "L2", "implementation_status": "pilot_replay_only", "trace_schema": "robotics-visual-trace/v1", "renderers": ["manim", "blender"], "known_limitations": ["Existing topic material only; no general TEB planner execution adapter."]},
+    "a_star": {"domain": "robotics", "support_level": "L2", "implementation_status": "pilot_replay_only", "trace_schema": "robotics-visual-trace/v1", "renderers": ["manim", "blender"], "known_limitations": ["Existing topic material only; no general planner execution adapter."]}
+  }
+}

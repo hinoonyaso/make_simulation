@@ -16,6 +16,14 @@ spec.loader.exec_module(manifest_validator)
 producer_spec = importlib.util.spec_from_file_location("produce_ai_video", ROOT / "scripts/produce_ai_video.py")
 producer = importlib.util.module_from_spec(producer_spec)
 producer_spec.loader.exec_module(producer)
+projection_spec = importlib.util.spec_from_file_location(
+    "v10_projection", ROOT / "pilots/v10_threejs_rag/scripts/build_projection.py")
+projection_module = importlib.util.module_from_spec(projection_spec)
+projection_spec.loader.exec_module(projection_module)
+rag_build_spec = importlib.util.spec_from_file_location(
+    "v10_build_video", ROOT / "pilots/v10_rag_poc/build_video.py")
+rag_build = importlib.util.module_from_spec(rag_build_spec)
+rag_build_spec.loader.exec_module(rag_build)
 
 
 class DirectorTraceRoutingTests(unittest.TestCase):
@@ -73,6 +81,31 @@ class DirectorTraceRoutingTests(unittest.TestCase):
              "score": item["value"]} for item in expected])
         self.assertEqual(projection["retrieval"]["top_k_ids"],
                          trace["outputs"][0]["retrieved_ids"])
+
+    def test_threejs_projection_handles_zero_total_variance(self):
+        import numpy as np
+        coordinates, ratios = projection_module.project_matrix(np.ones((4, 3)))
+        self.assertTrue(np.isfinite(coordinates).all())
+        self.assertTrue(np.isfinite(ratios).all())
+        self.assertTrue(np.all(coordinates == 0))
+        self.assertTrue(np.all(ratios == 0))
+
+    def test_rag_manifest_requires_all_beats_to_reference_selected_trace(self):
+        source_trace = ROOT / "pilots/v10_rag_poc/data/ai_trace.json"
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            manifest = json.loads((ROOT / "pilots/v10_rag_poc/visual_manifest.json").read_text())
+            manifest_path = root / "visual_manifest.json"
+            for beat in manifest["beats"]:
+                beat["trace"] = str(source_trace)
+            manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+            loaded, durations = rag_build.load_manifest(manifest_path, source_trace)
+            self.assertEqual(len(loaded["beats"]), 4)
+            self.assertEqual(len(durations), 4)
+            del manifest["beats"][2]["trace"]
+            manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+            with self.assertRaisesRegex(SystemExit, "shared trace path"):
+                rag_build.load_manifest(manifest_path, source_trace)
 
     def test_production_cli_routes_rag_to_validated_manim_pipeline(self):
         def fake_render(command, **_kwargs):

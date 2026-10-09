@@ -45,7 +45,13 @@ class AssetFactory:
 
     @staticmethod
     def _hash_path(path: Path) -> str:
+        if path.is_symlink():
+            raise ValueError(f"asset symlinks are not allowed: {path}")
         digest = hashlib.sha256()
+        if path.is_dir():
+            links = [p for p in path.rglob("*") if p.is_symlink()]
+            if links:
+                raise ValueError(f"asset contains symlink: {links[0]}")
         files = [path] if path.is_file() else sorted(p for p in path.rglob("*") if p.is_file())
         if not files:
             raise ValueError(f"asset has no files: {path}")
@@ -59,6 +65,9 @@ class AssetFactory:
 
     def validate_asset(self, asset_id: str) -> dict:
         entry = self._entry(asset_id)
+        declared_path = self.root / entry["source"]
+        if declared_path.is_symlink():
+            raise ValueError(f"asset source symlink is not allowed: {declared_path}")
         path = self.resolve_asset(asset_id)
         if not path.exists():
             raise FileNotFoundError(path)
@@ -70,32 +79,65 @@ class AssetFactory:
                 "file_count": 1 if path.is_file() else sum(1 for p in path.rglob("*") if p.is_file()),
                 "license": entry.get("license"), "validation": "local_files_present"}
 
-    def _cache_key(self, asset_id: str, source_hash: str, target: str) -> str:
+    def _converter_spec(self, asset_id: str, converter=None, converter_id=None,
+                        converter_version=None, converter_config=None) -> dict:
+        entry = self._entry(asset_id)
+        if converter is not None:
+            callable_name = f"{getattr(converter, '__module__', type(converter).__module__)}.{getattr(converter, '__qualname__', type(converter).__qualname__)}"
+        else:
+            callable_name = "unselected-converter"
+        config = converter_config if converter_config is not None else entry.get("converter_config", {})
+        try:
+            config_json = json.dumps(config, sort_keys=True, separators=(",", ":"), ensure_ascii=False, allow_nan=False)
+        except (TypeError, ValueError) as exc:
+            raise ValueError(f"converter configuration must be finite JSON data: {exc}") from exc
+        return {"id": converter_id or entry.get("converter_id") or callable_name,
+                "version": str(converter_version or entry.get("converter_version", "unversioned")),
+                "config": json.loads(config_json)}
+
+    def _cache_key(self, asset_id: str, source_hash: str, target: str,
+                   converter_spec: dict) -> str:
         entry = self._entry(asset_id)
         payload = {"asset_id": asset_id, "source_sha256": source_hash,
                    "target_format": target.lower(), "source_revision": entry.get("source_commit"),
-                   "factory_version": 1}
+                   "converter": converter_spec, "factory_version": 2}
         return hashlib.sha256(json.dumps(payload, sort_keys=True).encode()).hexdigest()
 
-    def get_cached_asset(self, asset_id: str, target_format: str) -> Path | None:
+    def get_cached_asset(self, asset_id: str, target_format: str, *, converter=None,
+                         converter_id=None, converter_version=None,
+                         converter_config=None) -> Path | None:
         report = self.validate_asset(asset_id)
-        key = self._cache_key(asset_id, report["sha256"], target_format)
+        spec = self._converter_spec(asset_id, converter, converter_id,
+                                    converter_version, converter_config)
+        key = self._cache_key(asset_id, report["sha256"], target_format, spec)
         folder = self.cache_root / asset_id / key
         meta_path = folder / "asset.json"
         if not meta_path.is_file():
             return None
         meta = json.loads(meta_path.read_text(encoding="utf-8"))
-        artifact = folder / meta.get("artifact", "")
+        artifact_rel = Path(meta.get("artifact", ""))
+        declared_artifact = folder / artifact_rel
+        artifact = declared_artifact.resolve()
+        if (artifact_rel.is_absolute() or declared_artifact.is_symlink() or
+                not artifact.is_relative_to(folder.resolve())):
+            return None
         if (meta.get("source_sha256") != report["sha256"] or
-                meta.get("target_format") != target_format.lower() or not artifact.is_file()):
+                meta.get("target_format") != target_format.lower() or
+                meta.get("converter") != spec or not artifact.is_file() or artifact.is_symlink()):
             return None
         if self._hash_path(artifact) != meta.get("artifact_sha256"):
             return None
         return artifact
 
     def convert_asset(self, asset_id: str, target_format: str,
-                      converter: Callable[[Path, Path, dict], Path] | None = None) -> Path:
-        cached = self.get_cached_asset(asset_id, target_format)
+                      converter: Callable[[Path, Path, dict], Path] | None = None, *,
+                      converter_id: str | None = None, converter_version: str | None = None,
+                      converter_config: dict | None = None) -> Path:
+        spec = self._converter_spec(asset_id, converter, converter_id,
+                                    converter_version, converter_config)
+        cached = self.get_cached_asset(asset_id, target_format, converter=converter,
+                                       converter_id=converter_id, converter_version=converter_version,
+                                       converter_config=converter_config)
         if cached:
             return cached
         if converter is None:
@@ -103,7 +145,7 @@ class AssetFactory:
         entry = self._entry(asset_id)
         source = self.resolve_asset(asset_id)
         source_hash = self.validate_asset(asset_id)["sha256"]
-        key = self._cache_key(asset_id, source_hash, target_format)
+        key = self._cache_key(asset_id, source_hash, target_format, spec)
         self.cache_root.mkdir(parents=True, exist_ok=True)
         staging = Path(tempfile.mkdtemp(prefix="asset-convert-", dir=self.cache_root))
         try:
@@ -119,7 +161,8 @@ class AssetFactory:
             relative = result.relative_to(staging).as_posix()
             metadata = {"asset_id": asset_id, "source_sha256": source_hash,
                         "target_format": target_format.lower(), "artifact": relative,
-                        "artifact_sha256": artifact_hash, "source_revision": entry.get("source_commit")}
+                        "artifact_sha256": artifact_hash, "source_revision": entry.get("source_commit"),
+                        "converter": spec}
             (destination / "asset.json").write_text(json.dumps(metadata, indent=2) + "\n")
             return destination / relative
         finally:

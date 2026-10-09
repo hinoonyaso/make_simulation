@@ -35,6 +35,9 @@ def _trace_validator(trace_path):
         if schema == "ai-mechanism-trace/v1":
             validator_path = BUNDLE / "core/ai-mechanism/rag_trace.py"
             module_name = "validate_ai_trace"
+        elif schema == "mechanism-envelope/v1":
+            validator_path = BUNDLE / "core/mechanism/trace_contract.py"
+            module_name = "validate_mechanism_envelope"
         elif isinstance(schema, str) and schema.startswith("robotics-visual-trace/"):
             validator_path = BUNDLE / "core/shared-data/validate_trace.py"
             module_name = "validate_trace"
@@ -46,8 +49,12 @@ def _trace_validator(trace_path):
                 return [f"could not load validator for schema {schema!r}"]
             module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(module)
-            errors = (module.validate_trace(data) if schema == "ai-mechanism-trace/v1"
-                      else module.validate(str(target)))
+            if schema == "ai-mechanism-trace/v1":
+                errors = module.validate_trace(data)
+            elif schema == "mechanism-envelope/v1":
+                errors = module.validate_envelope(data)
+            else:
+                errors = module.validate(str(target))
             return list(errors)
         except Exception as exc:
             return [f"trace validation failed safely: {type(exc).__name__}: {exc}"]

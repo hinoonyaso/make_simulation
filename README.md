@@ -30,6 +30,20 @@ uv run python scripts/produce_ai_video.py \
 
 For a fresh local lexical run, replace `--trace ...` with `--document path/to/document.txt --question "your question"`. Preview and final artifacts are written to `pilots/v10_rag_poc/output/runs/`. See the [V10 RAG README](pilots/v10_rag_poc/README.md) for execution limits, validation and optional audio instructions. Remote GitHub Actions and normal-speed audio review must be reported from actual runs; local PASS does not imply either.
 
+## V11 universal mechanism previews
+
+The additive V11 capability registry currently runs RAG, NumPy quantization (weight-only or separate weights and activations), synthetic-candidate IoU/NMS, a numerical MCU PID motor model, and the existing fixed-base MuJoCo H1 arm experiment. Inspect actual levels and limitations before routing a topic:
+
+```bash
+uv run python scripts/inspect_capabilities.py
+uv run python scripts/produce_video.py --topic quantization --preview
+uv run python scripts/produce_video.py --topic nms --preview
+uv run python scripts/produce_video.py --topic mcu_pid --preview
+uv run python scripts/produce_video.py --topic robot_kinematics --robot unitree_h1 --preview
+```
+
+These are silent technical previews, not narrated/reviewed finished videos. Other catalog topics remain planned or trace-only unless the registry says otherwise. See [V11 implementation and limits](docs/v11/IMPLEMENTATION_REPORT.md).
+
 ## Explanation craft
 
 Director now plans the visible cause, decisive comparison/constraint, and consequence of the central question. Manim/Blender expose that evidence with purposeful framing and phrase timing; Reviewer reports educational inspection separately from technical PASS. Narration guidance includes deliberate pauses and Korean terminology pronunciation. The next real preview must demonstrate these changes; existing published videos are unchanged. Reference sources, access limits, decisions, and tradeoffs are in [SOURCE_PATTERNS.md](SOURCE_PATTERNS.md#2026-10-explanation-craft-update-user-selected-references).

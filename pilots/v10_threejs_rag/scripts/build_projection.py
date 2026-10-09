@@ -13,6 +13,32 @@ TRACE_PATH = Path(os.environ.get("V10_AI_TRACE", ROOT / "pilots/v10_rag_poc/data
 OUT = Path(os.environ.get("V10_THREE_PROJECTION", Path(__file__).resolve().parents[1] / "data/embedding_space_3d.json"))
 
 
+def project_matrix(matrix: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    """Project finite rows deterministically; constant data yields zero variance safely."""
+    matrix = np.asarray(matrix, dtype=np.float64)
+    if matrix.ndim != 2 or matrix.shape[0] < 2 or matrix.shape[1] < 1 or not np.isfinite(matrix).all():
+        raise ValueError(f"expected at least two finite vectors with one dimension, got {matrix.shape}")
+    centered = matrix - matrix.mean(axis=0)
+    _, singular_values, vt = np.linalg.svd(centered, full_matrices=False)
+    components = vt[:3].copy()
+    coordinates = centered @ components.T
+    if coordinates.shape[1] < 3:
+        coordinates = np.pad(coordinates, ((0, 0), (0, 3-coordinates.shape[1])))
+    for axis in range(min(3, len(components))):
+        anchor = int(np.argmax(np.abs(components[axis])))
+        if components[axis, anchor] < 0:
+            components[axis] *= -1
+            coordinates[:, axis] *= -1
+    maximum = float(np.abs(coordinates).max())
+    if maximum > 0:
+        coordinates *= 3.4 / maximum
+    variance = singular_values ** 2
+    total_variance = float(variance.sum())
+    ratios = (np.pad(variance[:3] / total_variance, (0, max(0, 3-len(variance[:3]))))
+              if total_variance > np.finfo(np.float64).eps else np.zeros(3, dtype=np.float64))
+    return coordinates, ratios
+
+
 def main() -> None:
     spec = importlib.util.spec_from_file_location(
         "rag_trace", ROOT / "core/ai-mechanism/rag_trace.py")
@@ -30,23 +56,7 @@ def main() -> None:
     matrix = np.asarray([item["value"] for item in vectors] + [query_vector], dtype=np.float64)
     if not vectors or matrix.ndim != 2 or matrix.shape[1] < 1 or not np.isfinite(matrix).all():
         raise SystemExit(f"expected finite, dimension-matched recorded vectors, got {matrix.shape}")
-    centered = matrix - matrix.mean(axis=0)
-    _, singular_values, vt = np.linalg.svd(centered, full_matrices=False)
-    components = vt[:3].copy()
-    coordinates = centered @ components.T
-    if coordinates.shape[1] < 3:
-        coordinates = np.pad(coordinates, ((0, 0), (0, 3-coordinates.shape[1])))
-    # Fix arbitrary SVD signs deterministically for comparable rerenders.
-    for axis in range(min(3, len(components))):
-        anchor = int(np.argmax(np.abs(components[axis])))
-        if components[axis, anchor] < 0:
-            components[axis] *= -1
-            coordinates[:, axis] *= -1
-    maximum = float(np.abs(coordinates).max())
-    if maximum > 0:
-        coordinates *= 3.4 / maximum
-    variance = singular_values ** 2
-    ratios = np.pad(variance[:3] / variance.sum(), (0, max(0, 3-len(variance[:3]))))
+    coordinates, ratios = project_matrix(matrix)
     top_ids = trace["outputs"][0]["retrieved_ids"]
     spec = importlib.util.spec_from_file_location(
         "rag_visual_data", ROOT / "core/ai-mechanism/rag_visual_data.py")

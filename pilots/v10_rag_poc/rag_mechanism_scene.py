@@ -75,7 +75,9 @@ def chunk_range_scene():
 
 
 def beat_time(index, value):
-    return max(.08, value * min(1.0, DURATIONS[index] / DESIGNED[index]))
+    # One frame is the smallest meaningful animation. A longer floor makes
+    # several tiny actions overrun valid short manifest beats.
+    return max(1 / 30, value * min(1.0, DURATIONS[index] / DESIGNED[index]))
 
 
 class RAGMechanismPoC(Scene):
