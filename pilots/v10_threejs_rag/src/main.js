@@ -48,20 +48,25 @@ const colorSelected = new THREE.Color('#34d399');
 const pointObjects = new Map();
 const selectionLines = new Map();
 let dataset;
+const duration = Number(new URLSearchParams(location.search).get('duration') || 8);
 
 function setFrame(seconds) {
   if (!dataset) return;
   const time = Math.max(0, Number(seconds) || 0);
   const chunks = dataset.points.filter(point => point.kind === 'chunk');
-  const shownChunks = Math.min(chunks.length, Math.floor(time / .24));
-  const queryVisible = time >= 2.9;
+  const revealEnd = duration * .42;
+  const shownChunks = Math.min(chunks.length, Math.floor(chunks.length * time / revealEnd));
+  const queryVisible = time >= revealEnd;
+  const topK = dataset.retrieval.top_k_ids.length;
+  const selectionStart = duration * .50;
+  const selectionWindow = Math.max(.1, duration * .42);
   const selectedCount = queryVisible
-    ? Math.max(0, Math.min(3, Math.floor((time - 3.5) / .95) + 1)) : 0;
+    ? Math.max(0, Math.min(topK, Math.floor((time - selectionStart) / (selectionWindow / Math.max(topK, 1))) + 1)) : 0;
 
   chunks.forEach((point, index) => {
     const object = pointObjects.get(point.id);
     object.mesh.visible = index < shownChunks;
-    object.label.visible = index < shownChunks;
+    object.label.visible = index < shownChunks && point.rank <= topK;
     const selected = point.rank && point.rank <= selectedCount;
     object.mesh.material.color.copy(selected ? colorSelected : colorMuted);
     object.mesh.scale.setScalar(selected ? 1.35 : 1.0);
@@ -78,15 +83,15 @@ function setFrame(seconds) {
   }
 
   const list = document.querySelector('#ranking');
-  for (const [index, entry] of dataset.retrieval.ranking.slice(0, 3).entries()) {
+  for (const [index, entry] of dataset.retrieval.ranking.slice(0, topK).entries()) {
     const row = list.children[index];
     row.style.opacity = index < selectedCount ? '1' : '0';
   }
   document.querySelector('#status').textContent = !queryVisible
     ? '문서 청크를 벡터로 바꿉니다'
     : selectedCount
-      ? '원본 384차원 제곱 L2 순위가 차례로 선택됩니다'
-      : '질문 벡터가 들어오고 실제 거리를 비교합니다';
+      ? `기록된 ${dataset.retrieval.metric} 순위로 선택됩니다`
+      : '질문 벡터가 들어오고 실제 점수를 비교합니다';
   controls.update();
   renderer.render(scene, camera);
   window.__renderStats = {pointCount: shownChunks + Number(queryVisible), selectedIds:
@@ -95,11 +100,17 @@ function setFrame(seconds) {
     drawCalls: renderer.info.render.calls};
 }
 
-fetch('/data/embedding_space_3d.json').then(response => {
+const projectionUrl = new URLSearchParams(location.search).get('projection') || 'data/embedding_space_3d.json';
+fetch(projectionUrl).then(response => {
   if (!response.ok) throw new Error(`projection load failed: ${response.status}`);
   return response.json();
 }).then(data => {
   dataset = data;
+  document.querySelector('header h1').textContent = data.vector_label || '문서와 질문의 벡터 공간';
+  document.querySelector('header p').textContent =
+    `${data.points.filter(point => point.kind === 'chunk').length}개 청크와 질문의 표시 투영 → 기록된 ${data.retrieval.metric} 순위`;
+  document.querySelector('#selected-label').textContent = `검색 Top ${data.retrieval.top_k}`;
+  document.querySelector('#status').textContent = `원본 ${data.source_dimension}차원 벡터의 점수 순위를 재생합니다`;
   const grid = new THREE.GridHelper(7, 14, 0x334155, 0x1e293b);
   grid.position.y = -2.15;
   plot.add(grid);
@@ -117,8 +128,7 @@ fetch('/data/embedding_space_3d.json').then(response => {
         emissiveIntensity: isQuery ? .3 : .05, roughness: .34, metalness: .12}));
     mesh.position.copy(p);
     const label = makeLabel(isQuery ? '질문' : point.id, isQuery ? '#38bdf8' : '#dce3ed');
-    const labelOffsets = {C02: [-.30, .28, 0], C04: [-.35, .08, 0], C01: [.22, .32, 0]};
-    const offset = labelOffsets[point.id] || [0, .24, 0];
+    const offset = [0, (point.rank && point.rank % 2 ? .28 : .22), 0];
     label.position.copy(p).add(new THREE.Vector3(...offset));
     mesh.visible = false;
     label.visible = false;
@@ -126,7 +136,7 @@ fetch('/data/embedding_space_3d.json').then(response => {
     pointObjects.set(point.id, {mesh, label});
   }
   const queryPoint = data.points.find(point => point.id === data.query_id);
-  for (const item of data.retrieval.ranking.slice(0, 3)) {
+  for (const item of data.retrieval.ranking.slice(0, data.retrieval.top_k)) {
     const point = data.points.find(candidate => candidate.id === item.id);
     const geometry = new THREE.BufferGeometry().setFromPoints([
       new THREE.Vector3(...queryPoint.xyz), new THREE.Vector3(...point.xyz)]);
@@ -137,16 +147,16 @@ fetch('/data/embedding_space_3d.json').then(response => {
     selectionLines.set(point.id, line);
   }
   const list = document.querySelector('#ranking');
-  for (const item of data.retrieval.ranking.slice(0, 3)) {
+  for (const item of data.retrieval.ranking.slice(0, data.retrieval.top_k)) {
     const row = document.createElement('li');
-    row.textContent = `${item.id} · d² ${item.squared_l2_distance.toFixed(4)}`;
-    row.classList.toggle('rank-selected', item.rank <= 3);
+    row.textContent = `${item.id} · ${Number(item.score).toFixed(4)}`;
+    row.classList.toggle('rank-selected', item.rank <= data.retrieval.top_k);
     list.appendChild(row);
   }
   window.__dataReady = true;
   window.setFrame = setFrame;
   setFrame(0);
-  if (!captureMode) renderer.setAnimationLoop(ms => setFrame((ms / 1000) % 8));
+  if (!captureMode) renderer.setAnimationLoop(ms => setFrame((ms / 1000) % duration));
 }).catch(error => {
   console.error(error);
   document.querySelector('#status').textContent = `오류: ${error.message}`;

@@ -14,6 +14,35 @@ Phase 4 Three.js: **PARTIAL PASS**. A 3D PCA view of 11 actual chunk vectors plu
 
 Phase 5 integration: **PARTIAL / NOT_RUN**. No changes to Director/renderer skills, routing, manifest schema or cross-stage caching. Existing V9 is preserved while compatibility coverage is built around the additive trace.
 
+## Stabilization follow-up (2026-10-09)
+
+The previous Phase 5 status above is historical. The follow-up below implements a bounded RAG production path; it does not complete every V10 target.
+
+| Area | Status | Evidence / limit |
+|---|---|---|
+| AI/Robotics manifest trace dispatch | Implemented; local tests pass | Missing, malformed, unreadable, non-object, unknown-schema, empty and incomplete inputs return clear errors. Robotics regression covered by unit test. |
+| Generic RAG scene | Implemented; local tests pass | Chunk IDs/count, ranges, overlap, query/vector dimensions, metric direction and Top-K come from trace data. Datasets A/B/C/D run in unit tests. |
+| Fresh Execute mode | Implemented and rendered | New Korean document/query used local TF-IDF lexical vectors and cosine similarity. This is not semantic embedding or LLM execution. |
+| Director CLI | Implemented; mock routing tests pass | Supports `rag` only, rejects unsupported topics, and runs validation → preview → technical QA → final. |
+| Optional Three.js | Integrated; local browser and MP4 capture passed | Same trace hash, query/chunk IDs, recorded scores and manifest timeline. Auto fallback to Manim is recorded; local fallback was covered through routing tests. |
+| GitHub Actions | Workflow definitions updated | Push/PR fast checks and manual render workflow are configured. Remote GitHub Actions were not run in this task. |
+| Final video | Rendered and full-decode validated | `pilots/v10_rag_poc/output/runs/rag-dbb54184b8/rag_video.mp4`, 34 s, 1920×1080, 30 fps, H.264, silent. |
+| Reviewer inspection | Sampled final frames inspected | No blocker/high defect in the inspected frames. Full normal-speed playback, audio, narration timing and novice comprehension are incomplete/not applicable for this silent render. |
+
+Commands and outcomes for this follow-up:
+
+- `uv run python -m unittest discover -s tests -v`: **PASS**, 27 tests, including existing MuJoCo tests.
+- `uv run python scripts/produce_ai_video.py --topic rag --trace pilots/v10_rag_poc/data/ai_trace.json --render manim --preview-only --silent --output-root /tmp/v10_rag_replay_check`: **PASS**, checked-in trace replayed to a 34-second manifest-timed preview and full-decode QA passed.
+- `uv run python scripts/check_scene_style.py pilots/v10_rag_poc/rag_mechanism_scene.py`: **PASS**.
+- `uv run python scripts/validate_ai_trace.py pilots/v10_rag_poc/output/runs/rag-dbb54184b8/ai_trace.json`: **PASS**, 4 operations / 81 intermediate values.
+- `uv run python core/robotics-ai-visual-director-skill/templates/validate_visual_manifest.py pilots/v10_rag_poc/visual_manifest.json`: **PASS**.
+- `uv run python scripts/validate_delivery.py pilots/v10_rag_poc/output/runs/rag-dbb54184b8/rag_video.mp4 --fps 30 --full-decode`: **PASS**, 1920×1080 H.264, 30 fps, no audio stream, full decode.
+- Local `npm run test:browser` and configurable Three.js video capture: **PASS** in Chromium/WebGL, and MP4 capture completed. This is not a GitHub CI result.
+
+The fresh trace has 27 chunks, 214 TF-IDF features, cosine similarity (higher is better), and Top-5 `chunk-004`, `chunk-021`, `chunk-011`, `chunk-022`, `chunk-025`. The Three.js presentation interval is 8.5–17 seconds from the V9 beat manifest. These values are copied from the actual execution trace; PCA coordinates are only a lossy display projection.
+
+No production/render wall-time comparison or static-frame ratio comparison was made. No normal-speed full-video/audio review was performed. The replay and fresh execution commands ran from the current checkout; a separate clean Git clone was not created for this follow-up. Do not label these unperformed checks as PASS.
+
 ## Implementation
 
 - Added `core/ai-mechanism/rag_trace.py` to adapt saved Naive RAG runs and validate the independent AI trace contract.

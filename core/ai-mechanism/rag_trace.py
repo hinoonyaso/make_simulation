@@ -122,14 +122,23 @@ def adapt_rag_run(run_path: str | Path, output_path: str | Path) -> dict[str, An
 
 def validate_trace(trace: dict[str, Any]) -> list[str]:
     errors: list[str] = []
+    if not isinstance(trace, dict):
+        return ["trace root must be an object"]
     if trace.get("schema") != SCHEMA:
         errors.append(f"schema must be {SCHEMA}")
     for field in ("inputs", "operations", "transitions", "intermediate_values", "outputs"):
         if not isinstance(trace.get(field), list) or not trace[field]:
             errors.append(f"{field} must be a non-empty list")
+    # Stop structural walking when one of the core collections has the wrong type.
+    if any(not isinstance(trace.get(field), list) for field in
+           ("inputs", "operations", "transitions", "intermediate_values", "outputs")):
+        return errors
     ids: set[str] = set()
     for group in ("inputs", "operations", "intermediate_values", "outputs"):
         for item in trace.get(group, []):
+            if not isinstance(item, dict):
+                errors.append(f"{group} item must be an object")
+                continue
             item_id = item.get("id")
             if not isinstance(item_id, str) or not item_id:
                 errors.append(f"{group} item missing id")
@@ -137,20 +146,26 @@ def validate_trace(trace: dict[str, Any]) -> list[str]:
                 errors.append(f"duplicate data id: {item_id}")
             else:
                 ids.add(item_id)
-    op_ids = {o.get("id") for o in trace.get("operations", [])}
+    op_ids = {o.get("id") for o in trace.get("operations", []) if isinstance(o, dict)}
     for tr in trace.get("transitions", []):
+        if not isinstance(tr, dict):
+            errors.append("transitions item must be an object")
+            continue
         if tr.get("operation_id") not in op_ids:
             errors.append(f"transition {tr.get('id')} references unknown operation")
     for op in trace.get("operations", []):
+        if not isinstance(op, dict):
+            continue
         if op.get("evidence") not in {"model_execution", "reported_result", "toy_simulation", "illustration"}:
             errors.append(f"operation {op.get('id')} has invalid evidence")
         elapsed = op.get("execution_time_seconds")
         if elapsed is not None and (not isinstance(elapsed, (int, float)) or
                                     not math.isfinite(elapsed) or elapsed < 0):
             errors.append(f"operation {op.get('id')} execution_time_seconds must be null or nonnegative finite seconds")
-    values = {v.get("id"): v for v in trace.get("intermediate_values", [])}
+    values = {v.get("id"): v for v in trace.get("intermediate_values", [])
+              if isinstance(v, dict)}
     for item in values.values():
-        if item.get("kind") == "embedding":
+        if item.get("kind") in {"embedding", "feature_vector"}:
             vec = item.get("value")
             if not isinstance(vec, list) or item.get("shape") != [len(vec)] or not vec:
                 errors.append(f"embedding {item.get('id')} shape mismatch")
@@ -161,14 +176,17 @@ def validate_trace(trace: dict[str, Any]) -> list[str]:
             if not isinstance(value, (int, float)) or not math.isfinite(value) or value < 0:
                 errors.append(f"distance {item.get('id')} must be finite and nonnegative")
     for item in trace.get("inputs", []):
+        if not isinstance(item, dict):
+            continue
         vector = item.get("embedding")
         if vector is not None and (not isinstance(vector, list) or not vector or
                                    not all(isinstance(x, (int, float)) and math.isfinite(x) for x in vector)):
             errors.append(f"input {item.get('id')} has invalid embedding")
     dimensions = {len(item["value"]) for item in values.values()
-                  if item.get("kind") == "embedding" and isinstance(item.get("value"), list)}
-    query_dimensions = {len(item["embedding"]) for item in trace.get("inputs", [])
-                        if isinstance(item.get("embedding"), list)}
+                  if item.get("kind") in {"embedding", "feature_vector"}
+                  and isinstance(item.get("value"), list)}
+    query_dimensions = {len(item[key]) for item in trace.get("inputs", []) if isinstance(item, dict)
+                        for key in ("embedding", "features") if isinstance(item.get(key), list)}
     if len(dimensions) > 1 or (dimensions and query_dimensions and dimensions != query_dimensions):
         errors.append("query and document embedding dimensions must match")
     ranked = [v for v in values.values() if v.get("kind") == "squared_l2_distance"]
@@ -180,20 +198,54 @@ def validate_trace(trace: dict[str, Any]) -> list[str]:
         scores = [v["value"] for v in ordered]
         if scores != sorted(scores):
             errors.append("squared-L2 ranking must be ascending")
+    generic_ranked = [v for v in values.values() if v.get("kind") == "retrieval_score"]
+    if generic_ranked:
+        ranks = [v.get("rank") for v in generic_ranked]
+        if any(type(rank) is not int or rank < 1 for rank in ranks) or len(set(ranks)) != len(ranks):
+            errors.append("retrieval ranks must be unique positive integers")
+        retrieval = trace.get("retrieval", {})
+        direction = retrieval.get("direction") if isinstance(retrieval, dict) else None
+        ordered = sorted(generic_ranked, key=lambda v: v.get("rank", 0))
+        scores = [v.get("value") for v in ordered]
+        if not all(isinstance(score, (int, float)) and math.isfinite(score) for score in scores):
+            errors.append("retrieval scores must be finite numbers")
+        elif direction == "ascending" and scores != sorted(scores):
+            errors.append("retrieval scores must be ascending")
+        elif direction == "descending" and scores != sorted(scores, reverse=True):
+            errors.append("retrieval scores must be descending")
+        elif direction not in {"ascending", "descending"}:
+            errors.append("retrieval direction must be ascending or descending")
     known_sources = {v.get("source_id") for v in values.values()}
     known_sources.update(item.get("id") for item in values.values())
     known_sources.update(item.get("id") for item in trace.get("inputs", []))
     for out in trace.get("outputs", []):
+        if not isinstance(out, dict):
+            continue
         for source_id in out.get("retrieved_ids", []):
             if source_id not in known_sources:
                 errors.append(f"output references unknown retrieved source {source_id}")
     provenance = trace.get("provenance", {})
+    if not isinstance(provenance, dict):
+        errors.append("provenance must be an object")
+        provenance = {}
+    retrieval_meta = trace.get("retrieval", {})
+    if not isinstance(retrieval_meta, dict):
+        errors.append("retrieval must be an object")
+        retrieval_meta = {}
     if provenance.get("retrieval_runtime_seconds") is not None:
         elapsed = provenance["retrieval_runtime_seconds"]
         if not isinstance(elapsed, (int, float)) or not math.isfinite(elapsed) or elapsed < 0:
             errors.append("retrieval_runtime_seconds must be null or nonnegative finite seconds")
-    if trace.get("visualization", {}).get("projection_is_lossy") is not True:
+    visualization = trace.get("visualization", {})
+    if not isinstance(visualization, dict):
+        errors.append("visualization must be an object")
+        visualization = {}
+    if visualization.get("projection_is_lossy") is not True:
         errors.append("visualization must disclose lossy projection")
-    if trace.get("visualization", {}).get("render_time_semantics") != "presentation time; not inference latency":
+    if visualization.get("render_time_semantics") != "presentation time; not inference latency":
         errors.append("presentation time must be distinguished from inference latency")
+    if generic_ranked and retrieval_meta.get("top_k") is not None:
+        top_k = retrieval_meta["top_k"]
+        if type(top_k) is not int or top_k < 1:
+            errors.append("retrieval top_k must be a positive integer")
     return errors

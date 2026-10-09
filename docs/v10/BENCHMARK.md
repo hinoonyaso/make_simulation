@@ -55,3 +55,18 @@ The controller's target is not treated as the achieved result: peak target error
 | npm audit | 0 vulnerabilities at run time |
 
 The PCA variance describes only the first three components; the projection is lossy. The 3D geometry does not calculate retrieval. Three.js and browser frame-render time were not separately instrumented, so this experiment makes no speed or cost comparison against Manim. Remotion was not added because the fixed composition rendered through Three.js frame capture + FFmpeg without needing a React timeline.
+
+## Generic RAG execution and integrated video (2026-10-09)
+
+| Item | Observed result |
+|---|---:|
+| Input | New Korean fixture document and query; chunk size 48 chars, overlap 12, Top-K 5 |
+| Execution | 27 chunks; 214-dimensional TF-IDF features; cosine similarity, descending |
+| Selected IDs | `chunk-004`, `chunk-021`, `chunk-011`, `chunk-022`, `chunk-025` |
+| Renderer | Manim plus optional Three.js, selected automatically |
+| Three.js interval | 8.5–17.0 sec from the V9 manifest; source segment 8.5 sec |
+| Final video | 34.00 sec, 1920×1080, 30 fps, H.264, silent, 1,631,439 bytes |
+| Technical decode | `validate_delivery.py --fps 30 --full-decode`: PASS |
+| Unit/regression suite | 27 tests PASS, including Robotics trace routing and MuJoCo tests |
+
+This is a measured local lexical RAG execution and a trace-matched presentation. It does not use semantic embeddings or execute an LLM. The output video has no narration/audio. No render wall-time, static-frame ratio, normal-speed playback, audio quality or viewer learning effect was measured in this run. GitHub Actions definitions were added/updated, but no remote workflow run is claimed.

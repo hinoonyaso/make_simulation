@@ -1,5 +1,6 @@
 from __future__ import annotations
 import importlib.util, json, sys
+from json import JSONDecodeError
 from pathlib import Path
 
 ALLOWED_TOOLS={"M","B","E"}
@@ -9,22 +10,67 @@ TRACE_REQUIRED={"trace_playback","model_execution"}
 BUNDLE=Path(__file__).resolve().parents[3]
 
 def _trace_validator(trace_path):
-    import json
-    schema = json.loads(Path(trace_path).read_text(encoding="utf-8")).get("schema")
-    if schema == "ai-mechanism-trace/v1":
-        spec=importlib.util.spec_from_file_location("validate_ai_trace",BUNDLE/"core/ai-mechanism/rag_trace.py")
-        mod=importlib.util.module_from_spec(spec); spec.loader.exec_module(mod)
-        def validate_ai(path):
-            return mod.validate_trace(json.loads(Path(path).read_text(encoding="utf-8")))
-        return validate_ai
-    spec=importlib.util.spec_from_file_location("validate_trace",BUNDLE/"core/shared-data/validate_trace.py")
-    mod=importlib.util.module_from_spec(spec); spec.loader.exec_module(mod)
-    return mod.validate
+    """Return a path validator that reports file/schema failures as errors."""
+    path = Path(trace_path)
+
+    def validate_trace_file(_path=None):
+        target = Path(_path) if _path is not None else path
+        try:
+            raw = target.read_text(encoding="utf-8")
+        except FileNotFoundError:
+            return [f"missing trace file: {target}"]
+        except PermissionError:
+            return [f"unreadable trace file: {target}"]
+        except OSError as exc:
+            return [f"cannot read trace file {target}: {exc}"]
+        except UnicodeDecodeError as exc:
+            return [f"trace is not valid UTF-8: {exc}"]
+        try:
+            data = json.loads(raw)
+        except JSONDecodeError as exc:
+            return [f"invalid JSON: {exc}"]
+        if not isinstance(data, dict):
+            return ["trace root must be a JSON object"]
+        schema = data.get("schema")
+        if schema == "ai-mechanism-trace/v1":
+            validator_path = BUNDLE / "core/ai-mechanism/rag_trace.py"
+            module_name = "validate_ai_trace"
+        elif isinstance(schema, str) and schema.startswith("robotics-visual-trace/"):
+            validator_path = BUNDLE / "core/shared-data/validate_trace.py"
+            module_name = "validate_trace"
+        else:
+            return [f"unsupported trace schema: {schema!r}"]
+        try:
+            spec = importlib.util.spec_from_file_location(module_name, validator_path)
+            if spec is None or spec.loader is None:
+                return [f"could not load validator for schema {schema!r}"]
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            errors = (module.validate_trace(data) if schema == "ai-mechanism-trace/v1"
+                      else module.validate(str(target)))
+            return list(errors)
+        except Exception as exc:
+            return [f"trace validation failed safely: {type(exc).__name__}: {exc}"]
+
+    return validate_trace_file
 
 def validate(path: str, require_media: bool=False):
     manifest=Path(path).resolve(); base=manifest.parent
-    data=json.loads(manifest.read_text(encoding="utf-8"))
+    try:
+        data=json.loads(manifest.read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        return [f"missing manifest file: {manifest}"], []
+    except PermissionError:
+        return [f"unreadable manifest file: {manifest}"], []
+    except OSError as exc:
+        return [f"cannot read manifest file {manifest}: {exc}"], []
+    except (JSONDecodeError, UnicodeDecodeError) as exc:
+        return [f"invalid manifest JSON: {exc}"], []
+    if not isinstance(data, dict):
+        return ["manifest root must be a JSON object"], []
     beats=data.get("beats") or []
+    if not isinstance(beats, list):
+        return ["beats must be a list"], []
     long_form=data.get("format") == "long_form"
     max_beat_sec=60 if long_form else 20
     max_beats=48 if long_form else 16
@@ -33,6 +79,9 @@ def validate(path: str, require_media: bool=False):
     ids=set()
     for i,b in enumerate(beats):
         tag=f"beats[{i}]"
+        if not isinstance(b, dict):
+            errors.append(f"{tag}: must be an object")
+            continue
         bid=b.get("id")
         if not bid: errors.append(f"{tag}: missing id")
         elif bid in ids: errors.append(f"{tag}: duplicate id {bid}")
@@ -53,7 +102,7 @@ def validate(path: str, require_media: bool=False):
         elif evidence=="toy_simulation" and not trace: warnings.append(f"{tag}: toy_simulation without trace; renderers may invent values")
         if trace:
             tp=(base/trace).resolve()
-            if tp not in checked_traces: checked_traces[tp]=_trace_validator(tp)(str(tp))
+            if tp not in checked_traces: checked_traces[tp]=_trace_validator(tp)()
             errors.extend(f"{tag}: trace {trace}: {e}" for e in checked_traces[tp])
         for field in ("audio","media"):
             value=str(b.get(field,"")).strip()

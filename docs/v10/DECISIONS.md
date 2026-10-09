@@ -48,3 +48,23 @@
 **Evidence:** the browser loads the locally generated projection tied to the AI trace hash, renders all 12 points and the actual top-three links, and reports 29 draw calls. `validate_delivery.py` passes the generated 1920×1080, 30 fps H.264 file.
 
 **Tradeoff:** this produces a video-only 8-second component test, not a narrated episode or a substitute for the 34-second Manim explanation. Browser capture requires a user-level Playwright Chromium download and a host that permits Chromium to start. Remotion is held until a variable React timeline/composition is needed.
+
+## D8 — Provide a truthful local lexical RAG execution mode
+
+**Decision:** let the Director execute local chunking, TF-IDF feature construction, cosine ranking and context assembly when no reusable local semantic model path is available. Label the trace/video as lexical; do not fabricate an embedding-model or LLM answer run.
+
+**Evidence:** a new Korean document/query ran through the local executor, produced 27 trace chunks and 214-dimensional features, passed the AI trace validator and rendered a trace-matched video. Dataset A/B/C/D unit cases cover small/no-overlap, 11-chunk overlap, long/high-count input and variable Top-K.
+
+**Alternative considered:** download or call a semantic model. That adds model/runtime or external service requirements and was not necessary to make the current path reproducible.
+
+**Tradeoff:** lexical overlap is not semantic understanding and may rank paraphrases poorly. Semantic retrieval and answer generation remain unsupported.
+
+## D9 — Keep V9 manifest timing authoritative for integrated RAG
+
+**Decision:** obtain beat durations from one V9-compatible manifest and fit the optional Three.js display to the embedding beat. Key the optional capture on trace identity/hash, scene/runtime source and render settings; record trace IDs and the actual presentation interval in a segment manifest.
+
+**Evidence:** the fresh run used the same AI trace for Manim and Three.js, with a recorded 8.5–17.0 second embedding interval; capture/decode and final integrated full decode passed. No operation latency was inferred from this presentation timeline.
+
+**Alternative considered:** independent renderer timing and fixed 8.5/17/34 second constants. These can drift from the V9 manifest or from different trace content.
+
+**Tradeoff:** Three.js requires local browser tooling and remains optional. The lossy 3D projection explains spatial organization only; it cannot recalculate or justify the retrieval ranking.

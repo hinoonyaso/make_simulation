@@ -12,7 +12,17 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - name: Install lightweight vector projection dependency
+        run: python -m pip install numpy
       - name: Validate checked-in AI execution trace
         run: python scripts/validate_ai_trace.py pilots/v10_rag_poc/data/ai_trace.json
-      - name: Test AI and V9 manifest trace routing
-        run: python -m unittest discover -s tests -p 'test_ai_director_routing.py' -v
+      - name: Validate checked-in V9-compatible RAG manifest
+        run: python core/robotics-ai-visual-director-skill/templates/validate_visual_manifest.py pilots/v10_rag_poc/visual_manifest.json
+      - name: Test AI validator, generic RAG, and V9 trace routing
+        run: python -m unittest discover -s tests -p 'test_ai_*.py' -v
+      - name: Check Python syntax and module import boundaries
+        run: python -m compileall -q core/ai-mechanism scripts/produce_ai_video.py pilots/v10_rag_poc
+      - name: Build trace-matched Three.js projection without browser rendering
+        run: |
+          projection="$(mktemp)"
+          V10_AI_TRACE="$PWD/pilots/v10_rag_poc/data/ai_trace.json" V10_THREE_PROJECTION="$projection" python pilots/v10_threejs_rag/scripts/build_projection.py

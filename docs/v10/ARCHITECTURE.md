@@ -24,15 +24,17 @@ Simulation and rendering remain separate. The RAG PoC adapts a recorded algorith
 
 ## AI trace contract
 
-`ai-mechanism-trace/v1` has inputs, operations, state transitions, intermediate values, outputs, provenance and visualization metadata. Operation timing is nullable. Only a source-measured value is populated: the recorded LLM generation time. Chunking, embedding and retrieval runtimes were not recorded and remain null. Embedding vectors and distances are validated for finiteness and matching dimensions; retrieval ranks must be unique and ordered by the recorded squared-L2 score. Source chunk IDs are preserved through retrieval and context assembly.
+`ai-mechanism-trace/v1` has inputs, operations, state transitions, intermediate values, outputs, provenance and visualization metadata. Operation timing is nullable. A saved model execution retains only source-measured times; the new local lexical execution measures its retrieval loop and labels the implementation. Vector dimensions are data-driven. Squared-L2 traces sort ascending; generic retrieval scores declare their metric and ascending/descending direction. Source chunk IDs are preserved through retrieval and context assembly.
 
 This contract is additive. `core/shared-data/validate_trace.py` remains the validator for robotics traces.
 
 ## RAG primitives and renderer
 
-`core/ai-mechanism/primitives.py` supplies deterministic chunk-window, top-k selection and context assembly helpers with explicit source IDs. The data adapter currently targets the existing `naive-rag-run/v1` record. The Manim PoC shows: (1) document-to-chunk state change, (2) PCA projection of actual embeddings, (3) actual squared-L2 ranking and top-three selection, and (4) those same IDs assembling context. The projection is for display only. The short scene uses real recorded values and retained IDs, not a box-arrow sequence.
+`core/ai-mechanism/primitives.py` supplies deterministic chunk-window, top-k selection and context assembly helpers with explicit source IDs. `rag_visual_data.py` discovers actual chunk ranges, all overlaps, vectors, score direction and ranked IDs. The Manim scene consumes this trace-derived data and the V9 beat durations; it does not name specific chunk IDs or assume squared L2. Dense source ranges are sampled for legibility, with overlap IDs retained. The score and context views keep recorded identities and values.
 
-Narration is cut from the previously approved Naive RAG episode. Captions are selected from the same episode's measured caption timing. No new speech payload was sent to a TTS service.
+Two data paths are implemented: replay a validated saved AI trace, or execute local character chunking → TF-IDF lexical feature generation → cosine similarity ranking → context assembly. The latter requires no model download or external service, and the trace/video disclose that these are lexical features, not semantic embeddings. It performs no answer generation. Other standalone AI topics are rejected until implemented.
+
+`scripts/produce_ai_video.py --topic rag` connects the Director to trace validation, one V9-compatible beat manifest, Manim preview, decode QA and final render. `--render auto` adds the trace-matched Three.js segment if recorded vectors and local browser tooling are ready. Segment duration/position come from manifest beat 2. Cache reuse checks the trace hash, rendering code, locked browser dependencies and output settings. When Three.js fails, `renderer_selection.json` records the reason and retains a complete Manim path. TTS is not invoked automatically. Optional narration uses a full measured audio timeline rather than fixed beat IDs or audio windows.
 
 ## Asset Factory
 
@@ -41,5 +43,5 @@ Narration is cut from the previously approved Naive RAG episode. Captions are se
 ## Deferred target modules
 
 - MuJoCo environment is pinned at 3.7.0 and a headless Unitree H1 model smoke run is available through `scripts/smoke_mujoco.py`. The local adapter records joint/body state and emits a V9-compatible robotics trace projection; a fixed-base H1 arm PoC and Manim trace playback are implemented. Blender mesh replay, hardware/control-system fidelity and full manifest integration remain future work.
-- Three.js: an optional 3D PCA embedding view consumes the same validated AI trace vectors and recorded top-three IDs. A Playwright-managed headless Chromium capture is assembled into a standalone MP4 by FFmpeg. Remotion is deferred because a fixed 8-second composition did not require its React timeline and the existing FFmpeg path already writes the requested media.
-- Director integration, cross-stage cache keys, end-to-end manifest routing and reviewer skill updates: Phase 5 follow-up. Existing V9 behavior remains authoritative until compatibility tests exist.
+- Three.js: an optional 3D PCA display consumes the same validated query/chunk vectors and recorded ranking. PCA is explicitly lossy; it does not choose retrieval results. The browser capture and timeline are runtime-configurable. Remotion remains deferred.
+- Fresh local RAG execution is lexical only. Semantic embedding models and LLM answer generation remain future work; unsupported mechanisms are rejected rather than routed to this lexical path.

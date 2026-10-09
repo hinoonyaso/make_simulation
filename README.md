@@ -17,6 +17,19 @@ Key upgrades:
 
 Start with `ROUTING.md`.
 
+## V10 RAG production
+
+The current runnable V10 AI path supports RAG only. Replay a checked-in AI trace, or execute a new local lexical TF-IDF run from a document and question. It does not claim semantic embeddings or LLM generation. `--render auto` includes the trace-matched Three.js projection when local browser tooling is available and records a Manim fallback otherwise.
+
+```bash
+uv run python scripts/produce_ai_video.py \
+  --topic rag \
+  --trace pilots/v10_rag_poc/data/ai_trace.json \
+  --render auto --silent
+```
+
+For a fresh local lexical run, replace `--trace ...` with `--document path/to/document.txt --question "your question"`. Preview and final artifacts are written to `pilots/v10_rag_poc/output/runs/`. See the [V10 RAG README](pilots/v10_rag_poc/README.md) for execution limits, validation and optional audio instructions. Remote GitHub Actions and normal-speed audio review must be reported from actual runs; local PASS does not imply either.
+
 ## Explanation craft
 
 Director now plans the visible cause, decisive comparison/constraint, and consequence of the central question. Manim/Blender expose that evidence with purposeful framing and phrase timing; Reviewer reports educational inspection separately from technical PASS. Narration guidance includes deliberate pauses and Korean terminology pronunciation. The next real preview must demonstrate these changes; existing published videos are unchanged. Reference sources, access limits, decisions, and tradeoffs are in [SOURCE_PATTERNS.md](SOURCE_PATTERNS.md#2026-10-explanation-craft-update-user-selected-references).

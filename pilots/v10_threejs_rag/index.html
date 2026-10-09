@@ -4,9 +4,9 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>RAG 384D Embedding → 3D PCA</title>
-  <link rel="stylesheet" href="/src/style.css">
+  <link rel="stylesheet" href="src/style.css">
   <script type="importmap">
-  {"imports":{"three":"/node_modules/three/build/three.module.js","three/addons/":"/node_modules/three/examples/jsm/"}}
+  {"imports":{"three":"./node_modules/three/build/three.module.js","three/addons/":"./node_modules/three/examples/jsm/"}}
   </script>
 </head>
 <body>
@@ -18,13 +18,13 @@
   <aside>
     <div class="legend"><i class="query"></i><span>질문 벡터</span></div>
     <div class="legend"><i class="candidate"></i><span>문서 청크</span></div>
-    <div class="legend"><i class="selected"></i><span>실제 검색 Top 3</span></div>
-    <div id="status">실제 384차원 제곱 L2 거리를 비교합니다</div>
+    <div class="legend"><i class="selected"></i><span id="selected-label">검색 Top-K</span></div>
+    <div id="status">기록된 벡터 점수를 비교합니다</div>
     <ol id="ranking" aria-label="기록된 검색 순위"></ol>
   </aside>
   <footer>
-    <strong>주의</strong> 화면의 3D 거리는 설명용 PCA 좌표입니다. 검색 순위·점수는 원본 384차원 벡터의 제곱 L2 결과를 그대로 사용합니다.
+    <strong>주의</strong> 화면의 3D 거리는 설명용 PCA 좌표입니다. 검색 순위와 점수는 원본 추적 데이터에서 가져옵니다.
   </footer>
-  <script type="module" src="/src/main.js"></script>
+  <script type="module" src="src/main.js"></script>
 </body>
 </html>

@@ -1,0 +1,54 @@
+{
+  "language": "ko-KR",
+  "format": "long_form",
+  "beats": [
+    {
+      "id": "B01",
+      "text": "먼저 문서를 겹치는 구간이 있는 청크들로 나눕니다.",
+      "caption": "문서를 실제 문자 범위에 따라 청크로 나눕니다.",
+      "sec": 8.5,
+      "object": "원문과 청크 범위",
+      "state_change": "하나의 원문 범위가 실제 청크의 문자 구간들로 분리된다.",
+      "focus": "문서 구간의 실제 시작·끝 위치와 존재하는 겹침",
+      "tool": "M",
+      "evidence": "model_execution",
+      "trace": "data/ai_trace.json"
+    },
+    {
+      "id": "B02",
+      "text": "각 청크와 질문은 같은 실행 기록의 벡터 표현으로 비교할 수 있게 됩니다.",
+      "caption": "같은 실행 기록에 저장된 청크와 질문의 벡터입니다.",
+      "sec": 8.5,
+      "object": "청크와 질문 벡터",
+      "state_change": "청크 벡터들이 나타난 뒤 같은 질의의 벡터가 비교 공간에 들어온다.",
+      "focus": "동일한 청크 ID와 질문 ID의 연속성 및 손실 투영 경계",
+      "tool": "M",
+      "evidence": "model_execution",
+      "trace": "data/ai_trace.json"
+    },
+    {
+      "id": "B03",
+      "text": "검색기는 기록된 점수의 방향에 맞춰 후보를 순위화하고 설정된 상위 케이를 선택합니다.",
+      "caption": "실제 검색 점수와 정렬 방향에 따라 상위 결과를 고릅니다.",
+      "sec": 8.5,
+      "object": "질문과 후보 청크의 점수 순위",
+      "state_change": "각 기록 점수가 순위에 연결되고 상위 결과가 차례로 선택된다.",
+      "focus": "원본 trace의 실제 점수·순위·Top-K 선택",
+      "tool": "M",
+      "evidence": "model_execution",
+      "trace": "data/ai_trace.json"
+    },
+    {
+      "id": "B04",
+      "text": "선택된 같은 청크들이 답변 모델에 전달할 컨텍스트를 만듭니다.",
+      "caption": "선택된 원문 청크가 검색 컨텍스트로 모입니다.",
+      "sec": 8.5,
+      "object": "선택된 청크와 조립된 컨텍스트",
+      "state_change": "검색된 청크가 같은 ID를 유지한 채 순위 순서의 컨텍스트로 조립된다.",
+      "focus": "선택된 원문과 기록된 컨텍스트 또는 생성 실행 여부",
+      "tool": "M",
+      "evidence": "model_execution",
+      "trace": "data/ai_trace.json"
+    }
+  ]
+}

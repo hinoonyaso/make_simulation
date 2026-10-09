@@ -17,6 +17,8 @@ def load(name, path):
 trace_mod = load("rag_trace", ROOT / "core/ai-mechanism/rag_trace.py")
 primitives = load("primitives", ROOT / "core/ai-mechanism/primitives.py")
 assets = load("asset_factory", ROOT / "core/visual-assets/asset_factory.py")
+visual_data = load("rag_visual_data", ROOT / "core/ai-mechanism/rag_visual_data.py")
+execute_rag = load("execute_local_rag", ROOT / "core/ai-mechanism/execute_local_rag.py")
 
 
 class AITraceTests(unittest.TestCase):
@@ -86,6 +88,67 @@ class PrimitiveTests(unittest.TestCase):
     def test_top_k_preserves_actual_score_order(self):
         ranked = [{"id": "C2", "distance": .2}, {"id": "C1", "distance": .1}]
         self.assertEqual([x["id"] for x in primitives.select_top_k(ranked, 1, "distance")], ["C1"])
+
+
+class GenericRAGExecutionTests(unittest.TestCase):
+    def test_three_chunks_without_overlap_and_top_k_one(self):
+        document = "로봇 바퀴 이동. 센서 거리 측정. 지도 위치 추정."
+        trace = execute_rag.execute_lexical_rag(document, "바퀴 이동", chunk_size=12,
+                                                overlap=0, top_k=1)
+        self.assertFalse(trace_mod.validate_trace(trace))
+        data = visual_data.prepare_rag_visual_data(trace)
+        self.assertEqual(len(data["chunks"]), 3)
+        self.assertEqual(data["overlaps"], [])
+        self.assertEqual(len(data["top_ids"]), 1)
+        self.assertEqual(data["metric"], "TF-IDF cosine similarity")
+
+    def test_eleven_chunks_with_observed_overlap(self):
+        document = "ABCDEFGHIJKLMNOPQRSTUVWXYZ" * 6 + "ABCDEFGHIJKLMN"  # 170 characters -> 11 windows.
+        trace = execute_rag.execute_lexical_rag(document, "ABC", chunk_size=20,
+                                                overlap=5, top_k=3)
+        data = visual_data.prepare_rag_visual_data(trace)
+        self.assertEqual(len(data["chunks"]), 11)
+        self.assertTrue(data["representative_overlap"])
+        self.assertEqual(data["representative_overlap"]["length"], 5)
+
+    def test_fifteen_long_chunks_with_overlap_and_top_k_five(self):
+        sentence = "바퀴 회전 거리와 센서 위치를 비교합니다. "
+        document = sentence * 25
+        trace = execute_rag.execute_lexical_rag(document, "바퀴 회전 거리", chunk_size=48,
+                                                overlap=12, top_k=5)
+        data = visual_data.prepare_rag_visual_data(trace)
+        self.assertGreaterEqual(len(data["chunks"]), 15)
+        self.assertTrue(data["overlaps"])
+        self.assertEqual(len(data["top_ids"]), 5)
+        self.assertEqual(len(set(data["top_ids"])), 5)
+        self.assertTrue(all(item["char_end"] - item["char_start"] <= 48
+                            for item in data["chunks"]))
+
+    def test_arbitrary_ids_and_variable_top_k_are_data_driven(self):
+        trace = execute_rag.execute_lexical_rag("alpha beta gamma delta", "gamma", chunk_size=7,
+                                                overlap=1, top_k=3)
+        chunks = [item for item in trace["intermediate_values"] if item["kind"] == "text_chunk"]
+        for index, chunk in enumerate(chunks):
+            chunk["id"] = f"source-{index + 20}"
+            chunk["source_id"] = "document:source"
+            vector = next(item for item in trace["intermediate_values"]
+                          if item["id"] == f"vector:chunk-{index+1:03d}")
+            vector["id"] = f"vector:{chunk['id']}"
+            vector["source_id"] = chunk["id"]
+        scores = [item for item in trace["intermediate_values"] if item["kind"] == "retrieval_score"]
+        for item in scores:
+            original = item["source_id"]
+            suffix = int(original.split("-")[-1])
+            item["source_id"] = f"source-{suffix + 19}"
+            item["id"] = f"score:{item['source_id']}"
+        for output in trace["outputs"]:
+            output["retrieved_ids"] = [item["source_id"] for item in
+                                       sorted(scores, key=lambda item: item["rank"])[:3]]
+        trace["retrieval"]["top_k_ids"] = trace["outputs"][0]["retrieved_ids"]
+        self.assertFalse(trace_mod.validate_trace(trace))
+        data = visual_data.prepare_rag_visual_data(trace)
+        self.assertEqual(data["top_ids"], [f"source-{int(v['source_id'].split('-')[-1])}"
+                                          for v in sorted(scores, key=lambda item: item["rank"])[:3]])
 
 
 class AssetFactoryTests(unittest.TestCase):

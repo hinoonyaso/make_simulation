@@ -16,10 +16,12 @@ Do not preload the bundle. Route from the artifact that exists now.
 - review frame sampling -> `core/render-reviewer-skill/scripts/extract_review_frames.py`; no LLM agent
 
 ## V10 AI execution topics
-- RAG / embeddings / vector retrieval / attention -> validate the saved `ai-mechanism-trace/v1` with `scripts/validate_ai_trace.py`; use it as the sole source for identifiers, vectors, distances and ranks.
+- Implemented RAG retrieval / embeddings explanation -> validate the saved `ai-mechanism-trace/v1` with `scripts/validate_ai_trace.py`; use it as the sole source for identifiers, vectors, scores and ranks. The execution CLI currently supports RAG only; standalone Attention or other AI mechanisms must be reported unsupported.
 - Keep the V9 `visual_manifest.json` fields and `model_execution` evidence mode. Manifest validation dispatches by trace schema: robotics traces use `core/shared-data/validate_trace.py`; AI execution traces use `core/ai-mechanism/rag_trace.py`.
 - Route computational explanation to continuous, trace-driven Manim state transitions. When embedding-space geometry materially helps, reuse the trace-matched Three.js segment for the embedding/similarity interval; PCA coordinates are illustrative, while displayed ranking and scores remain from the original vector dimensions.
 - A request for an AI/RAG simulation must not fall back to a generic presentation/slide route. Use an existing validated trace when present; otherwise produce and validate a real AI execution trace before rendering. Do not invent timestamps or claim model latency from presentation time.
+- For an executable local RAG production, invoke `uv run python scripts/produce_ai_video.py --topic rag --trace <trace.json> --render auto --silent`. For new inputs use `--document <utf8-file> --question <text> [--chunk-size N --overlap N --top-k K]`. The supported fresh-execution path is lexical TF-IDF plus cosine retrieval and context assembly; it has no semantic embedding model or answer-generation model. Its labels and evidence must say so. Other AI topics are rejected until implemented.
+- The production CLI emits one V9-compatible `visual_manifest.json`, validates the AI trace, renders a preview and runs technical decode QA before final rendering. `auto` keeps Manim as the full mechanism renderer and inserts the Three.js vector segment only if recorded vectors and local browser dependencies are available; otherwise it records a Manim fallback.
 
 ## Skip rules
 - no preview -> no Reviewer

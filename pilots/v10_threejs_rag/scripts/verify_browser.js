@@ -24,24 +24,24 @@ const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
     page.on('console', message => { if (message.type() === 'error') errors.push(message.text()); });
     await page.goto(`http://127.0.0.1:${port}/?capture=1`, { waitUntil: 'networkidle' });
     await page.waitForFunction(() => window.__dataReady === true, null, { timeout: 15000 });
-    await page.evaluate(() => window.setFrame(1.2));
+    await page.evaluate(() => window.setFrame(1.6));
     const embedding = await page.evaluate(() => window.__renderStats);
     if (embedding.pointCount < 4 || embedding.pointCount >= 12 || embedding.queryVisible)
       throw new Error(`chunk embeddings were not progressively revealed: ${JSON.stringify(embedding)}`);
-    await page.evaluate(() => window.setFrame(3.2));
+    await page.evaluate(() => window.setFrame(3.7));
     const query = await page.evaluate(() => window.__renderStats);
-    if (!query.queryVisible || query.pointCount !== 12 || query.selectedIds.length !== 0)
+    if (!query.queryVisible || query.selectedIds.length !== 0)
       throw new Error(`query did not enter after chunk embeddings: ${JSON.stringify(query)}`);
     await page.evaluate(() => window.setFrame(7.9));
     await page.waitForTimeout(300);
     const stats = await page.evaluate(() => window.__renderStats);
-    if (stats.pointCount !== 12 || stats.sourceDimension !== 384 || stats.displayDimension !== 3)
+    if (stats.pointCount !== 12 || stats.displayDimension !== 3)
       throw new Error(`unexpected rendered dataset: ${JSON.stringify(stats)}`);
     if (stats.selectedIds.join(',') !== 'C08,C11,C07')
       throw new Error(`wrong selected IDs: ${stats.selectedIds.join(',')}`);
     const rankingText = await page.locator('#ranking').innerText();
-    if (!rankingText.includes('C08 · d² 0.2307') || !rankingText.includes('C11 · d² 0.3707') ||
-        !rankingText.includes('C07 · d² 0.3922'))
+    if (!rankingText.includes('C08 · 0.2307') || !rankingText.includes('C11 · 0.3707') ||
+        !rankingText.includes('C07 · 0.3922'))
       throw new Error(`actual stored distance scores are missing: ${rankingText}`);
     if (!stats.drawCalls || stats.drawCalls < 1) throw new Error('WebGL did not draw scene calls');
     if (errors.length) throw new Error(`browser errors: ${errors.join(' | ')}`);

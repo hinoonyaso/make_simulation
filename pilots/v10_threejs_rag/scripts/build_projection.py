@@ -4,12 +4,13 @@ from __future__ import annotations
 import hashlib
 import importlib.util
 import json
+import os
 from pathlib import Path
 import numpy as np
 
 ROOT = Path(__file__).resolve().parents[3]
-TRACE_PATH = ROOT / "pilots/v10_rag_poc/data/ai_trace.json"
-OUT = Path(__file__).resolve().parents[1] / "data/embedding_space_3d.json"
+TRACE_PATH = Path(os.environ.get("V10_AI_TRACE", ROOT / "pilots/v10_rag_poc/data/ai_trace.json")).resolve()
+OUT = Path(os.environ.get("V10_THREE_PROJECTION", Path(__file__).resolve().parents[1] / "data/embedding_space_3d.json"))
 
 
 def main() -> None:
@@ -21,18 +22,22 @@ def main() -> None:
     errors = module.validate_trace(trace)
     if errors:
         raise SystemExit("invalid AI trace: " + "; ".join(errors))
-    vectors = [item for item in trace["intermediate_values"] if item["kind"] == "embedding"]
+    vectors = [item for item in trace["intermediate_values"]
+               if item["kind"] in {"embedding", "feature_vector"}]
     query = next(item for item in trace["inputs"] if item.get("kind") == "query")
-    ids = [item["id"].removeprefix("vector:") for item in vectors] + [query["id"]]
-    matrix = np.asarray([item["value"] for item in vectors] + [query["embedding"]], dtype=np.float64)
-    if matrix.ndim != 2 or matrix.shape[1] != 384 or not np.isfinite(matrix).all():
-        raise SystemExit(f"expected finite 384-dimensional vectors, got {matrix.shape}")
+    query_vector = query.get("embedding", query.get("features"))
+    ids = [item.get("source_id", item["id"].removeprefix("vector:")) for item in vectors] + [query["id"]]
+    matrix = np.asarray([item["value"] for item in vectors] + [query_vector], dtype=np.float64)
+    if not vectors or matrix.ndim != 2 or matrix.shape[1] < 1 or not np.isfinite(matrix).all():
+        raise SystemExit(f"expected finite, dimension-matched recorded vectors, got {matrix.shape}")
     centered = matrix - matrix.mean(axis=0)
     _, singular_values, vt = np.linalg.svd(centered, full_matrices=False)
     components = vt[:3].copy()
     coordinates = centered @ components.T
+    if coordinates.shape[1] < 3:
+        coordinates = np.pad(coordinates, ((0, 0), (0, 3-coordinates.shape[1])))
     # Fix arbitrary SVD signs deterministically for comparable rerenders.
-    for axis in range(3):
+    for axis in range(min(3, len(components))):
         anchor = int(np.argmax(np.abs(components[axis])))
         if components[axis, anchor] < 0:
             components[axis] *= -1
@@ -41,39 +46,45 @@ def main() -> None:
     if maximum > 0:
         coordinates *= 3.4 / maximum
     variance = singular_values ** 2
-    ratios = variance[:3] / variance.sum()
+    ratios = np.pad(variance[:3] / variance.sum(), (0, max(0, 3-len(variance[:3]))))
     top_ids = trace["outputs"][0]["retrieved_ids"]
-    distances = sorted((item for item in trace["intermediate_values"]
-                       if item.get("kind") == "squared_l2_distance"),
-                       key=lambda item: item["rank"])
-    ranks = {item["source_id"]: item["rank"] for item in distances}
-    score_values = {item["source_id"]: item["value"] for item in distances}
+    spec = importlib.util.spec_from_file_location(
+        "rag_visual_data", ROOT / "core/ai-mechanism/rag_visual_data.py")
+    visual_module = importlib.util.module_from_spec(spec); spec.loader.exec_module(visual_module)
+    ranking, metric, direction = visual_module.ranking_from_trace(trace)
+    visual_data = visual_module.prepare_rag_visual_data(trace)
+    ranks = {item["source_id"]: item["rank"] for item in ranking}
+    score_values = {item["source_id"]: item["value"] for item in ranking}
+    duration = float(os.environ.get("V10_THREE_DURATION", "8"))
+    vector_label = visual_data["vector_label"]
     output = {
         "schema": "ai-embedding-display-projection/v1",
         "source_trace_sha256": hashlib.sha256(TRACE_PATH.read_bytes()).hexdigest(),
-        "method": "PCA by deterministic NumPy SVD over 11 stored chunk vectors and the stored query vector",
+        "method": f"PCA by deterministic NumPy SVD over {len(vectors)} recorded vectors and the query vector",
         "source_dimension": int(matrix.shape[1]),
         "display_dimension": 3,
+        "vector_label": vector_label,
         "explained_variance_ratio": ratios.tolist(),
         "projection_is_lossy": True,
-        "geometry_semantics": "display coordinates only; retrieval rankings and distances remain from original 384D vectors",
+        "geometry_semantics": f"display coordinates only; retrieval rankings and scores remain from original {matrix.shape[1]}D vectors",
         "trace_id": trace["trace_id"],
         "query_id": query["id"],
-        "retrieval": {"metric": "squared L2", "top_k_ids": top_ids,
+        "retrieval": {"metric": metric, "direction": direction,
+                      "top_k_ids": top_ids, "top_k": len(top_ids),
                       "ranking": [{"id": item["source_id"], "rank": item["rank"],
-                                   "squared_l2_distance": item["value"]}
-                                  for item in distances],
+                                   "score": item["value"]}
+                                  for item in ranking],
                       "scores_and_ranks_source": "ai_trace.json"},
         "points": [{"id": item_id, "xyz": coordinates[i].tolist(),
                     "rank": ranks.get(item_id),
-                    "squared_l2_distance": score_values.get(item_id),
+                    "score": score_values.get(item_id),
                     "kind": "query" if item_id == query["id"] else "chunk"}
                    for i, item_id in enumerate(ids)],
     }
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(output, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    print(f"PASS: {len(vectors)} vectors + query projected from 384D to 3D; "
-          f"PCA variance {ratios.sum():.4f}; top3={','.join(top_ids)}")
+    print(f"PASS: {len(vectors)} vectors + query projected from {matrix.shape[1]}D to 3D; "
+          f"PCA variance {ratios.sum():.4f}; top-k={','.join(top_ids)}; duration={duration:g}s")
     print(OUT)
 
 

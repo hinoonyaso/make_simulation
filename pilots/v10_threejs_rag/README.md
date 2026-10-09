@@ -1,10 +1,21 @@
-# V10 Three.js RAG embedding space
+# V10 Three.js RAG display
 
-This trace-driven 3D segment is designed for the embedding/similarity beat in `pilots/v10_rag_poc/`. Its eight seconds show chunk vectors appearing, the recorded query arriving, and the real 384D score order selecting the top three. It can also be opened as a standalone local view.
+This package renders the recorded query and chunk feature vectors as an optional 3D display for the embedding/similarity beat in `pilots/v10_rag_poc/`. It is trace-driven and accepts variable chunk counts, dimensions, Top-K and presentation duration. It does not use 3D distances to perform retrieval.
 
-## Build and verify
+## Integrated production
 
-Run from this directory:
+From the repository root, the normal automatic route is:
+
+```bash
+uv run python scripts/produce_ai_video.py \
+  --topic rag \
+  --trace pilots/v10_rag_poc/data/ai_trace.json \
+  --render auto --silent
+```
+
+The Director CLI validates the trace and V9 manifest, creates a preview, runs technical QA, and then renders the final video. When recorded vectors and the local Node/Playwright/Chromium runtime are available, `auto` inserts this 3D segment into the embedding beat. If the optional runtime fails, it records the reason and uses the Manim visualization. `renderer_selection.json` records the selected path. Use `--render manim` to skip Three.js explicitly.
+
+For standalone development, run from this directory:
 
 ```bash
 npm ci
@@ -14,12 +25,12 @@ npm run test:browser
 npm run render:video
 ```
 
-`build:data` loads `pilots/v10_rag_poc/data/ai_trace.json`, validates it, and computes a deterministic three-component PCA/SVD display projection from 11 stored chunk vectors and the stored query vector. It carries all recorded squared-L2 scores and ranks without recomputing them. `test:browser` checks progressive embedding, query appearance, 384D-to-3D display, WebGL rendering, and exact top-three IDs. `render:video` captures 240 fixed-time browser frames and creates `output/threejs_rag_3d.mp4`.
+The standalone scripts accept `V10_AI_TRACE`, `V10_THREE_PROJECTION`, `V10_THREE_VIDEO`, `V10_THREE_DURATION`, and `V10_THREE_FPS`. The production builder supplies those values from the same trace and V9 manifest used by Manim.
 
-## Data and visual limits
+## Data contract and limits
 
-The projection records the source AI trace hash, method and explained variance (0.4865 for the first three components). The 3D geometry is a lossy display only. Retrieval selection and order are the existing squared-L2 results from original 384D vectors; the scene does not recalculate or infer retrieval from 3D distance. It highlights the recorded top-three sequence and keeps chunk IDs visible.
+`build_projection.py` validates the AI trace, projects the recorded query/chunk vectors from their original dimension to three display coordinates, and stores the source trace SHA-256. It carries the trace's exact retrieval metric, direction, scores, ranks and selected IDs. `embedding_segment_manifest.json` also records trace/query/chunk IDs and the presentation interval. The segment duration is mapped to the manifest beat; the trace's algorithm execution time is not presented as video time.
 
-`uv run python pilots/v10_rag_poc/build_video.py final --with-threejs --silent` inserts the segment at the existing presentation interval 8.5–17.0 seconds and holds its actual final frame for 0.5 seconds. The resulting `embedding_segment_manifest.json` records trace/query/chunk identity, ranks/scores, timeline and the fact that AI execution timestamps are not present in the source. Remotion was not added because the fixed composition is captured with Three.js, Chromium and FFmpeg.
+The 3D projection is lossy and is only a visual aid. Similarity scores and selection come from the original trace. A TF-IDF lexical run is labeled as lexical features, never as semantic embeddings. Three.js is optional; a silent Manim-only replay needs no Node, browser or network access.
 
-The package pins Three.js 0.186.1 and Playwright 1.64.0 in `package-lock.json`. Chromium is a separate Playwright-managed user cache download, not a repository asset. A silent Manim replay does not require Node, Chromium or this segment; use the core RAG pilot README for that clone-safe route.
+`npm run test:browser` exercises the progressive scene and score identity. `npm run render:video` captures a standalone segment. These local checks do not imply that GitHub Actions ran the browser workflow or that the integrated video was watched at normal speed. Audio review is not applicable to this silent component.

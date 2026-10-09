@@ -28,6 +28,12 @@ Own the question, story, narration timing, visual state transition, tool route, 
 - Route computation to continuous Manim state transitions by default. Use the trace-matched Three.js view for embedding/similarity only when spatial structure helps the explanation. Maintain chunk/query IDs, recorded ranks/scores and the beat's presentation-time interval across renderer handoff. The lossy PCA display must never drive retrieval or replace 384D score values.
 - A request for a RAG/AI simulation is not a slide-deck request: preserve the same document/query/chunk objects while they split, embed, compare and enter context. Do not resolve a missing AI route by selecting a generic presentation renderer.
 
+### Executable RAG route
+- For a requested RAG video, use `uv run python scripts/produce_ai_video.py --topic rag --trace <trace.json> --render auto --silent`; for a new input provide both `--document <file>` and `--question <text>`. The command writes one V9-compatible manifest, validates its trace, renders/decodes a preview, and only then renders the final video. `--durations` changes the four presentation beats in that manifest.
+- The currently supported new execution is a local lexical pipeline: character windows → TF-IDF features → cosine ranking → context assembly. It has no semantic embedding model and does not generate an answer. State that in narration, captions and the evidence description. Do not call a lexical vector an embedding or infer an LLM answer.
+- `--render auto` keeps Manim as the full mechanism scene and uses the trace-matched Three.js segment when actual vectors and its local runtime are available. PCA coordinates are lossy display data; ranking remains the recorded original score. On missing or failed browser tooling, the report must state Manim fallback and continue with the full timeline.
+- Only RAG is currently executable. Reject unsupported AI topics by name; do not imply that Attention, Transformer, Quantization or other mechanisms have a working renderer.
+
 ## Compact manifest
 Return one `visual_manifest.json` (shape: `templates/visual_manifest.json`). It is the single beat contract for every downstream stage; Resolve does not restate beats.
 Beat fields: `id | text | caption | sec | min_sec | object | state_change | focus | tool(M/B/E) | evidence | trace | sfx | bgm | audio | media | media_in | media_out`.
