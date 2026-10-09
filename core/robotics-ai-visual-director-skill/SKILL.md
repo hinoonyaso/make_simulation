@@ -22,6 +22,12 @@ Own the question, story, narration timing, visual state transition, tool route, 
 - Dense relations (network edges, attention, point correspondences) start thresholded/top-k and expand only when needed.
 - Evidence label must be explicit: illustration / toy simulation / trace playback / model execution / reported result.
 
+## AI execution topic routing (V10, additive to V9)
+- For RAG, embeddings, retrieval, vector databases and attention, inspect the available `ai-mechanism-trace/v1` before drafting beats. If a validated trace exists, reuse it as the source of all IDs, vectors, scores, ranks and text. If computation is absent, create/record it before animation; never hand-author the result values.
+- Keep the existing V9 manifest schema and `model_execution` evidence. The manifest validator selects the AI trace validator by its `schema`; robotics `robotics-visual-trace/v1` continues to use the robotics validator.
+- Route computation to continuous Manim state transitions by default. Use the trace-matched Three.js view for embedding/similarity only when spatial structure helps the explanation. Maintain chunk/query IDs, recorded ranks/scores and the beat's presentation-time interval across renderer handoff. The lossy PCA display must never drive retrieval or replace 384D score values.
+- A request for a RAG/AI simulation is not a slide-deck request: preserve the same document/query/chunk objects while they split, embed, compare and enter context. Do not resolve a missing AI route by selecting a generic presentation renderer.
+
 ## Compact manifest
 Return one `visual_manifest.json` (shape: `templates/visual_manifest.json`). It is the single beat contract for every downstream stage; Resolve does not restate beats.
 Beat fields: `id | text | caption | sec | min_sec | object | state_change | focus | tool(M/B/E) | evidence | trace | sfx | bgm | audio | media | media_in | media_out`.

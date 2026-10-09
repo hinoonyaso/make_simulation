@@ -11,12 +11,71 @@
   ],
   "projection_is_lossy": true,
   "geometry_semantics": "display coordinates only; retrieval rankings and distances remain from original 384D vectors",
+  "trace_id": "rag:bf4873f9389f:Q0",
+  "query_id": "query:Q0",
   "retrieval": {
     "metric": "squared L2",
     "top_k_ids": [
       "C08",
       "C11",
       "C07"
+    ],
+    "ranking": [
+      {
+        "id": "C08",
+        "rank": 1,
+        "squared_l2_distance": 0.23073649406433105
+      },
+      {
+        "id": "C11",
+        "rank": 2,
+        "squared_l2_distance": 0.37070298194885254
+      },
+      {
+        "id": "C07",
+        "rank": 3,
+        "squared_l2_distance": 0.3921671211719513
+      },
+      {
+        "id": "C03",
+        "rank": 4,
+        "squared_l2_distance": 0.4013180136680603
+      },
+      {
+        "id": "C05",
+        "rank": 5,
+        "squared_l2_distance": 0.4167324900627136
+      },
+      {
+        "id": "C02",
+        "rank": 6,
+        "squared_l2_distance": 0.42369863390922546
+      },
+      {
+        "id": "C04",
+        "rank": 7,
+        "squared_l2_distance": 0.4294598698616028
+      },
+      {
+        "id": "C06",
+        "rank": 8,
+        "squared_l2_distance": 0.4360257685184479
+      },
+      {
+        "id": "C01",
+        "rank": 9,
+        "squared_l2_distance": 0.43841618299484253
+      },
+      {
+        "id": "C10",
+        "rank": 10,
+        "squared_l2_distance": 0.4635811448097229
+      },
+      {
+        "id": "C09",
+        "rank": 11,
+        "squared_l2_distance": 0.480965793132782
+      }
     ],
     "scores_and_ranks_source": "ai_trace.json"
   },
@@ -28,7 +87,8 @@
         -0.8588260169268611,
         -1.7045787536084012
       ],
-      "rank": null,
+      "rank": 9,
+      "squared_l2_distance": 0.43841618299484253,
       "kind": "chunk"
     },
     {
@@ -38,7 +98,8 @@
         -0.43015830226053575,
         -0.6734452254541893
       ],
-      "rank": null,
+      "rank": 6,
+      "squared_l2_distance": 0.42369863390922546,
       "kind": "chunk"
     },
     {
@@ -48,7 +109,8 @@
         -0.4324888335895094,
         -0.9742776062233852
       ],
-      "rank": null,
+      "rank": 4,
+      "squared_l2_distance": 0.4013180136680603,
       "kind": "chunk"
     },
     {
@@ -58,7 +120,8 @@
         -0.6102053762661016,
         -0.12872631245961183
       ],
-      "rank": null,
+      "rank": 7,
+      "squared_l2_distance": 0.4294598698616028,
       "kind": "chunk"
     },
     {
@@ -68,7 +131,8 @@
         -0.4827924744492119,
         1.5870160522784273
       ],
-      "rank": null,
+      "rank": 5,
+      "squared_l2_distance": 0.4167324900627136,
       "kind": "chunk"
     },
     {
@@ -78,7 +142,8 @@
         0.2788145356343139,
         2.9065934730253784
       ],
-      "rank": null,
+      "rank": 8,
+      "squared_l2_distance": 0.4360257685184479,
       "kind": "chunk"
     },
     {
@@ -89,6 +154,7 @@
         2.54288641084752
       ],
       "rank": 3,
+      "squared_l2_distance": 0.3921671211719513,
       "kind": "chunk"
     },
     {
@@ -99,6 +165,7 @@
         -0.8850810717253493
       ],
       "rank": 1,
+      "squared_l2_distance": 0.23073649406433105,
       "kind": "chunk"
     },
     {
@@ -108,7 +175,8 @@
         -2.446925955942755,
         -0.2514256846279244
       ],
-      "rank": null,
+      "rank": 11,
+      "squared_l2_distance": 0.480965793132782,
       "kind": "chunk"
     },
     {
@@ -118,7 +186,8 @@
         -2.2464185492124824,
         -0.5301527355612647
       ],
-      "rank": null,
+      "rank": 10,
+      "squared_l2_distance": 0.4635811448097229,
       "kind": "chunk"
     },
     {
@@ -129,6 +198,7 @@
         0.4952186747602866
       ],
       "rank": 2,
+      "squared_l2_distance": 0.37070298194885254,
       "kind": "chunk"
     },
     {
@@ -139,6 +209,7 @@
         -2.3840272212514866
       ],
       "rank": null,
+      "squared_l2_distance": null,
       "kind": "query"
     }
   ]

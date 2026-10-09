@@ -13,13 +13,14 @@
   <canvas id="scene" aria-label="3D PCA embedding space"></canvas>
   <header>
     <h1>문서와 질문의 임베딩 공간</h1>
-    <p>384차원 임베딩을 3차원 PCA로 투영 · 차원 축소 설명 장면</p>
+    <p>실제 문서 청크 임베딩 → 질문 등장 → 기록된 거리 점수로 검색</p>
   </header>
   <aside>
     <div class="legend"><i class="query"></i><span>질문 벡터</span></div>
     <div class="legend"><i class="candidate"></i><span>문서 청크</span></div>
     <div class="legend"><i class="selected"></i><span>실제 검색 Top 3</span></div>
-    <div id="status">실제 384차원 거리 순위: C08 → C11 → C07</div>
+    <div id="status">실제 384차원 제곱 L2 거리를 비교합니다</div>
+    <ol id="ranking" aria-label="기록된 검색 순위"></ol>
   </aside>
   <footer>
     <strong>주의</strong> 화면의 3D 거리는 설명용 PCA 좌표입니다. 검색 순위·점수는 원본 384차원 벡터의 제곱 L2 결과를 그대로 사용합니다.

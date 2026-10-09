@@ -15,6 +15,12 @@ Do not preload the bundle. Route from the artifact that exists now.
 - narration TTS / measured timing / captions -> `core/narration/prepare_audio.py`; no LLM agent
 - review frame sampling -> `core/render-reviewer-skill/scripts/extract_review_frames.py`; no LLM agent
 
+## V10 AI execution topics
+- RAG / embeddings / vector retrieval / attention -> validate the saved `ai-mechanism-trace/v1` with `scripts/validate_ai_trace.py`; use it as the sole source for identifiers, vectors, distances and ranks.
+- Keep the V9 `visual_manifest.json` fields and `model_execution` evidence mode. Manifest validation dispatches by trace schema: robotics traces use `core/shared-data/validate_trace.py`; AI execution traces use `core/ai-mechanism/rag_trace.py`.
+- Route computational explanation to continuous, trace-driven Manim state transitions. When embedding-space geometry materially helps, reuse the trace-matched Three.js segment for the embedding/similarity interval; PCA coordinates are illustrative, while displayed ranking and scores remain from the original vector dimensions.
+- A request for an AI/RAG simulation must not fall back to a generic presentation/slide route. Use an existing validated trace when present; otherwise produce and validate a real AI execution trace before rendering. Do not invent timestamps or claim model latency from presentation time.
+
 ## Skip rules
 - no preview -> no Reviewer
 - no edit request/assets -> no Resolve

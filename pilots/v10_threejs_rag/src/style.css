@@ -10,5 +10,9 @@ aside { position: absolute; right: 5%; top: 12%; min-width: 265px; padding: 20px
 .legend i { display: inline-block; width: 14px; height: 14px; border-radius: 50%; }
 .query { background: #38bdf8; } .candidate { background: #8a94a6; } .selected { background: #34d399; }
 #status { margin-top: 18px; padding-top: 14px; border-top: 1px solid #334155; color: #fbbf24; font-weight: 600; line-height: 1.5; }
+#ranking { margin: 10px 0 0; padding-left: 28px; color: #cbd5e1; line-height: 1.5; font-variant-numeric: tabular-nums; }
+#ranking li { opacity: 0; transition: opacity 180ms linear; }
+#ranking li.rank-selected { color: #34d399; background: transparent; font-weight: 700; }
+body.capture #ranking li { transition: none; }
 footer { position: absolute; left: 5%; right: 5%; bottom: 5%; padding: 15px 18px; color: #dce3ed; background: rgba(8,14,29,.78); border-left: 3px solid #fbbf24; font-size: clamp(16px, 1.15vw, 22px); line-height: 1.5; }
 footer strong { color: #fbbf24; margin-right: .5em; }

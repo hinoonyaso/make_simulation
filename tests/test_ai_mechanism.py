@@ -20,16 +20,17 @@ assets = load("asset_factory", ROOT / "core/visual-assets/asset_factory.py")
 
 
 class AITraceTests(unittest.TestCase):
-    def test_real_rag_run_adapts_and_validates(self):
-        source = ROOT / "pilots/07_naive_rag/data/rag_run.json"
-        with tempfile.TemporaryDirectory() as temp:
-            output = Path(temp) / "trace.json"
-            trace = trace_mod.adapt_rag_run(source, output)
-            self.assertEqual(trace["schema"], "ai-mechanism-trace/v1")
-            self.assertEqual(trace["outputs"][0]["retrieved_ids"], ["C08", "C11", "C07"])
-            self.assertIsNone(trace["operations"][3]["execution_time_seconds"])
-            self.assertGreater(trace["operations"][5]["execution_time_seconds"], 0)
-            self.assertFalse(trace_mod.validate_trace(json.loads(output.read_text())))
+    def test_checked_in_trace_validates_without_source_episode(self):
+        path = ROOT / "pilots/v10_rag_poc/data/ai_trace.json"
+        trace = json.loads(path.read_text(encoding="utf-8"))
+        self.assertFalse(trace_mod.validate_trace(trace))
+        self.assertEqual(trace["schema"], "ai-mechanism-trace/v1")
+        self.assertEqual(trace["outputs"][0]["retrieved_ids"], ["C08", "C11", "C07"])
+        self.assertEqual(len(trace["inputs"][1]["embedding"]), 384)
+        source_text = trace["inputs"][0]["text"]
+        for chunk in (value for value in trace["intermediate_values"]
+                      if value["kind"] == "text_chunk"):
+            self.assertEqual(chunk["value"], source_text[chunk["char_start"]:chunk["char_end"]])
 
     def test_rejects_invalid_operation_runtime(self):
         trace = {

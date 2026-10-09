@@ -43,7 +43,11 @@ def main() -> None:
     variance = singular_values ** 2
     ratios = variance[:3] / variance.sum()
     top_ids = trace["outputs"][0]["retrieved_ids"]
-    ranks = {chunk_id: rank for rank, chunk_id in enumerate(top_ids, start=1)}
+    distances = sorted((item for item in trace["intermediate_values"]
+                       if item.get("kind") == "squared_l2_distance"),
+                       key=lambda item: item["rank"])
+    ranks = {item["source_id"]: item["rank"] for item in distances}
+    score_values = {item["source_id"]: item["value"] for item in distances}
     output = {
         "schema": "ai-embedding-display-projection/v1",
         "source_trace_sha256": hashlib.sha256(TRACE_PATH.read_bytes()).hexdigest(),
@@ -53,10 +57,17 @@ def main() -> None:
         "explained_variance_ratio": ratios.tolist(),
         "projection_is_lossy": True,
         "geometry_semantics": "display coordinates only; retrieval rankings and distances remain from original 384D vectors",
+        "trace_id": trace["trace_id"],
+        "query_id": query["id"],
         "retrieval": {"metric": "squared L2", "top_k_ids": top_ids,
+                      "ranking": [{"id": item["source_id"], "rank": item["rank"],
+                                   "squared_l2_distance": item["value"]}
+                                  for item in distances],
                       "scores_and_ranks_source": "ai_trace.json"},
         "points": [{"id": item_id, "xyz": coordinates[i].tolist(),
-                    "rank": ranks.get(item_id), "kind": "query" if item_id == query["id"] else "chunk"}
+                    "rank": ranks.get(item_id),
+                    "squared_l2_distance": score_values.get(item_id),
+                    "kind": "query" if item_id == query["id"] else "chunk"}
                    for i, item_id in enumerate(ids)],
     }
     OUT.parent.mkdir(parents=True, exist_ok=True)

@@ -1,6 +1,8 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
+const captureMode = new URLSearchParams(location.search).has('capture');
+if (captureMode) document.body.classList.add('capture');
 const canvas = document.querySelector('#scene');
 const renderer = new THREE.WebGLRenderer({canvas, antialias: true, alpha: false});
 renderer.setPixelRatio(1);
@@ -14,8 +16,8 @@ const camera = new THREE.PerspectiveCamera(44, window.innerWidth / window.innerH
 camera.position.set(0, 1.4, 9.4);
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.target.set(0, 0, 0);
-controls.enableDamping = true;
-controls.dampingFactor = .06;
+controls.enableDamping = false;
+controls.enabled = !captureMode;
 controls.minDistance = 5;
 controls.maxDistance = 16;
 scene.add(new THREE.HemisphereLight(0xb7d4ff, 0x182033, 2.2));
@@ -46,39 +48,56 @@ const colorSelected = new THREE.Color('#34d399');
 const pointObjects = new Map();
 const selectionLines = new Map();
 let dataset;
-let selectedCount = 0;
 
-function clamp(x, lo, hi) { return Math.max(lo, Math.min(hi, x)); }
 function setFrame(seconds) {
+  if (!dataset) return;
   const time = Math.max(0, Number(seconds) || 0);
-  plot.rotation.y = .10 * Math.sin(time * .34);
-  selectedCount = clamp(Math.floor((time - .7) / 1.35) + 1, 0, dataset.retrieval.top_k_ids.length);
-  for (const point of dataset.points) {
+  const chunks = dataset.points.filter(point => point.kind === 'chunk');
+  const shownChunks = Math.min(chunks.length, Math.floor(time / .24));
+  const queryVisible = time >= 2.9;
+  const selectedCount = queryVisible
+    ? Math.max(0, Math.min(3, Math.floor((time - 3.5) / .95) + 1)) : 0;
+
+  chunks.forEach((point, index) => {
     const object = pointObjects.get(point.id);
-    if (point.kind === 'query') continue;
+    object.mesh.visible = index < shownChunks;
+    object.label.visible = index < shownChunks;
     const selected = point.rank && point.rank <= selectedCount;
     object.mesh.material.color.copy(selected ? colorSelected : colorMuted);
     object.mesh.scale.setScalar(selected ? 1.35 : 1.0);
     object.label.material.opacity = selected ? 1 : .78;
-  }
+  });
+  const query = pointObjects.get(dataset.query_id);
+  query.mesh.visible = queryVisible;
+  query.label.visible = queryVisible;
   for (const [id, line] of selectionLines) {
-    const point = dataset.points.find(p => p.id === id);
-    line.material.opacity = point.rank <= selectedCount ? .75 : 0;
+    const point = dataset.points.find(candidate => candidate.id === id);
+    const active = point.rank <= selectedCount;
+    line.material.opacity = active ? .8 : 0;
+    pointObjects.get(id).mesh.material.color.copy(active ? colorSelected : colorMuted);
   }
-  const shown = dataset.retrieval.top_k_ids.slice(0, selectedCount);
-  document.querySelector('#status').textContent = shown.length
-    ? `실제 384차원 Top 3 선택: ${shown.join(' → ')}`
-    : '질문 벡터와 문서 임베딩을 비교합니다';
+
+  const list = document.querySelector('#ranking');
+  for (const [index, entry] of dataset.retrieval.ranking.slice(0, 3).entries()) {
+    const row = list.children[index];
+    row.style.opacity = index < selectedCount ? '1' : '0';
+  }
+  document.querySelector('#status').textContent = !queryVisible
+    ? '문서 청크를 벡터로 바꿉니다'
+    : selectedCount
+      ? '원본 384차원 제곱 L2 순위가 차례로 선택됩니다'
+      : '질문 벡터가 들어오고 실제 거리를 비교합니다';
   controls.update();
   renderer.render(scene, camera);
-  window.__renderStats = {pointCount: pointObjects.size, selectedIds: shown,
-                          sourceDimension: dataset.source_dimension,
-                          displayDimension: dataset.display_dimension, drawCalls: renderer.info.render.calls};
+  window.__renderStats = {pointCount: shownChunks + Number(queryVisible), selectedIds:
+    dataset.retrieval.top_k_ids.slice(0, selectedCount), queryVisible,
+    sourceDimension: dataset.source_dimension, displayDimension: dataset.display_dimension,
+    drawCalls: renderer.info.render.calls};
 }
 
-fetch('/data/embedding_space_3d.json').then(r => {
-  if (!r.ok) throw new Error(`projection load failed: ${r.status}`);
-  return r.json();
+fetch('/data/embedding_space_3d.json').then(response => {
+  if (!response.ok) throw new Error(`projection load failed: ${response.status}`);
+  return response.json();
 }).then(data => {
   dataset = data;
   const grid = new THREE.GridHelper(7, 14, 0x334155, 0x1e293b);
@@ -97,29 +116,37 @@ fetch('/data/embedding_space_3d.json').then(r => {
         emissive: isQuery ? colorQuery : colorMuted,
         emissiveIntensity: isQuery ? .3 : .05, roughness: .34, metalness: .12}));
     mesh.position.copy(p);
-    plot.add(mesh);
     const label = makeLabel(isQuery ? '질문' : point.id, isQuery ? '#38bdf8' : '#dce3ed');
     const labelOffsets = {C02: [-.30, .28, 0], C04: [-.35, .08, 0], C01: [.22, .32, 0]};
     const offset = labelOffsets[point.id] || [0, .24, 0];
     label.position.copy(p).add(new THREE.Vector3(...offset));
-    plot.add(label);
+    mesh.visible = false;
+    label.visible = false;
+    plot.add(mesh, label);
     pointObjects.set(point.id, {mesh, label});
   }
-  const query = data.points.find(p => p.kind === 'query');
-  for (const point of data.points.filter(p => p.rank)) {
+  const queryPoint = data.points.find(point => point.id === data.query_id);
+  for (const item of data.retrieval.ranking.slice(0, 3)) {
+    const point = data.points.find(candidate => candidate.id === item.id);
     const geometry = new THREE.BufferGeometry().setFromPoints([
-      new THREE.Vector3(...query.xyz), new THREE.Vector3(...point.xyz)]);
-    const material = new THREE.LineBasicMaterial({color: colorSelected, transparent: true, opacity: 0, depthWrite: false});
+      new THREE.Vector3(...queryPoint.xyz), new THREE.Vector3(...point.xyz)]);
+    const material = new THREE.LineBasicMaterial({color: colorSelected, transparent: true,
+      opacity: 0, depthWrite: false});
     const line = new THREE.Line(geometry, material);
     plot.add(line);
     selectionLines.set(point.id, line);
   }
+  const list = document.querySelector('#ranking');
+  for (const item of data.retrieval.ranking.slice(0, 3)) {
+    const row = document.createElement('li');
+    row.textContent = `${item.id} · d² ${item.squared_l2_distance.toFixed(4)}`;
+    row.classList.toggle('rank-selected', item.rank <= 3);
+    list.appendChild(row);
+  }
   window.__dataReady = true;
   window.setFrame = setFrame;
   setFrame(0);
-  if (!new URLSearchParams(location.search).has('capture')) {
-    renderer.setAnimationLoop(ms => setFrame((ms / 1000) % 8));
-  }
+  if (!captureMode) renderer.setAnimationLoop(ms => setFrame((ms / 1000) % 8));
 }).catch(error => {
   console.error(error);
   document.querySelector('#status').textContent = `오류: ${error.message}`;

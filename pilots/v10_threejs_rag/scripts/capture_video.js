@@ -1,4 +1,5 @@
 const { spawn, spawnSync } = require('node:child_process');
+const crypto = require('node:crypto');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
@@ -38,6 +39,19 @@ const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
       '-c:v', 'libx264', '-preset', 'fast', '-crf', '18', '-pix_fmt', 'yuv420p',
       '-movflags', '+faststart', out], { stdio: 'inherit' });
     if (ffmpeg.status !== 0) throw new Error(`ffmpeg exited with ${ffmpeg.status}`);
+    const projection = JSON.parse(fs.readFileSync(path.join(root, 'data/embedding_space_3d.json'), 'utf8'));
+    const sceneHash = crypto.createHash('sha256');
+    for (const relative of ['index.html', 'src/main.js', 'src/style.css']) {
+      sceneHash.update(relative); sceneHash.update(fs.readFileSync(path.join(root, relative)));
+    }
+    fs.writeFileSync(path.join(root, 'output/threejs_rag_3d_manifest.json'), JSON.stringify({
+      schema: 'v10-rag-embedding-video/v1', trace_id: projection.trace_id,
+      query_id: projection.query_id, source_trace_sha256: projection.source_trace_sha256,
+      scene_sha256: sceneHash.digest('hex'),
+      chunk_ids: projection.points.filter(point => point.kind === 'chunk').map(point => point.id),
+      retrieval: projection.retrieval, duration_sec: 8, fps: 30,
+      width: 1920, height: 1080, audio: false,
+    }, null, 2) + '\n');
     console.log(`${out} (${fs.statSync(out).size} bytes; 8 sec, 1080p30, no audio)`);
   } finally {
     if (browser) await browser.close();

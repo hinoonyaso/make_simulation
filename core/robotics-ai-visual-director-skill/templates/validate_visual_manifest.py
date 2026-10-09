@@ -8,7 +8,15 @@ ALLOWED_EVIDENCE={"illustration","toy_simulation","trace_playback","model_execut
 TRACE_REQUIRED={"trace_playback","model_execution"}
 BUNDLE=Path(__file__).resolve().parents[3]
 
-def _trace_validator():
+def _trace_validator(trace_path):
+    import json
+    schema = json.loads(Path(trace_path).read_text(encoding="utf-8")).get("schema")
+    if schema == "ai-mechanism-trace/v1":
+        spec=importlib.util.spec_from_file_location("validate_ai_trace",BUNDLE/"core/ai-mechanism/rag_trace.py")
+        mod=importlib.util.module_from_spec(spec); spec.loader.exec_module(mod)
+        def validate_ai(path):
+            return mod.validate_trace(json.loads(Path(path).read_text(encoding="utf-8")))
+        return validate_ai
     spec=importlib.util.spec_from_file_location("validate_trace",BUNDLE/"core/shared-data/validate_trace.py")
     mod=importlib.util.module_from_spec(spec); spec.loader.exec_module(mod)
     return mod.validate
@@ -45,7 +53,7 @@ def validate(path: str, require_media: bool=False):
         elif evidence=="toy_simulation" and not trace: warnings.append(f"{tag}: toy_simulation without trace; renderers may invent values")
         if trace:
             tp=(base/trace).resolve()
-            if tp not in checked_traces: checked_traces[tp]=_trace_validator()(str(tp))
+            if tp not in checked_traces: checked_traces[tp]=_trace_validator(tp)(str(tp))
             errors.extend(f"{tag}: trace {trace}: {e}" for e in checked_traces[tp])
         for field in ("audio","media"):
             value=str(b.get(field,"")).strip()
