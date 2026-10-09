@@ -37,12 +37,14 @@ class MCUPIDAdapter:
             error = target - measured
             derivative = (error - previous_error) / dt if index else 0.0
             raw_pwm = kp * error + ki * integral + kd * derivative
+            integral_state = integral
             pwm = max(-1.0, min(1.0, raw_pwm))
             if -1.0 < raw_pwm < 1.0 or error * raw_pwm < 0:
                 integral += error * dt
             samples.append({"time_s": time_s, "target_rad_s": target, "motor_speed_rad_s": speed,
                             "encoder_speed_rad_s": measured, "error_rad_s": error,
-                            "pwm_duty": pwm, "encoder_count": count})
+                            "derivative_rad_s2": derivative, "integral_state": integral_state,
+                            "raw_pwm": raw_pwm, "pwm_duty": pwm, "encoder_count": count})
             if index < steps:
                 speed += dt * ((pwm * max_speed - speed) / tau)
                 position += speed * dt
@@ -67,6 +69,8 @@ class MCUPIDAdapter:
 
     def validate(self, trace):
         errors = validate_envelope(trace)
+        if trace.get("topic") != "mcu_pid" or trace.get("domain") != "mcu_embedded":
+            errors.append("PID trace domain/topic mismatch")
         payload = trace.get("payload", {})
         samples = payload.get("samples", [])
         if not samples:
@@ -76,10 +80,57 @@ class MCUPIDAdapter:
                        ("time_s", "target_rad_s", "motor_speed_rad_s", "encoder_speed_rad_s", "pwm_duty"))
                for row in samples):
             errors.append("PID samples contain non-finite values")
-        elif any(b["time_s"] <= a["time_s"] for a, b in zip(samples, samples[1:])):
-            errors.append("PID sample timestamps must increase")
+        else:
+            dt = float(payload.get("sample_period_s", float("nan")))
+            if not math.isfinite(dt) or dt <= 0:
+                errors.append("PID sample period must be finite and positive")
+            elif any(not math.isclose(row["time_s"], i * dt, rel_tol=0, abs_tol=1e-10)
+                     for i, row in enumerate(samples)):
+                errors.append("PID sample timestamps do not match the configured sample period")
         if any(abs(row.get("pwm_duty", 0)) > 1 for row in samples):
             errors.append("PID PWM duty exceeds configured saturation")
+        try:
+            dt = float(payload["sample_period_s"]); tau = float(payload["motor_time_constant_s"])
+            max_speed = float(payload["max_speed_rad_s"]); ticks = int(payload["encoder_ticks_per_rev"])
+            target = float(payload["target_rad_s"]); gains = payload["pid"]
+            kp, ki, kd = (float(gains[name]) for name in ("kp", "ki", "kd"))
+            if tau <= 0 or ticks <= 0:
+                raise ValueError("motor time constant and encoder resolution must be positive")
+            steps = float(payload["duration_s"]) / dt
+            if not math.isclose(steps, round(steps), abs_tol=1e-9) or len(samples) != round(steps) + 1:
+                errors.append("PID sample count does not match duration and sample period")
+            integral = 0.0; previous_error = 0.0
+            if samples and (samples[0]["encoder_count"] != 0 or samples[0]["encoder_speed_rad_s"] != 0):
+                errors.append("PID initial encoder state must be zero")
+            for index, row in enumerate(samples):
+                expected_error = target - row["encoder_speed_rad_s"]
+                expected_derivative = (expected_error - previous_error) / dt if index else 0.0
+                expected_raw = kp * expected_error + ki * integral + kd * expected_derivative
+                for key, actual, expected in (("error", row.get("error_rad_s"), expected_error),
+                        ("derivative", row.get("derivative_rad_s2"), expected_derivative),
+                        ("integral state", row.get("integral_state"), integral),
+                        ("raw PWM", row.get("raw_pwm"), expected_raw),
+                        ("saturated PWM", row.get("pwm_duty"), max(-1., min(1., expected_raw)))):
+                    if actual is None or not math.isclose(float(actual), expected, rel_tol=1e-9, abs_tol=1e-9):
+                        errors.append(f"PID {key} equation mismatch at sample {index}")
+                        break
+                if -1.0 < expected_raw < 1.0 or expected_error * expected_raw < 0:
+                    integral += expected_error * dt
+                previous_error = expected_error
+            for index, (row, nxt) in enumerate(zip(samples, samples[1:])):
+                predicted = row["motor_speed_rad_s"] + dt * ((row["pwm_duty"] * max_speed - row["motor_speed_rad_s"]) / tau)
+                if not math.isclose(predicted, nxt["motor_speed_rad_s"], rel_tol=1e-9, abs_tol=1e-9):
+                    errors.append(f"PID motor plant transition mismatch after sample {index}")
+                    break
+                measured = ((nxt["encoder_count"] - row["encoder_count"]) * (2 * math.pi / ticks) / dt)
+                if not math.isclose(measured, nxt["encoder_speed_rad_s"], rel_tol=1e-9, abs_tol=1e-9):
+                    errors.append(f"PID encoder speed/count mismatch at sample {index + 1}")
+                    break
+            if samples and (not math.isclose(samples[-1]["motor_speed_rad_s"], payload["final_speed_rad_s"], abs_tol=1e-10) or
+                            not math.isclose(samples[-1]["encoder_speed_rad_s"], payload["final_encoder_speed_rad_s"], abs_tol=1e-10)):
+                errors.append("PID final speed summary does not match the last sample")
+        except (KeyError, TypeError, ValueError, ZeroDivisionError) as exc:
+            errors.append(f"invalid PID simulation payload: {exc}")
         return errors
 
     def build_visual_plan(self, trace):

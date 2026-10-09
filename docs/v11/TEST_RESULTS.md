@@ -1,23 +1,30 @@
-# V11 test results
+# V11.1 validation results
 
-This file records only commands actually run in the current working tree. Update the status after the remaining test/render pass. Never treat a preview as final delivery.
+Run from `/home/sang/make_simulation` on 2026-10-09. These are local results; GitHub Actions has not run.
 
 | Check | Status | Evidence |
 |---|---|---|
-| Full repository unit suite | PASS | `uv run python -m unittest discover -s tests -v` — 36 tests |
-| New V11 mechanism adapter tests | PASS | Included in full suite: 6 tests across registry, envelope, quantization, NMS and PID |
-| OpenMANIPULATOR-X URDF/mesh validation | PASS | `uv run python scripts/manage_assets.py validate --asset blender.open_manipulator_x.v1`; see asset report |
-| OpenMANIPULATOR-X local fetch/hash check | PASS | `uv run python scripts/manage_assets.py fetch --asset blender.open_manipulator_x.v1` (already present; no download) |
-| Scene style | PASS | `uv run python scripts/check_scene_style.py core/mechanism/manim_scene.py`; same check passed for `pilots/v10_rag_poc/rag_mechanism_scene.py` |
-| Quantization preview | PASS | 12.0s, 960×540, 30fps, H.264, no audio; full decode passed |
-| Weight+activation quantization preview | PASS | Supplied distinct tensors; separate numerical results and visual error labels; 12.0s, 960×54030 full decode passed |
-| NMS preview | PASS | 12.0s, 960×540, 30fps, H.264, no audio; full decode passed |
-| MCU PID preview | PASS | 12.0s, 960×540, 30fps, H.264, no audio; full decode passed; PID label overlap found in first frame review and corrected |
-| MuJoCo H1 adapter preview | PASS | 12.0s, 960×540, 30fps, H.264, no audio; full decode passed |
-| V10 short-beat regression | PASS | Four 0.4s beats rendered to 1.6s 960×54030 MP4; full decode passed |
-| Python compile check | PASS | `python -m compileall -q` across changed Python modules and scripts |
-| Clean source-copy reproduction | PASS | After the final weight+activation update, exported `HEAD` to `/tmp`, overlaid only this task's changed/new source files (no pilot 07/08 dependencies), then ran all 36 tests, checked-in AI trace validation, OpenMANIPULATOR-X asset validation, and capability inspection using the installed Python environment |
-| GitHub Actions workflow | NOT RUN | Workflow file updated; remote Actions was not triggered |
-| Three.js integrated render | PASS | Local Playwright capture produced the 8.5s 1080p30 segment; trace/query IDs, chunk IDs and Top-K match the source trace; 34s 960×54030 silent composite passed full decode. A separate 1s capture to `/tmp` verified external output paths and passed 1080p30 full decode |
+| Full unit/regression suite | PASS | `uv run python -m unittest discover -s tests -v` — 48 tests |
+| Quantization one-sided/constant/INT4/INT8/per-channel regression | PASS | `tests.test_v11_mechanism`; affine reconstruction and tampered-code rejection |
+| Korean aliases / ambiguity | PASS | Korean mappings resolve; generic `attention` prints 3 choices and does not choose one |
+| NMS and PID stored trace integrity | PASS | tampered IoU and plant samples rejected; PID validates controller equation and encoder values |
+| Self-Attention arithmetic and replay validation | PASS | Q/K/V, scaling, causal mask, row softmax and outputs; corrupted output rejected by both adapter and manifest validator |
+| Environment preflight and safe archive pipeline | PASS | candidates stay not-ready; path traversal, symlink and expanded-size tests rejected; mocked HTTPS fetch verifies hash, atomic extraction and cache reuse |
+| V10 AI trace and V9-compatible manifest | PASS | `scripts/validate_ai_trace.py .../ai_trace.json`; `validate_visual_manifest.py .../visual_manifest.json` |
+| Manim style gate | PASS | `uv run python scripts/check_scene_style.py core/mechanism/manim_scene.py` |
+| Python compile | PASS | `uv run python -m compileall -q core/ai-mechanism core/mechanism core/visual-assets core/simulation scripts/produce_video.py scripts/manage_assets.py` |
+| Quantization preview | PASS | `/tmp/v11_quantization_final_smoke/quantization/preview.mp4`, 12.00s, 960×540, H.264, 30fps, silent, full decode |
+| Positive-only asymmetric quantization preview | PASS | `/tmp/v11_quant_positive/quantization/preview.mp4`, 12.00s, 960×540, H.264, 30fps, silent, full decode; trace: scale `2/255`, zero point `0`, codes `128` and `255` |
+| NMS preview | PASS | `/tmp/v11_nms_final_smoke/nms/preview.mp4`, 12.00s, 960×540, H.264, 30fps, silent, full decode |
+| MCU PID preview | PASS | `/tmp/v11_pid_final_smoke/mcu_pid/preview.mp4`, 12.00s, 960×540, H.264, 30fps, silent, full decode |
+| Self-Attention preview | PASS | `/tmp/v11_attention_final/self_attention/preview.mp4`, 15.97s, 960×540, H.264, 30fps, silent, full decode |
+| Sampled render frame review | PASS, scoped | Render Reviewer frame extraction + real frame inspection; zero blocker/high in inspected frames. Whole-video motion pacing and novice comprehension remain incomplete. |
+| Clearpath/Gazebo environment load | BLOCKED | `ros2` and `gz` are absent |
+| ManiSkill/SAPIEN environment load/render | BLOCKED | `sapien` absent; project matrix lists WSL rendering unsupported; GPU access blocked |
+| robosuite Lift load | BLOCKED | robosuite absent; `uv run --with robosuite==1.5.2 ...` failed on PyPI DNS before installation |
+| Environment downloads/dependency closure | NOT_RUN | no source candidates yet satisfy revision/hash/size/model license gate |
+| YOLO model inference | NOT_RUN | no detector adapter or pinned model; NMS preview remains synthetic |
+| Narrated full production / delivery | NOT_RUN | common mechanism CLI remains silent technical render |
+| Remote CI | NOT_RUN | workflow definitions updated but not triggered |
 
-The first auto-render attempt exposed two environmental/implementation failures: sandboxed loopback prevented the local HTTP server from starting, and an external `--output-dir` placed the projection outside the server root. The output-path bug is fixed by staging the temporary projection under the served project directory and copying it to the requested output. The final render ran with authorized local loopback and the renderer report records Manim and Three.js success.
+The active V9/V10 tests and checked-in trace checks passed. This suite result does not convert simulator, model, full production or whole-video review blockers into passes.

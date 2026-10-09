@@ -38,6 +38,12 @@ BEAT_COPY = {
         ("PD 토크 입력에 대한 관절 응답을 기록합니다.", "어깨와 팔꿈치 관절의 실제 MuJoCo 상태입니다.", "관절 상태", "시뮬레이션 목표와 solver 상태"),
         ("기록된 관절 상태에서 끝단 궤적을 확인합니다.", "같은 실행 trace의 link 위치를 보여줍니다.", "끝단 이동", "trace 좌표와 검증 범위; 하드웨어 아님"),
     ],
+    "self_attention": [
+        ("세 토큰의 벡터에서 질문·키·값을 각각 만듭니다.", "같은 입력 토큰이 학습된 투영을 거쳐 Q, K, V가 됩니다.", "Q·K·V 벡터", "Trace의 실제 투영 행렬과 토큰 벡터"),
+        ("질문과 모든 키의 내적으로 관련도를 계산합니다.", "각 질문 행에서 키 열마다 내적 점수를 계산합니다.", "QKᵀ 점수 행렬", "실제 행렬 곱 결과와 토큰 위치 대응"),
+        ("차원으로 나눈 뒤 softmax로 가중치를 만듭니다.", "점수를 √차원으로 나누고 행마다 확률 가중치로 바꿉니다.", "Scaled scores → softmax", "Trace의 점수·가중치와 행 합 1"),
+        ("가중치로 값 벡터를 합쳐 문맥 표현을 만듭니다.", "각 토큰의 출력은 값 벡터의 가중합입니다.", "문맥 벡터", "동일 Trace의 attention weights × V 계산"),
+    ],
 }
 
 
@@ -107,6 +113,9 @@ def main() -> int:
     try:
         capability = registry.resolve(args.topic)
         if capability is None:
+            resolution = registry.resolve_detailed(args.topic)
+            if resolution["status"] == "ambiguous":
+                raise SystemExit(f"ambiguous topic {args.topic!r}; choose one: {', '.join(resolution['candidates'])}")
             raise SystemExit(f"unknown topic {args.topic!r}; inspect supported names with scripts/inspect_capabilities.py")
         topic = capability["topic"]
         if topic == "rag":
@@ -152,7 +161,8 @@ def main() -> int:
         plan.setdefault("title", {"quantization": "실제 수치로 보는 가중치 양자화",
                                    "nms": "합성 후보로 계산하는 IoU 기반 NMS",
                                    "mcu_pid": "엔코더 피드백을 사용하는 PID 모터 시뮬레이션",
-                                   "robot_kinematics": "MuJoCo 로봇팔의 실제 관절 상태"}[topic])
+                                   "robot_kinematics": "MuJoCo 로봇팔의 실제 관절 상태",
+                                   "self_attention": "토큰 관계 점수로 계산하는 Self-Attention"}[topic])
         if topic == "quantization" and plan.get("scope") == "weight_and_activation":
             plan["title"] = "가중치와 활성값을 따로 양자화해 오차를 비교"
         manifest_path = write_v9_manifest(topic, trace_path, args.output_dir,

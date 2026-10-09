@@ -16,10 +16,16 @@
     "systems_infrastructure": ["linux", "networking", "ipc", "distributed_systems", "docker", "gpu_scheduling", "inference_serving", "mlops", "llmops", "ai_workflow", "rag_infrastructure", "vector_databases", "benchmarking", "performance_profiling"]
   },
   "aliases": {
-    "rag": ["retrieval augmented generation", "naive rag", "advanced rag"],
-    "quantization": ["model quantization", "int8 quantization", "int4 quantization"],
-    "nms": ["non maximum suppression", "non-maximum suppression"],
-    "mcu_pid": ["motor pid", "embedded pid", "pwm pid"],
+    "rag": ["retrieval augmented generation", "naive rag", "advanced rag", "검색 증강 생성"],
+    "quantization": ["model quantization", "int8 quantization", "int4 quantization", "양자화", "int8 양자화", "int4 양자화"],
+    "nms": ["non maximum suppression", "non-maximum suppression", "비최대 억제"],
+    "object_detection": ["객체 탐지", "물체 탐지"],
+    "mcu_pid": ["motor pid", "embedded pid", "pwm pid", "모터 pid", "모터 제어 pid", "stm32 pid 제어"],
+    "forward_kinematics": ["로봇팔 순기구학", "순기구학", "정기구학"],
+    "navigation2": ["자율주행", "nav2 내비게이션"],
+    "self_attention": ["자기주의", "셀프 어텐션", "self attention", "attention"],
+    "cross_attention": ["attention"],
+    "multi_head_attention": ["attention"],
     "robot_kinematics": ["mujoco h1 arm", "unitree h1 arm"]
   },
   "overrides": {
@@ -37,6 +43,14 @@
       "supported_features": ["weight-only", "weight+activation", "symmetric/asymmetric", "per-tensor/per-channel", "INT8/INT4", "dequantization/error"],
       "software_requirements": ["Python 3.12", "NumPy"],
       "known_limitations": ["Reference arithmetic simulation only; no accelerator kernel or model-quality benchmark."]
+    },
+    "self_attention": {
+      "domain": "ai_deep_learning", "support_level": "L3", "implementation_status": "ready",
+      "adapter": "core.mechanism.adapters.attention:SelfAttentionAdapter", "execution_backend": "NumPy",
+      "trace_schema": "mechanism-envelope/v1", "renderers": ["manim"],
+      "supported_features": ["Q/K/V projection", "QKᵀ scores", "scale", "optional causal mask", "softmax", "weighted values"],
+      "software_requirements": ["Python 3.12", "NumPy"],
+      "known_limitations": ["Single-head educational arithmetic; no trained Transformer model or model inference."]
     },
     "nms": {
       "domain": "computer_vision", "support_level": "L3", "implementation_status": "ready",

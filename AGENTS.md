@@ -8,14 +8,15 @@ Ignore `_backup_*/`, `CHANGELOG_V7.md`, `CHANGELOG_V8*.md`: superseded history, 
 1. `director` owns story + narration timing + visual state transitions in one compact manifest.
 2. Each beat has one persistent object, one meaningful state change, and one attention target. Do not design slide decks.
 3. For simulation/data-driven visuals, generate or load one shared trace/config first. Manim and Blender must not independently invent values.
-4. Manim/Blender use existing production primitives before new infrastructure. Repeated patterns become helpers, not longer prompts.
-5. Asset lookup, trace validation, manifest validation, and sequence staging are deterministic scripts; do not spend LLM calls on them.
-6. Reviewer runs only after a real preview; one pass by default, up to three targeted passes for flagship shots. Inspect the central cause/comparison/consequence and narration timing, not only technical defects. Missing decisive explanation is high severity. Patch blocker/high issues for acceptance; requested craft polishing may also address documented observations. Report incomplete inspection separately from PASS.
-7. Astra is escalation, never default. Use hero agents for flagship scenes, hard central defects, or failed normal patches.
-8. Resolve runs after visual approval; YouTube only when explicitly requested.
-9. Final delivery >=1920x1080; prefer 2560x1440 for line/text-heavy masters when practical.
-10. No persistent dashboard chrome, SCENE badges, opaque subtitle boxes, decorative zooms, or tiny secondary text by default.
-11. Pass compact artifacts rather than conversation history.
+4. For V11 robotics/AI mechanisms, inspect `scripts/inspect_capabilities.py` and the Mechanism Registry before routing; resolve Korean/English aliases, require a unique canonical topic, then check support level and implementation status. Do not route unsupported topics through RAG or a generic slide path.
+5. Manim/Blender use existing production primitives before new infrastructure. Repeated patterns become helpers, not longer prompts.
+6. Asset lookup, trace validation, manifest validation, and sequence staging are deterministic scripts; do not spend LLM calls on them.
+7. Reviewer runs only after a real preview; one pass by default, up to three targeted passes for flagship shots. Inspect the central cause/comparison/consequence and narration timing, not only technical defects. Missing decisive explanation is high severity. Patch blocker/high issues for acceptance; requested craft polishing may also address documented observations. Report incomplete inspection separately from PASS.
+8. Astra is escalation, never default. Use hero agents for flagship scenes, hard central defects, or failed normal patches.
+9. Resolve runs after visual approval; YouTube only when explicitly requested.
+10. Final delivery >=1920x1080; prefer 2560x1440 for line/text-heavy masters when practical.
+11. No persistent dashboard chrome, SCENE badges, opaque subtitle boxes, decorative zooms, or tiny secondary text by default.
+12. Pass compact artifacts rather than conversation history.
 
 ## Source-informed production rules
 - Iterate via cheap previews before final render.

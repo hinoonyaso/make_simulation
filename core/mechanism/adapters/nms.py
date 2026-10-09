@@ -72,15 +72,37 @@ class NMSAdapter:
 
     def validate(self, trace):
         errors = validate_envelope(trace)
+        if trace.get("topic") != "nms" or trace.get("domain") != "computer_vision":
+            errors.append("NMS trace domain/topic mismatch")
         try:
             p = trace["payload"]
             boxes, scores, ids = p["boxes_xyxy"], p["scores"], p["ids"]
             if len(boxes) != len(scores) or len(boxes) != len(ids) or len(set(ids)) != len(ids):
                 errors.append("NMS candidate identity/array mismatch")
-            kept = p["kept_ids"]
-            if any(item not in ids for item in kept) or len(set(kept)) != len(kept):
-                errors.append("NMS output contains unknown or duplicate candidate")
-        except (KeyError, TypeError) as exc:
+                return errors
+            expected = self.execute({"boxes": boxes, "scores": scores, "ids": ids,
+                                     "confidence_threshold": p["confidence_threshold"],
+                                     "iou_threshold": p["iou_threshold"]})["payload"]
+            for key in ("confidence_pass_ids", "kept_ids"):
+                if p.get(key) != expected[key]:
+                    errors.append(f"NMS {key} do not match the input candidates and thresholds")
+            actual_steps = p.get("steps", [])
+            expected_steps = expected["steps"]
+            if len(actual_steps) != len(expected_steps):
+                errors.append("NMS greedy selection step count mismatch")
+            else:
+                for actual, wanted in zip(actual_steps, expected_steps):
+                    if actual.get("selected_id") != wanted["selected_id"] or len(actual.get("comparisons", [])) != len(wanted["comparisons"]):
+                        errors.append("NMS selection/comparison order mismatch")
+                        break
+                    for got, ref in zip(actual["comparisons"], wanted["comparisons"]):
+                        if (got.get("winner_id") != ref["winner_id"] or
+                                got.get("candidate_id") != ref["candidate_id"] or
+                                got.get("suppressed") != ref["suppressed"] or
+                                not np.isclose(float(got.get("iou", np.nan)), ref["iou"], atol=1e-12)):
+                            errors.append("NMS recorded IoU comparison does not match the boxes")
+                            break
+        except (KeyError, TypeError, ValueError) as exc:
             errors.append(f"invalid NMS payload: {exc}")
         return errors
 

@@ -53,6 +53,24 @@ def _trace_validator(trace_path):
                 errors = module.validate_trace(data)
             elif schema == "mechanism-envelope/v1":
                 errors = module.validate_envelope(data)
+                # Dispatch known V11 topics through their domain validator so
+                # mathematically inconsistent payloads cannot pass as schema-only traces.
+                try:
+                    if str(BUNDLE) not in sys.path:
+                        sys.path.insert(0, str(BUNDLE))
+                    from core.mechanism.registry import MechanismRegistry
+                    capability = MechanismRegistry().resolve(data.get("topic", ""))
+                    if capability is None:
+                        errors.append(f"unknown mechanism topic for domain trace validation: {data.get('topic')!r}")
+                    elif capability.get("trace_schema") != schema:
+                        errors.append(f"mechanism topic {data.get('topic')!r} does not declare trace schema {schema!r}")
+                    elif capability.get("implementation_status") == "ready":
+                        adapter = MechanismRegistry().load_adapter(data["topic"])
+                        errors.extend(adapter.validate(data))
+                    else:
+                        errors.append(f"mechanism topic {data.get('topic')!r} has no ready domain validator")
+                except Exception as exc:
+                    errors.append(f"domain trace validation failed safely: {type(exc).__name__}: {exc}")
             else:
                 errors = module.validate(str(target))
             return list(errors)

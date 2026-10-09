@@ -45,11 +45,11 @@ class MechanismTraceScene(Scene):
             caption = text(beat["caption"], 20, P.muted, 12.5).move_to([0, -3.1, 0])
             header = text(f"{index+1:02d} / {len(beats):02d}", 16, P.active).to_corner(UR, buff=.4)
             anims = [FadeIn(header), FadeIn(caption)]
-            if index == 0:
-                anims.extend(transitions[0])
-            else:
-                anims.extend(transitions[index])
-            run_time = min(.6, duration * .35)
+            state_animations = transitions[index] if index < len(transitions) else []
+            anims.extend(state_animations)
+            state_runtime = max([value for animation in state_animations
+                                 if isinstance((value := getattr(animation, "run_time", .6)), (int, float))] + [.6])
+            run_time = min(duration * .88, max(.6, state_runtime))
             self.play(*anims, run_time=run_time)
             self.wait(max(0.0, duration - run_time))
             self.remove(header, caption)
@@ -60,12 +60,18 @@ class MechanismTraceScene(Scene):
         if kind == "nms": return self._nms()
         if kind == "mcu_pid": return self._pid()
         if kind == "mujoco_arm": return self._mujoco_arm()
+        if kind == "self_attention": return self._self_attention()
         raise ValueError(f"no Manim visual plan for mechanism: {kind}")
 
     def _quantization(self):
         p = self.plan
         original, quantized, restored = (flat_values(p[key]) for key in ("original", "quantized", "dequantized"))
         x0, x1, y = -5.4, 5.4, .25
+        qmin, qmax = int(p["qmin"]), int(p["qmax"])
+        real_low = min(float(np.min(original)), float(np.min(restored)), 0.0)
+        real_high = max(float(np.max(original)), float(np.max(restored)), 0.0)
+        def normalize(value, low, high):
+            return 0.0 if high <= low else 2.0 * (float(value) - low) / (high - low) - 1.0
         axis = Line([x0, y, 0], [x1, y, 0], color=P.faint)
         axis_labels = VGroup(text("실수 가중치", 18, P.muted).move_to([-4.5, 1.3, 0]),
                              text(f"{p['bits']}비트 정수 코드", 18, P.active).move_to([0, 1.3, 0]),
@@ -76,14 +82,16 @@ class MechanismTraceScene(Scene):
         restored_dots = VGroup()
         value_labels = VGroup()
         for i, (value, q, deq, x) in enumerate(zip(original, quantized, restored, positions)):
-            y0 = y + float(value) * 1.15
-            yq = y + float(q) / max(1, 2**(p["bits"]-1)-1) * 1.15
-            yd = y + float(deq) * 1.15
+            y0 = y + normalize(value, real_low, real_high) * 1.15
+            # Place the integer code on the same calibrated interval as its
+            # dequantized real value; this makes zero_point's offset visible.
+            yq = y + normalize(q, qmin, qmax) * 1.15
+            yd = y + normalize(deq, real_low, real_high) * 1.15
             original_dots.add(Dot([x, y0, 0], radius=.075, color=P.muted))
             quant_dots.add(Square(.15, color=P.active, fill_opacity=.8).move_to([x, yq, 0]))
             restored_dots.add(Dot([x, yd, 0], radius=.07, color=P.result))
             value_labels.add(text(f"{value:.2f}", 13, P.fg).move_to([x, -1.25, 0]))
-        scale_label = text(f"scale={np.asarray(p['scale']).reshape(-1)[0]:.5g}   zero point={np.asarray(p['zero_point']).reshape(-1)[0]:g}",
+        scale_label = text(f"scale={np.asarray(p['scale']).reshape(-1)[0]:.5g}   zero point={np.asarray(p['zero_point']).reshape(-1)[0]:g}   code=[{qmin}, {qmax}]",
                            21, P.active).move_to([0, 2.1, 0])
         error_text = f"가중치 최대 절대 오차 = {p['max_absolute_error']:.5g}"
         if p.get("activation_max_absolute_error") is not None:
@@ -92,7 +100,6 @@ class MechanismTraceScene(Scene):
                            P.result, 12.5).move_to([0, -2.15, 0])
         graphic = VGroup(axis, axis_labels, original_dots, quant_dots, restored_dots, value_labels,
                          scale_label, error_label)
-        quant_dots.set_opacity(0); restored_dots.set_opacity(0); error_label.set_opacity(0)
         return graphic, [[Create(axis), FadeIn(axis_labels), FadeIn(original_dots), FadeIn(value_labels)],
                          [FadeIn(quant_dots), FadeIn(scale_label)],
                          [FadeIn(restored_dots), FadeIn(error_label)]]
@@ -121,17 +128,27 @@ class MechanismTraceScene(Scene):
         threshold = text(f"confidence ≥ {p['confidence_threshold']:.2f}    IoU threshold = {p['iou_threshold']:.2f}",
                          20, P.muted).move_to([2.7, 2.3, 0])
         result = text("유지: " + ", ".join(p["kept_ids"]), 18, P.result, 6.2).move_to([2.7, -2.45, 0])
-        result.set_opacity(0)
-        graphic = VGroup(canvas, candidates, threshold, result)
+        comparison_label = text("confidence 통과 후보를 점수 순서로 비교", 17, P.active, 5.0).move_to([3.55, .3, 0])
+        graphic = VGroup(canvas, candidates, threshold, result, comparison_label)
         steps = p["steps"]
-        selected = steps[0]["selected_id"] if steps else None
-        pair = next((x for step in steps for x in step["comparisons"] if x["suppressed"]), None)
-        compare_label = text((f"{selected} 선택 → {pair['candidate_id']}와 IoU {pair['iou']:.3f} 비교"
-                              if pair else "실제 점수 순으로 후보를 비교"), 21, P.active, 8).move_to([2.5, -1.9, 0])
-        graphic.add(compare_label)
-        highlight = [Indicate(box_mobs[selected], color=P.active)] if selected in box_mobs else []
+        comparisons = []
+        for step in steps:
+            winner = step["selected_id"]
+            if winner in box_mobs:
+                comparisons.append(Indicate(box_mobs[winner], color=P.active, scale_factor=1.05))
+            for item in step["comparisons"]:
+                candidate = item["candidate_id"]
+                if candidate not in box_mobs: continue
+                decision = "억제" if item["suppressed"] else "유지"
+                label = text(f"{winner} × {candidate}\nIoU {item['iou']:.3f} → {decision}",
+                             18, P.error if item["suppressed"] else P.result, 4.8).move_to([3.55, .3, 0])
+                comparisons.extend([Indicate(box_mobs[candidate], color=P.error if item["suppressed"] else P.result),
+                                    Transform(comparison_label, label), Wait(.16)])
+        if comparisons:
+            comparisons.insert(0, FadeIn(comparison_label))
+        comparison_sequence = Succession(*comparisons).set_run_time(3.3) if comparisons else Wait(.1)
         return graphic, [[Create(canvas), FadeIn(threshold), FadeIn(candidates)],
-                         [*highlight, FadeIn(compare_label)],
+                         [comparison_sequence],
                          [*[mob.animate.set_stroke(color=P.result if item in p["kept_ids"] else P.muted)
                             for item, mob in box_mobs.items()], FadeIn(result)]]
 
@@ -159,11 +176,18 @@ class MechanismTraceScene(Scene):
         pwm_points = [[x0+width*i/max(1,len(pwm)-1), -2.5+float(value)*.42, 0]
                       for i, value in enumerate(pwm)]
         pwm_line = polyline(pwm_points, P.active, 3)
+        time_cursor = ValueTracker(0.0)
+        cursor = always_redraw(lambda: Line(
+            [x0+width*time_cursor.get_value()/max_t, y0-.12, 0],
+            [x0+width*time_cursor.get_value()/max_t, y0+height+.12, 0],
+            color=P.active, stroke_width=2))
         label = text(f"이산 PID · 주기 {p['duration_s'] / max(1,len(rows)-1):.3f}s · PWM 범위 [-1, 1]",
                      16, P.muted).move_to([0, 1.95, 0])
-        graphic = VGroup(axes, target, speed, encoder_line, legend, pwm_line, label)
+        graphic = VGroup(axes, target, speed, encoder_line, legend, pwm_line, label, cursor)
         return graphic, [[Create(axes), Create(target), FadeIn(legend)],
-                         [Create(speed), Create(encoder_line)], [Create(pwm_line), FadeIn(label)]]
+                         [Create(speed).set_run_time(2.6), Create(encoder_line).set_run_time(2.6),
+                          FadeIn(cursor), time_cursor.animate.set_value(max_t).set_run_time(2.6)],
+                         [Create(pwm_line), FadeIn(label)]]
 
     def _mujoco_arm(self):
         p = self.plan
@@ -191,3 +215,50 @@ class MechanismTraceScene(Scene):
                             for x,y in zip(xvals,yvals)], P.active, 4)
         graphic=VGroup(axes,shoulder,elbow,labels,ee_line)
         return graphic, [[Create(axes), FadeIn(labels)], [Create(shoulder), Create(elbow)], [Create(ee_line)]]
+
+    def _self_attention(self):
+        p = self.plan
+        n = len(p["tokens"])
+        def matrix(values, title, color):
+            values = np.asarray(values, dtype=float)
+            group = VGroup()
+            for row in range(values.shape[0]):
+                for col in range(values.shape[1]):
+                    value = float(values[row, col])
+                    cell = Square(.78, color=color, stroke_width=1.4,
+                                  fill_opacity=.12 + .65 * min(1.0, abs(value)))
+                    cell.move_to([-.39*(values.shape[1]-1)+col*.82,
+                                  .39*(values.shape[0]-1)-row*.82, 0])
+                    label = text(f"{value:.2f}", 15, P.fg).move_to(cell)
+                    group.add(VGroup(cell, label))
+            title_mob = text(title, 23, color, 10).move_to([0, 2.25, 0])
+            row_tags = VGroup(*[text(f"Q{i+1}", 14, P.muted).move_to([-2.2, .39*(n-1)-i*.82, 0]) for i in range(n)])
+            col_tags = VGroup(*[text(f"K{i+1}", 14, P.muted).move_to([-.39*(n-1)+i*.82, 1.45, 0]) for i in range(n)])
+            return VGroup(title_mob, row_tags, col_tags, group)
+        raw = matrix(p["raw_scores"], "질문 Q × 키 Kᵀ : 내적 점수", P.active)
+        scaled = matrix(p["scaled_scores"], f"차원으로 나눈 점수 · ÷ {p['scale_factor']:.2f}", P.sensor)
+        weights = matrix(p["attention_weights"], "행마다 정규화한 softmax 가중치", P.result)
+        raw_title, row_tags, col_tags, score_cells = raw.submobjects
+        scaled_title, _, _, scaled_cells = scaled.submobjects
+        weights_title, _, _, weight_cells = weights.submobjects
+        output = VGroup(*[text("출력 토큰 " + str(i+1) + "  →  " + ", ".join(f"{v:.2f}" for v in row), 21, P.result)
+                          for i, row in enumerate(p["output"])])
+        output.arrange(DOWN, buff=.3).move_to([0, .55, 0])
+        value_rows = VGroup(*[text(f"V{i+1} = [" + ", ".join(f"{v:.2f}" for v in row) + "]", 16, P.sensor)
+                              for i, row in enumerate(p["v"])])
+        value_rows.arrange(DOWN, buff=.12).move_to([0, -1.3, 0])
+        note = text("각 출력 = 해당 행의 가중치 × V", 20, P.active).move_to([0, 1.75, 0])
+        def reveal(group):
+            title, rows, cols, cells = group.submobjects
+            return AnimationGroup(FadeIn(title), FadeIn(rows), FadeIn(cols),
+                                  LaggedStart(*[FadeIn(cell, shift=UP*.08) for cell in cells], lag_ratio=.08),
+                                  lag_ratio=.05).set_run_time(2.2)
+        def matrix_update(cells, next_cells, old_title, next_title):
+            move_cells = Transform(cells, next_cells).set_run_time(.65)
+            change_title = AnimationGroup(FadeOut(old_title), FadeIn(next_title)).set_run_time(.65)
+            return AnimationGroup(move_cells, change_title, lag_ratio=0).set_run_time(.65)
+        return VGroup(raw, scaled, weights, output, note), [
+            [reveal(raw)], [matrix_update(score_cells, scaled_cells, raw_title, scaled_title)],
+            [matrix_update(score_cells, weight_cells, scaled_title, weights_title)],
+            [FadeOut(score_cells), FadeOut(row_tags), FadeOut(col_tags), FadeOut(weights_title),
+             FadeIn(note), FadeIn(output), FadeIn(value_rows)]]

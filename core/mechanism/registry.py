@@ -43,19 +43,34 @@ class MechanismRegistry:
 
     @staticmethod
     def _normalize(value: str) -> str:
-        return re.sub(r"[^a-z0-9]+", "_", value.casefold()).strip("_")
+        # Preserve Hangul so Korean aliases remain distinguishable after
+        # punctuation/spacing normalization.
+        return re.sub(r"[^a-z0-9가-힣]+", "_", value.casefold()).strip("_")
 
     def list_capabilities(self) -> list[dict[str, Any]]:
         return [dict(row) for row in self._rows]
 
     def resolve(self, topic_or_alias: str) -> dict[str, Any] | None:
         key = self._normalize(topic_or_alias)
-        for row in self._rows:
-            if key == self._normalize(row["topic"]):
-                return dict(row)
-            if any(key == self._normalize(alias) for alias in row["aliases"]):
-                return dict(row)
-        return None
+        # Canonical IDs always win. Aliases are only routable when unique.
+        canonical = [row for row in self._rows if key == self._normalize(row["topic"])]
+        if len(canonical) == 1:
+            return dict(canonical[0])
+        matches = [row for row in self._rows
+                   if any(key == self._normalize(alias) for alias in row["aliases"])]
+        return dict(matches[0]) if len(matches) == 1 else None
+
+    def resolve_detailed(self, topic_or_alias: str) -> dict[str, Any]:
+        key = self._normalize(topic_or_alias)
+        canonical = [row for row in self._rows if key == self._normalize(row["topic"])]
+        matches = canonical or [row for row in self._rows
+                                if any(key == self._normalize(alias) for alias in row["aliases"])]
+        if not matches:
+            return {"status": "unknown", "topic": topic_or_alias, "candidates": []}
+        if len(matches) > 1:
+            return {"status": "ambiguous", "topic": topic_or_alias,
+                    "candidates": [row["topic"] for row in matches]}
+        return {"status": "resolved", "capability": dict(matches[0])}
 
     def require_executable(self, topic_or_alias: str) -> dict[str, Any]:
         row = self.resolve(topic_or_alias)

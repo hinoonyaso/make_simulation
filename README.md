@@ -32,17 +32,19 @@ For a fresh local lexical run, replace `--trace ...` with `--document path/to/do
 
 ## V11 universal mechanism previews
 
-The additive V11 capability registry currently runs RAG, NumPy quantization (weight-only or separate weights and activations), synthetic-candidate IoU/NMS, a numerical MCU PID motor model, and the existing fixed-base MuJoCo H1 arm experiment. Inspect actual levels and limitations before routing a topic:
+The additive V11 capability registry currently runs RAG, NumPy quantization (weight-only or separate weights and activations), synthetic-candidate IoU/NMS, a numerical MCU PID motor model, a NumPy single-head Self-Attention calculation, and the existing fixed-base MuJoCo H1 arm experiment. Korean aliases and ambiguity are resolved by the registry. Inspect actual levels and limitations before routing a topic:
 
 ```bash
 uv run python scripts/inspect_capabilities.py
 uv run python scripts/produce_video.py --topic quantization --preview
 uv run python scripts/produce_video.py --topic nms --preview
 uv run python scripts/produce_video.py --topic mcu_pid --preview
+uv run python scripts/produce_video.py --topic 자기주의 --preview
 uv run python scripts/produce_video.py --topic robot_kinematics --robot unitree_h1 --preview
+uv run python scripts/manage_assets.py search --category environment
 ```
 
-These are silent technical previews, not narrated/reviewed finished videos. Other catalog topics remain planned or trace-only unless the registry says otherwise. See [V11 implementation and limits](docs/v11/IMPLEMENTATION_REPORT.md).
+These are silent technical previews, not narrated/reviewed finished videos. Self-Attention uses toy numerical vectors, not a trained Transformer. The secure pinned-archive helper exists, but no environment currently has enough verified metadata to download, and no environment has passed a simulator load/render test on this host. Clearpath/Gazebo, ManiSkill/SAPIEN and robosuite status is documented in [environment validation](docs/v11/environments/ENVIRONMENT_VALIDATION.md). Other catalog topics remain planned or trace-only unless the registry says otherwise. See [V11 implementation and limits](docs/v11/IMPLEMENTATION_REPORT.md).
 
 ## Explanation craft
 

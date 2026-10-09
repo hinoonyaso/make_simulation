@@ -20,14 +20,16 @@ jobs:
         run: python core/robotics-ai-visual-director-skill/templates/validate_visual_manifest.py pilots/v10_rag_poc/visual_manifest.json
       - name: Test AI validator, generic RAG, and V9 trace routing
         run: python -m unittest discover -s tests -p 'test_ai_*.py' -v
-      - name: Test V11 registry and numerical mechanism adapters
+      - name: Test V11 registry, domain traces, archive safety and environment preflight
         run: python -m unittest tests.test_v11_mechanism -v
       - name: Validate V11 capability routing and vendored robot asset
         run: |
           python scripts/inspect_capabilities.py --topic quantization
+          python scripts/inspect_capabilities.py --topic self_attention
+          python scripts/manage_assets.py search --category environment
           python scripts/manage_assets.py validate --asset blender.open_manipulator_x.v1
       - name: Check Python syntax and module import boundaries
-        run: python -m compileall -q core/ai-mechanism core/mechanism core/visual-assets scripts/produce_ai_video.py scripts/produce_video.py scripts/inspect_capabilities.py scripts/manage_assets.py pilots/v10_rag_poc pilots/v10_threejs_rag/scripts
+        run: python -m compileall -q core/ai-mechanism core/mechanism core/visual-assets core/simulation scripts/produce_ai_video.py scripts/produce_video.py scripts/inspect_capabilities.py scripts/manage_assets.py pilots/v10_rag_poc pilots/v10_threejs_rag/scripts
       - name: Build trace-matched Three.js projection without browser rendering
         run: |
           projection="$(mktemp)"

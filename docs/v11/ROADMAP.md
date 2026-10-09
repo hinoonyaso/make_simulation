@@ -1,10 +1,9 @@
 # V11 roadmap
 
-1. Complete adapter and V9/V10 regression tests; validate all generated previews and inspect frames.
-2. Add a real detector trace path using a pinned, license-reviewed model and image when runtime/weight size permit.
-3. Add small Transformer attention adapter with explicit tensor-shape and softmax checks.
-4. Improve robotics asset loading evidence with xacro expansion and simulator-specific load tests, keeping kinematic source and render mesh roles distinct.
-5. Connect V11 visual plans to the full narration, caption, render-reviewer, and delivery validation workflow before claiming L4.
-6. Add secure pinned-archive fetch only when an asset source, license, size and checksum are reviewed.
+1. Provision a network-enabled ROS 2 Jazzy + Gazebo Harmonic runner and execute Clearpath world dependency/load/physics/render tests.
+2. Provision a Linux SAPIEN/Vulkan runner (or network-enabled robosuite environment) and execute a manipulation task with state trace and preview.
+3. Add a real object detector path only after pinning a license-reviewed model and image/runtime; keep synthetic NMS separate.
+4. Connect ready V11 visual plans to measured Korean narration, captions, reviewer, final delivery and delivery QA before claiming L4.
+5. Validate secure pinned-archive downloading end-to-end against a small approved remote fixture and register only environments with complete provenance/dependency metadata.
 
 These are future tasks; they are not represented as implemented capabilities.

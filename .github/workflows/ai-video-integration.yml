@@ -22,6 +22,10 @@ jobs:
         run: |
           output="$(mktemp -d)"
           python pilots/v10_rag_poc/build_video.py preview --trace pilots/v10_rag_poc/data/ai_trace.json --manifest pilots/v10_rag_poc/visual_manifest.json --output-dir "$output" --silent
+      - name: Render and full-decode the V11 Attention smoke preview
+        run: |
+          output="$(mktemp -d)"
+          python scripts/produce_video.py --topic self_attention --preview --output-dir "$output"
 
   threejs-browser:
     runs-on: ubuntu-latest

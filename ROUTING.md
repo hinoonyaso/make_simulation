@@ -23,6 +23,12 @@ Do not preload the bundle. Route from the artifact that exists now.
 - For an executable local RAG production, invoke `uv run python scripts/produce_ai_video.py --topic rag --trace <trace.json> --render auto --silent`. For new inputs use `--document <utf8-file> --question <text> [--chunk-size N --overlap N --top-k K]`. The supported fresh-execution path is lexical TF-IDF plus cosine retrieval and context assembly; it has no semantic embedding model or answer-generation model. Its labels and evidence must say so. Other AI topics are rejected until implemented.
 - The production CLI emits one V9-compatible `visual_manifest.json`, validates the AI trace, renders a preview and runs technical decode QA before final rendering. `auto` keeps Manim as the full mechanism renderer and inserts the Three.js vector segment only if recorded vectors and local browser dependencies are available; otherwise it records a Manim fallback.
 
+## V11 mechanism capability routing
+- Before selecting a renderer for a robotics/AI mechanism, query `uv run python scripts/inspect_capabilities.py` or `MechanismRegistry`. Resolve Korean and English aliases to a canonical topic, then check its support level and implementation status.
+- For ready numerical adapters, use `uv run python scripts/produce_video.py --topic <canonical-or-unambiguous-alias> --preview`. The command executes the adapter, validates its domain trace, makes a visual plan, renders Manim and full-decodes the preview. An ambiguous alias (for example `attention`) must return candidates; select `self_attention`, `cross_attention` or `multi_head_attention` explicitly.
+- `self_attention` is a NumPy single-head educational calculation: Q/K/V → QKᵀ → scaling → optional causal mask → softmax → weighted values. It is not trained Transformer or LLM inference. NMS is synthetic candidate arithmetic, not YOLO inference. Quantization is NumPy reference arithmetic, not an accelerator kernel. MCU PID is a numerical plant, not firmware or hardware execution.
+- Ready means the declared adapter can execute its stated scope; it does not imply L4 full production. General narration, captions, reviewer and delivery workflow remain separate from the current silent technical renderer. A missing or planned adapter is refused by name rather than sent to RAG or a generic slide renderer.
+
 ## Skip rules
 - no preview -> no Reviewer
 - no edit request/assets -> no Resolve

@@ -25,17 +25,22 @@ def quantize_array(values: np.ndarray, bits: int, scheme: str, granularity: str)
     else:
         low = np.min(values, axis=reduction_axes, keepdims=granularity == "per_channel")
         high = np.max(values, axis=reduction_axes, keepdims=granularity == "per_channel")
+        # Affine quantization must represent real zero. Include it in each
+        # calibration interval before deriving scale and zero point.
+        low = np.minimum(low, 0.0)
+        high = np.maximum(high, 0.0)
         scale = np.where(high > low, (high - low) / (qmax - qmin), 1.0)
         zero_point = np.clip(np.rint(qmin - low / scale), qmin, qmax).astype(np.int64)
     quantized = np.clip(np.rint(values / scale + zero_point), qmin, qmax).astype(np.int64)
     restored = (quantized - zero_point) * scale
     error = np.abs(values - restored)
     relative = np.divide(error, np.abs(values), out=np.zeros_like(error), where=values != 0)
+    saturated = (np.rint(values / scale + zero_point) < qmin) | (np.rint(values / scale + zero_point) > qmax)
     return {"qmin": qmin, "qmax": qmax, "scale": np.asarray(scale).tolist(),
             "zero_point": np.asarray(zero_point).tolist(), "original": values.tolist(),
             "quantized_integer": quantized.tolist(), "dequantized": restored.tolist(),
             "absolute_error": error.tolist(), "relative_error": relative.tolist(),
-            "max_absolute_error": float(error.max())}
+            "saturation_mask": saturated.tolist(), "max_absolute_error": float(error.max())}
 
 
 class QuantizationAdapter:
@@ -100,7 +105,14 @@ class QuantizationAdapter:
     def validate(self, trace):
         errors = validate_envelope(trace)
         payload = trace.get("payload", {})
+        if trace.get("topic") != "quantization" or trace.get("domain") != "ai_deep_learning":
+            errors.append("quantization trace domain/topic mismatch")
         try:
+            bits = int(payload["bits"]); scheme = payload["scheme"]
+            if bits not in {4, 8} or scheme not in {"symmetric", "asymmetric"}:
+                errors.append("quantization trace has unsupported bits/scheme")
+            expected_qmin = -(2 ** (bits - 1)) + 1 if scheme == "symmetric" else 0
+            expected_qmax = 2 ** (bits - 1) - 1 if scheme == "symmetric" else 2 ** bits - 1
             for name, item in (("weights", payload), ("activations", payload.get("activation_quantization"))):
                 if item is None:
                     continue
@@ -109,11 +121,32 @@ class QuantizationAdapter:
                 restored = np.asarray(item["dequantized"], dtype=float)
                 scale = np.asarray(item["scale"], dtype=float)
                 zero = np.asarray(item["zero_point"], dtype=float)
+                qmin, qmax = int(item["qmin"]), int(item["qmax"])
+                if (qmin, qmax) != (expected_qmin, expected_qmax):
+                    errors.append(f"{name} integer range does not match bit width and quantization scheme")
+                granularity = payload.get("granularity")
+                expected_scale_shape = () if granularity == "per_tensor" else ((original.shape[0], 1) if original.ndim == 2 else None)
+                if expected_scale_shape is None or scale.shape != expected_scale_shape or zero.shape != expected_scale_shape:
+                    errors.append(f"{name} scale/zero point shape does not match granularity")
                 if (original.shape != quantized.shape or original.shape != restored.shape or
                         not np.allclose((quantized - zero) * scale, restored)):
                     errors.append(f"{name} quantization shape or dequantization equation mismatch")
                 if not np.isfinite(original).all() or not np.isfinite(restored).all():
                     errors.append(f"{name} quantization contains non-finite values")
+                if (not np.isfinite(scale).all() or np.any(scale <= 0) or
+                        np.any(zero < qmin) or np.any(zero > qmax) or
+                        np.any(quantized < qmin) or np.any(quantized > qmax)):
+                    errors.append(f"{name} quantization scale, zero point, or integer code is out of range")
+                expected = np.clip(np.rint(original / scale + zero), qmin, qmax)
+                if not np.array_equal(expected.astype(np.int64), quantized.astype(np.int64)):
+                    errors.append(f"{name} integer codes do not match the quantization equation")
+                if not np.allclose(np.abs(original - restored), np.asarray(item["absolute_error"])):
+                    errors.append(f"{name} absolute error does not match the restored values")
+                expected_saturation = (np.rint(original / scale + zero) < qmin) | (np.rint(original / scale + zero) > qmax)
+                if not np.array_equal(expected_saturation, np.asarray(item.get("saturation_mask"), dtype=bool)):
+                    errors.append(f"{name} saturation mask does not match the clipping boundaries")
+                if not np.isclose(float(item["max_absolute_error"]), float(np.max(np.abs(original-restored)))):
+                    errors.append(f"{name} maximum absolute error summary mismatch")
             if payload.get("scope") == "weight_and_activation" and payload.get("activation_quantization") is None:
                 errors.append("weight_and_activation scope is missing activation results")
         except (KeyError, TypeError, ValueError) as exc:
@@ -125,7 +158,7 @@ class QuantizationAdapter:
         activation = p.get("activation_quantization")
         return {"kind": "quantization", "original": p["original"], "quantized": p["quantized_integer"],
                 "dequantized": p["dequantized"], "bits": p["bits"], "scheme": p["scheme"],
-                "scale": p["scale"], "zero_point": p["zero_point"], "scope": p["scope"],
+                "qmin": p["qmin"], "qmax": p["qmax"], "scale": p["scale"], "zero_point": p["zero_point"], "scope": p["scope"],
                 "max_absolute_error": p["max_absolute_error"],
                 "activation_max_absolute_error": activation["max_absolute_error"] if activation else None}
 

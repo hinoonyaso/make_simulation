@@ -6,5 +6,8 @@
 - MCU PID uses a simple first-order plant and quantized encoder model. It does not execute firmware, interrupt/peripheral simulation, or hardware measurement.
 - The MuJoCo adapter wraps one fixed-base H1 arm experiment; it does not establish ROS2, general FK/IK, or hardware compatibility.
 - RAG fresh execution remains lexical; semantic retrieval and answer generation are not provided by this adapter.
-- Asset fetch is local-only. Generic pinned remote archive download and URDF conversion are not implemented. URDF validation does not run xacro or a physics/render engine.
+- Pinned HTTPS archive download/extraction primitives now require explicit host, size, SHA-256 and destination metadata; they reject path traversal, links, special files and oversized archives. No registered environment currently has the complete pinned metadata, so actual environment downloads remain blocked. URDF validation does not run xacro or a physics/render engine.
+- Environment preflight/catalog exists, but no Clearpath/Gazebo, ManiSkill/SAPIEN or robosuite environment has passed load, physics/action, trace, collision or render tests on this host.
+- `object_detection` remains planned. The existing NMS adapter is synthetic candidate arithmetic and must not be reported as YOLO or image inference.
+- The common mechanism CLI still produces silent technical renders. Narration, captions, educational reviewer, final delivery QA and L4 full production are not connected for these adapters.
 - Most catalog entries are routing/planning records, not executable implementations. Check the capability registry before claiming support.
