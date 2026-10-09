@@ -42,6 +42,8 @@ The final frame sweep shows actual source ranges and the observed C05/C06 overla
 
 The MP4 was fully decoded and representative frames across the 34-second timeline were inspected. A normal-speed human watch/listen and learner-comprehension check were not performed; this silent render has no educational-review PASS claim.
 
+Reproducibility was exercised from a separate local Git clone at commit `f734a45`, with no `pilots/07_naive_rag/` files present: trace validation and `uv run python pilots/v10_rag_poc/build_video.py final --silent` succeeded, and the generated 1920×1080 H.264 30 fps file passed full decode. Running the preview command without audio inputs printed the missing source paths and produced a video-only file.
+
 ## Data boundaries and provenance
 
 The committed trace retains source-run provenance and SHA-256, source data hash, model names and retrieval index. The source run contains only LLM answer-generation timing; that measured duration is retained. Chunking, embedding and retrieval execution durations are not present and remain null. Scene duration is presentation time and is not model latency. The optional adapter can rebuild from an explicitly supplied `--source-run`; by default `build_ai_rag_trace.py` only validates and reuses the committed trace.
