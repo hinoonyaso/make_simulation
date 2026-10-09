@@ -219,7 +219,11 @@ def main():
     title = add_text("Title", "Unitree H1 | 물리 실행 trace", .12, (.20, 1.04, -2.0), ink, font, camera)
     subtitle = add_text("Subtitle", "MuJoCo 관절 상태를 Blender 3D 메시와 그래프에 동기화", .064,
                         (.20, .86, -2.0), muted, font, camera)
-    scope = add_text("Scope", "고정 골반 · PD 토크 제어 · trace playback", .052,
+    playback_speed = float(payload.get("playback_speed", 1.0))
+    scope_copy = (f"MuJoCo {payload.get('source_duration_sec', payload['end_time']-payload['start_time']):.2f}s"
+                  f" · 영상 {payload.get('presentation_duration_sec', payload['end_time']-payload['start_time']):.2f}s"
+                  f" · 재생 {playback_speed:.2f}× · 고정 골반 / PD 토크")
+    scope = add_text("Scope", scope_copy, .052,
                      (.20, .73, -2.0), muted, font, camera)
 
     # Graph of actual and commanded left-shoulder angles from the same trace.
@@ -229,8 +233,10 @@ def main():
     actual_values = np.asarray([frame["qpos"][payload["shoulder_index"]] for frame in payload["frames"]], dtype=float)
     ymin = min(float(target_values.min()), float(actual_values.min())) - .04
     ymax = max(float(target_values.max()), float(actual_values.max())) + .04
-    def graph_x(index):
-        return gx0 + (gx1 - gx0) * index / (len(payload["frames"]) - 1)
+    def graph_x(source_time):
+        duration = payload["end_time"] - payload["start_time"]
+        ratio = 0.0 if duration <= 0 else (float(source_time) - payload["start_time"]) / duration
+        return gx0 + (gx1 - gx0) * ratio
     def graph_y(value):
         return gy0 + (gy1 - gy0) * (value - ymin) / (ymax - ymin)
     add_text("Graph title", "왼쪽 어깨 각도 (rad)", .068, (gx0, .57, -2.0), ink, font, camera)
@@ -241,11 +247,14 @@ def main():
         y = gy0 + (gy1 - gy0) * k / 3
         add_line(f"Graph grid {k}", [(gx0, y, -2.01), (gx1, y, -2.01)], grid, .0015, camera)
     add_line("Graph axis x", [(gx0, gy0, -2.01), (gx1, gy0, -2.01)], muted, .002, camera)
-    add_line("Target angle", [(graph_x(i), graph_y(v), -2.0) for i, v in enumerate(target_values)], target_mat, .006, camera)
-    add_line("Actual angle", [(graph_x(i), graph_y(v), -2.0) for i, v in enumerate(actual_values)], actual_mat, .006, camera)
+    source_values = [float(frame["source_time_sec"]) for frame in payload["frames"]]
+    add_line("Target angle", [(graph_x(t), graph_y(v), -2.0)
+                              for t, v in zip(source_values, target_values)], target_mat, .006, camera)
+    add_line("Actual angle", [(graph_x(t), graph_y(v), -2.0)
+                              for t, v in zip(source_values, actual_values)], actual_mat, .006, camera)
     add_text("Y max", f"{ymax:.2f}", .042, (gx1 + .025, gy1 - .015, -2.0), muted, font, camera)
     add_text("Y min", f"{ymin:.2f}", .042, (gx1 + .025, gy0 - .015, -2.0), muted, font, camera)
-    add_text("X zero", "0.0 s", .042, (gx0, gy0 - .10, -2.0), muted, font, camera)
+    add_text("X zero", f"{payload['start_time']:.1f} s", .042, (gx0, gy0 - .10, -2.0), muted, font, camera)
     add_text("X end", f"{payload['end_time']:.1f} s", .042, (gx1 - .2, gy0 - .10, -2.0), muted, font, camera)
     cursor = add_line("Graph time cursor", [(gx0, gy0 - .015, -2.02), (gx0, gy1 + .015, -2.02)], white, .003, camera)
     cursor.data.splines[0].points[0].keyframe_insert(data_path="co", frame=1)
@@ -289,11 +298,13 @@ def main():
             obj.keyframe_insert(data_path="location", frame=frame_number)
             obj.keyframe_insert(data_path="rotation_quaternion", frame=frame_number)
         cursor_pts = cursor.data.splines[0].points
-        for point, co in zip(cursor_pts, ((graph_x(idx), gy0 - .015, -2.02), (graph_x(idx), gy1 + .015, -2.02))):
+        source_time = frame["source_time_sec"]
+        for point, co in zip(cursor_pts, ((graph_x(source_time), gy0 - .015, -2.02),
+                                          (graph_x(source_time), gy1 + .015, -2.02))):
             point.co = (*co, 1)
             point.keyframe_insert(data_path="co", frame=frame_number)
-        actual_dot.location = (graph_x(idx), graph_y(float(actual_values[idx])), -2.03)
-        target_dot.location = (graph_x(idx), graph_y(float(target_values[idx])), -2.03)
+        actual_dot.location = (graph_x(source_time), graph_y(float(actual_values[idx])), -2.03)
+        target_dot.location = (graph_x(source_time), graph_y(float(target_values[idx])), -2.03)
         actual_dot.keyframe_insert(data_path="location", frame=frame_number)
         target_dot.keyframe_insert(data_path="location", frame=frame_number)
 

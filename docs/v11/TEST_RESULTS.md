@@ -1,5 +1,24 @@
 # V11.2 local validation results
 
+## V11.4 local validation (2026-10-10)
+
+| Check | Status | Evidence |
+|---|---|---|
+| Full regression suite | PASS | `uv run --offline python -m unittest discover -s tests -v` — 87 tests passed, including commit-only cache reuse. |
+| Compile / diff whitespace | PASS | Changed Python packages and scenes compile; `git diff --check` clean. |
+| Shared timeline and routing tests | PASS | Frame rounding, phase continuity, source mapping, invalid ranges, renderer choice/fallback, explicit Blender block, and renderer/timeline cache partition covered in `tests/test_v114_timeline_routing.py`. |
+| Quantization Manim preview | PASS | `/tmp/v114-final-quant/quantization-1e64a469f70189111216/preview.mp4`; 432 frames, 14.4 s, 960×540, 30 fps, final full decode. |
+| YOLO image-space preview | PASS | `/tmp/v114-final-yolo/object_detection-19ed95ad9457498f09dc/preview.mp4`; 468 frames; each of four phases uses 117 frames; 960×540, 30 fps, final full decode. |
+| H1 comparative Manim preview | PASS | Explicit `comparative_analysis` selected Manim; 960×540, 30 fps, full decode. |
+| H1 motion Blender preview | PASS | `/tmp/v114-final-h1/robot_kinematics-d8b94a256468edf69206/preview.mp4`; Auto selected Blender 5.2.1; 2.0 s MuJoCo source trace mapped across 11.7 s/351 presentation frames; H1 mesh, full model asset hash, and final full decode recorded. Executed in approved local context because normal WSL interop failed. |
+| RAG Manim-only fallback preview | PASS | Four-phase timeline retained; 1,020 frames, 34 s, 960×540, full decode; feature loss recorded when ordinary local loopback capture was blocked. |
+| RAG Manim + Three.js preview | PASS | `/tmp/v114-final-rag/rag-b3d854b04e3ffab771e3/preview.mp4`; exact embedding interval `[255, 510)` at 30 fps; 1,020 frames total; final full decode. Boundary stills 254/255 and 509/510 inspected. |
+| YOLO and H1 sampled phase frames | PASS, scoped | YOLO stage boundaries and H1 mesh/trace display samples inspected. This is not whole-video or audio review. |
+| Remote GitHub Actions | NOT_RUN | Workflow includes the V11.4 unit test command, but was not dispatched. |
+| Audio/listening and learner comprehension | NOT_RUN | Renders are silent technical previews. |
+
+Detailed artifact paths and environment caveats are in [V11.4 integration report](V11_4_INTEGRATION_REPORT.md).
+
 Run from `/home/sang/make_simulation` on 2026-10-09. These are local results; GitHub Actions has not run.
 
 | Check | Status | Evidence |

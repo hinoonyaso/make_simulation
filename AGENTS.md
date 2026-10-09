@@ -47,3 +47,12 @@ For this user’s robotics episodes where physical motion/contact is relevant, r
 - `object_detection` is actual, local YOLO11n inference only with the verified checkpoint hash. It is separate from synthetic `nms`; replay verifies the source image hash and performs no inference. Ultralytics is optional and its runtime hooks run in a child process.
 - `robot_kinematics --render blender` uses the existing H1 MJCF and Blender trace pilot. The exporter checks source hash, joint order/limits and FK; Blender renders interpolated MuJoCo states and does not integrate physics again. Set `BLENDER_BIN` when automatic executable discovery does not work; explicit Blender failure is never downgraded to Manim.
 - Render Integration CI remains manual. A local PASS is not a remote Actions PASS; report remote dispatch as NOT_RUN when no dispatch credential/UI is available.
+
+## V11.4 renderer routing and timeline
+
+- Route from the requested visual goal, trace evidence, renderer capabilities, local assets, and a process-level runtime preflight. Inspect with `uv run python scripts/inspect_capabilities.py --topic <topic> --preflight`.
+- H1 `motion_3d` requires Blender; numerical/comparative H1 analysis uses Manim. An explicit Blender request stays BLOCKED on failure. Automatic 2D fallback must report its feature loss.
+- Renderers consume the run's `mechanism-timeline/v1`. Integer frame ranges define presentation boundaries; source trace time remains a separate mapping.
+- YOLO phases consume the timeline ranges. RAG keeps its four phase IDs, and the Three.js projection replaces the embedding phase's exact frame range.
+- Run identity includes effective renderer, goal, timeline, renderer version, relevant code fingerprint and model/asset hash. A Git commit change by itself is not a render-input change.
+- Full decode and frame count do not prove motion continuity or educational review; report those checks separately.

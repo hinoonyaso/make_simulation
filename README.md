@@ -68,6 +68,12 @@ These are silent technical previews, not narrated/reviewed finished videos. Self
 
 The common CLI now routes `robot_kinematics --render blender` through the existing H1 mesh trace exporter/renderer, and `object_detection` through the verified YOLO11n CPU inference adapter. Blender plays the validated MuJoCo trace; it does not rerun physics. YOLO uses the pinned checkpoint hash and records the original image hash; replay checks the same image and does not rerun inference. Install Ultralytics 8.3.0 in the active environment only when real YOLO inference is requested.
 
+## V11.4 routing and timeline
+
+`--visual-goal` steers renderer selection by the evidence the explanation needs: H1 `motion_3d` requires the Blender trace renderer, H1 comparison stays in Manim, YOLO uses image-space Manim, and RAG can use the recorded-vector Three.js embedding segment. `--render auto` runs a lightweight process preflight; `scripts/inspect_capabilities.py --topic <topic> --preflight` shows the decision before rendering. Explicit Blender failures remain blocked.
+
+Each run stores a `mechanism-timeline/v1` contract with contiguous integer frame ranges. Manim, YOLO, H1 trace export and the existing four-beat RAG scene use that timeline. H1 source time is mapped separately from presentation time. RAG's Three.js section uses the exact embedding-phase frame range. Run identity includes renderer choice, visual goal, timeline, relevant code/runtime versions and local asset hash. See [V11.4 routing](docs/v11/V11_4_RENDERER_ROUTING.md), [timeline contract](docs/v11/V11_4_TIMELINE_CONTRACT.md), and [integration report](docs/v11/V11_4_INTEGRATION_REPORT.md).
+
 ```bash
 uv run python scripts/produce_video.py --topic robot_kinematics --robot unitree_h1 \
   --mode replay --trace pilots/v10_mujoco_arm/data/trace.json --render blender --preview

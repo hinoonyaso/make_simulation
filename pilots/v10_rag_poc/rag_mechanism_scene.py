@@ -8,6 +8,7 @@ from manim import *
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
+sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "core/manim-robotics-education-skill/templates"))
 from manim_kit import apply_theme, txt, BeatClock, P
 
@@ -83,16 +84,40 @@ def chunk_range_scene():
 def beat_time(phase_id, value):
     # One frame is the smallest meaningful animation. A longer floor makes
     # several tiny actions overrun valid short manifest beats.
-    return max(1 / 30, value * min(1.0, DURATIONS[phase_id] / DESIGNED[phase_id]))
+    scaled = value * min(1.0, DURATIONS[phase_id] / DESIGNED[phase_id])
+    return max(1, round(scaled * 30)) / 30
 
 
 class RAGMechanismPoC(Scene):
     def construct(self):
         apply_theme(self)
+        timeline_path = os.environ.get("V10_RAG_TIMELINE_PATH")
+        timeline = json.loads(Path(timeline_path).read_text(encoding="utf-8")) if timeline_path else None
+        if timeline:
+            from core.mechanism.timeline import validate_timeline
+            errors = validate_timeline(timeline, expected_phase_ids=list(PHASE_IDS))
+            if errors:
+                raise RuntimeError("invalid shared RAG timeline: " + "; ".join(errors))
+            if timeline["fps"] != 30:
+                raise RuntimeError("RAG Manim scene requires a 30 fps shared timeline")
+
+        def assert_phase_frame(phase_id, boundary):
+            if timeline is None:
+                return
+            phase = next(item for item in timeline["phases"] if item["phase_id"] == phase_id)
+            expected = phase[f"presentation_{boundary}_frame"]
+            actual = int(round(self.renderer.time * timeline["fps"]))
+            if boundary == "end" and actual < expected:
+                self.wait((expected - actual) / timeline["fps"])
+                actual = int(round(self.renderer.time * timeline["fps"]))
+            if actual != expected:
+                raise RuntimeError(f"RAG phase {phase_id} {boundary} frame is {actual}; expected {expected}")
+
         title = heading("문서 범위가 청크로 나뉜다")
         self.add(title)
 
         # Segment 1: exact character windows from the recorded splitter output.
+        assert_phase_frame("chunking", "start")
         with BeatClock(self, DURATIONS["chunking"]) as clock:
             rows, ruler, visible_chunks = chunk_range_scene()
             density_note = f" · {len(rows)}개 표시" if len(rows) < len(CHUNKS) else ""
@@ -160,8 +185,10 @@ class RAGMechanismPoC(Scene):
                       UpdateFromAlphaFunc(cards_group, follow_chunk_text), run_time=movement_time)
             clock.used += movement_time
             clock.wait(beat_time("chunking", .8))
+        assert_phase_frame("chunking", "end")
 
         # Segment 2: each stored chunk vector appears at its saved display coordinate.
+        assert_phase_frame("embeddings", "start")
         with BeatClock(self, DURATIONS["embeddings"]) as clock:
             self.play(Transform(title, heading("같은 ID의 청크가 벡터가 된다")),
                       *[FadeOut(mob) for mob in [subhead, ruler, *(row[0] for row in rows),
@@ -206,8 +233,10 @@ class RAGMechanismPoC(Scene):
                          19, P.muted, 11.8).move_to([0, -3.35, 0])
             self.play(FadeIn(note), run_time=beat_time("embeddings", .25)); clock.used += beat_time("embeddings", .25)
             clock.wait(beat_time("embeddings", 1.5))
+        assert_phase_frame("embeddings", "end")
 
         # Segment 3: candidates are tested in recorded score order; one current link at a time.
+        assert_phase_frame("retrieval", "start")
         with BeatClock(self, DURATIONS["retrieval"]) as clock:
             self.play(Transform(title, heading("질문과 후보 청크의 점수로 순위를 정한다")),
                       FadeOut(query_text), run_time=beat_time("retrieval", .3))
@@ -249,8 +278,10 @@ class RAGMechanismPoC(Scene):
             self.play(Indicate(VGroup(*selected_rows), color=P.result, scale_factor=1.03),
                       FadeIn(top_note), run_time=beat_time("retrieval", .55)); clock.used += beat_time("retrieval", .55)
             clock.wait(beat_time("retrieval", 1.35))
+        assert_phase_frame("retrieval", "end")
 
         # Segment 4: selected source objects move into context, then feed the recorded answer.
+        assert_phase_frame("context", "start")
         with BeatClock(self, DURATIONS["context"]) as clock:
             self.play(Transform(title, heading("검색된 같은 청크가 문맥으로 모인다")),
                       *[FadeOut(row) for row in rows], FadeOut(score_title), FadeOut(top_note),
@@ -291,3 +322,4 @@ class RAGMechanismPoC(Scene):
             answer_text = label(output_label, 17, P.fg, 11.7).move_to([0, -2.45, 0])
             self.play(Create(answer_box), Write(answer_text), run_time=beat_time("context", .6)); clock.used += beat_time("context", .6)
             clock.wait(beat_time("context", 1.0))
+        assert_phase_frame("context", "end")

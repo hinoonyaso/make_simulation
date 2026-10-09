@@ -45,7 +45,8 @@ def _blender_path_arg(path: Path, executable: str) -> str:
     return str(path)
 
 
-def render_h1_blender(trace_path: Path, output: Path, model_path: Path, mode: str = "preview") -> Path:
+def render_h1_blender(trace_path: Path, output: Path, model_path: Path, mode: str = "preview",
+                      timeline_path: Path | None = None) -> Path:
     """Render an already validated MuJoCo H1 trace with the existing pilot Blender scene."""
     if mode not in {"preview", "final"}:
         raise ValueError("render mode must be preview or final")
@@ -57,9 +58,11 @@ def render_h1_blender(trace_path: Path, output: Path, model_path: Path, mode: st
     pilot = ROOT / "pilots/v11_2_h1_blender"
     backend_dir = output.parent / "blender_backend"
     backend_dir.mkdir(parents=True, exist_ok=True)
-    subprocess.run([sys.executable, str(pilot / "export_trace.py"), "--trace", str(trace_path),
-                    "--model", str(model_path), "--out", str(backend_dir), "--fps", "30"],
-                   cwd=ROOT, check=True)
+    export_command = [sys.executable, str(pilot / "export_trace.py"), "--trace", str(trace_path),
+                      "--model", str(model_path), "--out", str(backend_dir), "--fps", "30"]
+    if timeline_path is not None:
+        export_command.extend(["--timeline", str(Path(timeline_path).resolve())])
+    subprocess.run(export_command, cwd=ROOT, check=True)
     width, height = (960, 540) if mode == "preview" else (1920, 1080)
     blender = _blender_binary()
     script_arg = _blender_path_arg(pilot / "render_trace.py", blender)
@@ -80,6 +83,9 @@ def render_h1_blender(trace_path: Path, output: Path, model_path: Path, mode: st
     actual = media_metadata(output)
     if actual["width"] != width or actual["height"] != height:
         raise RuntimeError(f"Blender produced {actual['width']}x{actual['height']}; expected {width}x{height}")
+    payload = json.loads((backend_dir / "blender_payload.json").read_text(encoding="utf-8"))
+    if actual["frame_count"] != len(payload.get("frames", [])):
+        raise RuntimeError("Blender frame count does not match exported timeline payload")
     version = subprocess.run([blender, "--version"], capture_output=True, text=True, check=True).stdout.splitlines()[0]
     from core.mechanism.run_management import file_hash
     (backend_dir / "renderer_provenance.json").write_text(json.dumps({
@@ -87,7 +93,8 @@ def render_h1_blender(trace_path: Path, output: Path, model_path: Path, mode: st
         "fps": 30, "width": width, "height": height, "codec": actual["codec"],
         "trace_sha256": file_hash(trace_path), "model_sha256": file_hash(model_path),
         "physics_integrated_by_blender": False,
-        "state_source": "validated MuJoCo trace; linear qpos interpolation at 30 fps",
+        "state_source": "validated MuJoCo trace; interpolated qpos and FK at presentation frame source times",
+        "timeline": payload.get("timeline"),
     }, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     return output
 
@@ -102,6 +109,8 @@ def render_yolo_trace(trace_path: Path, output: Path, manifest_path: Path, mode:
     env = os.environ.copy()
     env["YOLO_TRACE_PATH"] = str(trace_path)
     env["YOLO_MANIFEST_PATH"] = str(Path(manifest_path).resolve())
+    timeline_path = Path(manifest_path).with_name("timeline.json")
+    env["YOLO_TIMELINE_PATH"] = str(timeline_path.resolve())
     runner = shlex.split(os.environ.get("V11_MANIM_BIN", "uv run manim"))
     subprocess.run([*runner, "-ql" if mode == "preview" else "-qh", "--fps", "30",
                     "--resolution", f"{width},{height}", "--disable_caching", "--media_dir",
@@ -119,6 +128,9 @@ def render_yolo_trace(trace_path: Path, output: Path, manifest_path: Path, mode:
     actual = media_metadata(output)
     if actual["width"] != width or actual["height"] != height:
         raise RuntimeError(f"YOLO renderer produced {actual['width']}x{actual['height']}; expected {width}x{height}")
+    timeline = json.loads(timeline_path.read_text(encoding="utf-8"))
+    if actual["frame_count"] != timeline["total_frames"]:
+        raise RuntimeError(f"YOLO produced {actual['frame_count']} frames; timeline requires {timeline['total_frames']}")
     return output
 
 
@@ -135,6 +147,10 @@ def render_plan(plan: dict, manifest_path: Path, output: Path, mode: str = "prev
     env = os.environ.copy()
     env["V11_VISUAL_PLAN"] = str(plan_path)
     env["V11_VISUAL_MANIFEST"] = str(Path(manifest_path).resolve())
+    timeline_path = Path(manifest_path).with_name("timeline.json").resolve()
+    if not timeline_path.is_file():
+        raise ValueError(f"shared timeline file is required for common Manim rendering: {timeline_path}")
+    env["V11_TIMELINE_PATH"] = str(timeline_path)
     runner = shlex.split(os.environ.get("V11_MANIM_BIN", "uv run manim"))
     if not runner:
         raise ValueError("V11_MANIM_BIN must name a Manim executable")
@@ -152,6 +168,11 @@ def render_plan(plan: dict, manifest_path: Path, output: Path, mode: str = "prev
         if len(matches) != 1:
             raise FileNotFoundError(f"Manim output missing or ambiguous below {media_dir}")
         rendered = matches[0]
+    timeline = json.loads(timeline_path.read_text(encoding="utf-8"))
+    from core.mechanism.run_management import media_metadata
+    actual = media_metadata(rendered)
+    if actual["frame_count"] != timeline["total_frames"]:
+        raise RuntimeError(f"Manim produced {actual['frame_count']} frames; timeline requires {timeline['total_frames']}")
     output.write_bytes(rendered.read_bytes())
     minimum = "540" if mode == "preview" else "1920"
     subprocess.run([sys.executable, str(ROOT / "scripts/validate_delivery.py"), str(output),

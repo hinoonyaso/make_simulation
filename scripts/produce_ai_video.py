@@ -29,6 +29,7 @@ def main() -> None:
                         help="supported topic: rag (other AI topics are not implemented yet)")
     parser.add_argument("--trace", type=Path, default=PILOT / "data/ai_trace.json",
                         help="validated AI execution trace to replay")
+    parser.add_argument("--timeline", type=Path, help="shared mechanism-timeline/v1 contract")
     parser.add_argument("--document", type=Path, help="new UTF-8 document for local lexical execution")
     parser.add_argument("--question", help="query for --document")
     parser.add_argument("--chunk-size", type=int, default=500)
@@ -80,7 +81,20 @@ def main() -> None:
         trace_path = stable_trace
 
     manifest = json.loads((PILOT / "visual_manifest.json").read_text(encoding="utf-8"))
-    durations = args.durations or [float(beat["sec"]) for beat in manifest["beats"]]
+    shared_timeline = None
+    if args.timeline:
+        timeline_module = load_module("mechanism_timeline", ROOT / "core/mechanism/timeline.py")
+        shared_timeline = json.loads(args.timeline.read_text(encoding="utf-8"))
+        timeline_errors = timeline_module.validate_timeline(
+            shared_timeline, expected_phase_ids=[beat["phase_id"] for beat in manifest["beats"]])
+        if timeline_errors:
+            raise SystemExit("invalid shared RAG timeline: " + "; ".join(timeline_errors))
+        if args.durations:
+            raise SystemExit("--durations cannot override an explicit shared --timeline")
+        durations = [(phase["presentation_end_frame"] - phase["presentation_start_frame"])
+                     / shared_timeline["fps"] for phase in shared_timeline["phases"]]
+    else:
+        durations = args.durations or [float(beat["sec"]) for beat in manifest["beats"]]
     if any(value <= 0 or value > 60 for value in durations):
         raise SystemExit("each beat duration must be >0 and <=60 seconds")
     relative_trace = Path(os.path.relpath(trace_path, run_dir)).as_posix()
@@ -109,6 +123,8 @@ def main() -> None:
     build = PILOT / "build_video.py"
     build_args = ["--trace", str(trace_path), "--manifest", str(manifest_path),
                   "--output-dir", str(run_dir), *render_args]
+    if args.timeline:
+        build_args.extend(["--timeline", str(args.timeline.resolve())])
     def reported_path(path):
         try:
             return str(path.resolve().relative_to(ROOT))

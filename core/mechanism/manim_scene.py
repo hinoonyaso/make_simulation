@@ -14,6 +14,7 @@ sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "core/manim-robotics-education-skill/templates"))
 from manim_kit import apply_theme, txt, P
 from core.mechanism.storyboard import validate_phase_contract
+from core.mechanism.timeline import validate_timeline
 
 
 def text(value, size=24, color=P.fg, width=None):
@@ -40,13 +41,23 @@ class MechanismTraceScene(Scene):
         self.plan = json.loads(plan_path.read_text(encoding="utf-8"))
         self.manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
         beats = self.manifest["beats"]
+        timeline = json.loads(Path(os.environ["V11_TIMELINE_PATH"]).read_text(encoding="utf-8"))
+        errors = validate_timeline(timeline, expected_phase_ids=[beat.get("phase_id") for beat in beats])
+        if errors:
+            raise ValueError("invalid shared mechanism timeline: " + "; ".join(errors))
+        fps = timeline["fps"]
+        if fps != 30:
+            raise ValueError("common Manim renderer requires a 30 fps shared timeline")
+        phases = {phase["phase_id"]: phase for phase in timeline["phases"]}
         self.add(text(self.plan["title"], 34, P.fg, 13.2).to_edge(UP, buff=.35))
         graphic, transitions = self._build_graphic()
         errors = validate_phase_contract(beats, transitions)
         if errors:
             raise ValueError("invalid storyboard/renderer phase contract: " + "; ".join(errors))
         for index, beat in enumerate(beats):
-            duration = float(beat["sec"])
+            phase = phases[beat["phase_id"]]
+            duration_frames = phase["presentation_end_frame"] - phase["presentation_start_frame"]
+            duration = duration_frames / fps
             caption = text(beat["caption"], 20, P.muted, 12.5).move_to([0, -3.1, 0])
             header = text(f"{index+1:02d} / {len(beats):02d}", 16, P.active).to_corner(UR, buff=.4)
             anims = [FadeIn(header), FadeIn(caption)]
@@ -54,9 +65,12 @@ class MechanismTraceScene(Scene):
             anims.extend(state_animations)
             state_runtime = max([value for animation in state_animations
                                  if isinstance((value := getattr(animation, "run_time", .6)), (int, float))] + [.6])
-            run_time = min(duration * .88, max(.6, state_runtime))
-            self.play(*anims, run_time=run_time)
-            self.wait(max(0.0, duration - run_time))
+            minimum_frames = max(1, int(round(state_runtime * fps)))
+            if minimum_frames > duration_frames:
+                raise ValueError(f"phase {beat['phase_id']} needs {minimum_frames} transition frames, "
+                                 f"only {duration_frames} presentation frames are available")
+            self.play(*anims, run_time=minimum_frames / fps)
+            self.wait((duration_frames - minimum_frames) / fps)
             self.remove(header, caption)
 
     def _build_graphic(self):

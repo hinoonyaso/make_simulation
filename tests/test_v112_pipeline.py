@@ -164,6 +164,21 @@ class RunManagementTests(unittest.TestCase):
             second = self._identity()
         self.assertEqual(first["run_id"], second["run_id"])
 
+    def test_commit_only_change_does_not_reject_a_valid_cached_render(self):
+        with tempfile.TemporaryDirectory() as temp:
+            with patch("core.mechanism.run_management.git_revision", return_value="commit-a"):
+                first = self._identity()
+            run, _ = prepare_run_dir(Path(temp), first["run_id"], expected_identity=first)
+            media = run / "preview.mp4"
+            media.write_bytes(b"complete-test-media")
+            self._write_cached_report(run, media, first)
+            with patch("core.mechanism.run_management.git_revision", return_value="commit-b"):
+                second = self._identity()
+            with patch("core.mechanism.run_management._validate_cached_media", return_value=True):
+                reused, hit = prepare_run_dir(Path(temp), second["run_id"], expected_identity=second)
+            self.assertEqual(reused, run)
+            self.assertTrue(hit)
+
 
 class StoryboardTests(unittest.TestCase):
     def test_trace_complexity_changes_storyboard_and_narration_time_is_measured_input(self):

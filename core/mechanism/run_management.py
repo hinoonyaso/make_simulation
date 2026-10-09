@@ -52,10 +52,24 @@ def _validate_cached_media(path: Path, spec: dict[str, Any], reported: dict[str,
         return False
 
 
+def _cache_identity_matches(actual: dict[str, Any], expected: dict[str, Any]) -> bool:
+    """Git revision is report metadata; render inputs are already fingerprinted."""
+    actual_render_inputs = {key: value for key, value in actual.items() if key != "code_revision"}
+    expected_render_inputs = {key: value for key, value in expected.items() if key != "code_revision"}
+    return actual_render_inputs == expected_render_inputs
+
+
 def canonical_hash(value: Any) -> str:
     encoded = json.dumps(value, sort_keys=True, ensure_ascii=False,
                          separators=(",", ":"), allow_nan=False).encode("utf-8")
     return hashlib.sha256(encoded).hexdigest()
+
+
+def _timeline_digest(timeline: dict[str, Any] | None) -> str | None:
+    if timeline is None:
+        return None
+    stored = timeline.get("timeline_sha256")
+    return stored if isinstance(stored, str) and stored else canonical_hash(timeline)
 
 
 def file_hash(path: Path | None) -> str | None:
@@ -65,6 +79,22 @@ def file_hash(path: Path | None) -> str | None:
     with Path(path).open("rb") as source:
         for block in iter(lambda: source.read(1024 * 1024), b""):
             digest.update(block)
+    return digest.hexdigest()
+
+
+def asset_tree_hash(root: Path) -> str:
+    """Hash a local model bundle by relative paths and file content."""
+    root = Path(root).resolve()
+    if not root.is_dir():
+        raise FileNotFoundError(f"model asset directory does not exist: {root}")
+    digest = hashlib.sha256()
+    files = sorted(path for path in root.rglob("*") if path.is_file())
+    if not files:
+        raise ValueError(f"model asset directory is empty: {root}")
+    for path in files:
+        relative = path.relative_to(root).as_posix().encode("utf-8")
+        digest.update(len(relative).to_bytes(4, "big")); digest.update(relative)
+        digest.update(bytes.fromhex(file_hash(path)))
     return digest.hexdigest()
 
 
@@ -115,6 +145,7 @@ def code_fingerprint() -> str:
              ROOT / "pilots/v10_threejs_rag/src/style.css", ROOT / "pilots/v10_threejs_rag/scripts/build_projection.py",
              ROOT / "pilots/v10_threejs_rag/scripts/capture_video.js",
              ROOT / "pilots/v10_threejs_rag/package-lock.json",
+             ROOT / "core/mechanism/timeline.py", ROOT / "core/mechanism/renderer_routing.py",
              *sorted((ROOT / "core/mechanism/adapters").glob("*.py"))]
     return canonical_hash({str(path.relative_to(ROOT)): file_hash(path)
                           for path in paths if path.is_file()})
@@ -123,25 +154,35 @@ def code_fingerprint() -> str:
 def make_run_identity(*, topic: str, config: dict[str, Any], trace: dict[str, Any],
                       mode: str, renderer: str, config_path: Path | None = None,
                       trace_path: Path | None = None, request: dict[str, Any] | None = None,
-                      asset_revision: str | None = None) -> dict[str, str]:
+                      asset_revision: str | None = None, visual_goal: str | None = None,
+                      timeline: dict[str, Any] | None = None, asset_hash: str | None = None,
+                      renderer_version: str | None = None) -> dict[str, str]:
     input_hash = canonical_hash({"request": request or {}, "config": config,
                                  "source_file_sha256": file_hash(config_path)})
     render_mode = "preview" if renderer.endswith(":preview") else "final"
     render_spec = {"mode": render_mode, "width": 960 if render_mode == "preview" else 1920,
                    "height": 540 if render_mode == "preview" else 1080, "fps": 30, "codec": "h264"}
     config_hash = canonical_hash({"config": config, "mode": mode, "renderer": renderer,
-                                  "render_spec": render_spec})
+                                  "render_spec": render_spec, "visual_goal": visual_goal,
+                                  "timeline_hash": _timeline_digest(timeline),
+                                  "renderer_version": renderer_version, "asset_hash": asset_hash})
     trace_hash = canonical_hash(trace)
     renderer_hash = canonical_hash({"renderer": renderer, "mode": mode, "fps": 30})
     material = {"topic": topic, "input_hash": input_hash, "config_hash": config_hash,
                 "trace_hash": trace_hash, "adapter_version": ADAPTER_VERSION,
                 "asset_revision": asset_revision or "local-registry-default",
+                "visual_goal": visual_goal,
+                "timeline_hash": _timeline_digest(timeline),
+                "asset_hash": asset_hash,
+                "renderer_version": renderer_version,
                 "renderer_hash": renderer_hash,
                 "code_fingerprint": code_fingerprint()}
     run_id = f"{topic}-{canonical_hash(material)[:20]}"
     return {"run_id": run_id, **material, "code_revision": git_revision(),
             "render_spec": render_spec, "renderer": renderer, "mode": mode,
-            "trace_sha256": trace_hash, "config_sha256": config_hash}
+            "trace_sha256": trace_hash, "config_sha256": config_hash,
+            "visual_goal": visual_goal, "timeline_hash": _timeline_digest(timeline),
+            "asset_hash": asset_hash, "renderer_version": renderer_version}
 
 
 def prepare_run_dir(root: Path, run_id: str, *, reuse: bool = True,
@@ -178,7 +219,8 @@ def prepare_run_dir(root: Path, run_id: str, *, reuse: bool = True,
                         and data.get("media_metadata")
                         and trace_path.parent == candidate
                         and stored_trace_hash == data.get("identity", {}).get("trace_hash")
-                        and (expected_identity is None or data.get("identity") == expected_identity)
+                        and (expected_identity is None or
+                             _cache_identity_matches(data.get("identity", {}), expected_identity))
                         and _validate_cached_media(media, spec, data["media_metadata"])):
                     return candidate, True
             except (OSError, KeyError, TypeError, json.JSONDecodeError):

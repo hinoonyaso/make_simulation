@@ -14,3 +14,6 @@
 - The common H1 route can select Blender to replay the recorded MuJoCo trace using imported H1 meshes. It checks source model hash, joint order/limits and FK, interpolates recorded states, and does not step Blender physics.
 - The existing V10 RAG renderer requires its four established beat stages; dynamic V11.2 storyboard planning does not alter that scene contract.
 - Most catalog entries are routing/planning records, not executable implementations. Check the capability registry before claiming support.
+- Current WSL session can launch Windows Blender only from an elevated process context: normal sandbox preflight fails with `UtilBindVsockAnyPort`, while elevated Blender 5.2.1 `--version` succeeds. H1 rendering is therefore host-context dependent; production correctly blocks when the process check fails.
+- Loopback binding is part of Three.js preflight because Chromium loads a locally served trace projection. When the host forbids local binds, RAG uses Manim and reports loss of the 3D embedding projection.
+- H1 Blender displays interpolated recorded MuJoCo states; the shared timeline changes playback mapping, not physics execution or the source simulation duration.

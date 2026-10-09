@@ -16,6 +16,8 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "core/robotics-simulation"))
 import mujoco_adapter  # noqa: E402
+sys.path.insert(0, str(ROOT))
+from core.mechanism.timeline import source_time_for_frame, validate_timeline  # noqa: E402
 
 
 def sha256(path: Path) -> str:
@@ -44,7 +46,8 @@ def _interp(samples: list[dict], t: float, key: str) -> np.ndarray:
     return np.asarray([np.interp(t, times, values[:, i]) for i in range(values.shape[1])])
 
 
-def export(trace_path: Path, model_path: Path, out_dir: Path, fps: int = 30) -> Path:
+def export(trace_path: Path, model_path: Path, out_dir: Path, fps: int = 30,
+           timeline_path: Path | None = None) -> Path:
     trace = json.loads(trace_path.read_text(encoding="utf-8"))
     if trace.get("schema") != "robotics-visual-trace/v1":
         raise ValueError("expected robotics-visual-trace/v1")
@@ -111,8 +114,21 @@ def export(trace_path: Path, model_path: Path, out_dir: Path, fps: int = 30) -> 
         meshes[mesh_id] = f"meshes/{filename}"
 
     start, end = float(times[0]), float(times[-1])
-    frame_count = int(round((end - start) * fps)) + 1
-    render_times = np.linspace(start, end, frame_count)
+    timeline = None
+    if timeline_path is not None:
+        timeline = json.loads(timeline_path.read_text(encoding="utf-8"))
+        errors = validate_timeline(timeline, source_range=(start, end))
+        if errors:
+            raise ValueError("invalid H1 presentation timeline: " + "; ".join(errors))
+        if timeline["fps"] != fps:
+            raise ValueError("H1 timeline fps must match Blender export fps")
+        frame_count = timeline["total_frames"]
+        frame_mappings = [source_time_for_frame(timeline, frame) for frame in range(frame_count)]
+        if any(source is None for _, source in frame_mappings):
+            raise ValueError("every H1 presentation frame requires a source trace timestamp")
+    else:
+        frame_count = int(round((end - start) * fps)) + 1
+        frame_mappings = [("trace_playback", float(t)) for t in np.linspace(start, end, frame_count)]
     frames = []
     bounds_min = np.full(3, np.inf); bounds_max = np.full(3, -np.inf)
     geom_specs = []
@@ -131,7 +147,7 @@ def export(trace_path: Path, model_path: Path, out_dir: Path, fps: int = 30) -> 
         verts = model.mesh_vert[a:a + n]
         mesh_bounds[mesh_id] = np.stack([verts.min(axis=0), verts.max(axis=0)]).tolist()
 
-    for frame_num, t in enumerate(render_times, start=1):
+    for frame_num, (phase_id, t) in enumerate(frame_mappings, start=1):
         qpos = _interp(samples, float(t), "qpos")
         data.qpos[:] = qpos
         mujoco.mj_forward(model, data)
@@ -147,7 +163,9 @@ def export(trace_path: Path, model_path: Path, out_dir: Path, fps: int = 30) -> 
             bounds_min = np.minimum(bounds_min, world_corners.min(axis=0))
             bounds_max = np.maximum(bounds_max, world_corners.max(axis=0))
             transforms.append({"id": geom_id, "position": pos.tolist(), "rotation": rot.reshape(-1).tolist()})
-        frames.append({"frame": frame_num, "t": float(t), "qpos": qpos.tolist(),
+        frames.append({"frame": frame_num, "t": float(t), "source_time_sec": float(t),
+                       "presentation_time_sec": (frame_num-1)/fps, "phase_id": phase_id,
+                       "qpos": qpos.tolist(),
                        "target": _interp(samples, float(t), "target").tolist(),
                        "transforms": transforms})
 
@@ -161,9 +179,13 @@ def export(trace_path: Path, model_path: Path, out_dir: Path, fps: int = 30) -> 
     payload = {"schema": "h1-blender-trace-payload/v1", "source_trace": str(trace_path),
                "trace_sha256": sha256(trace_path), "model_sha256": model_hash,
                "asset_license": trace["model"]["asset_license"], "engine": "MuJoCo",
-               "mode": "validated trace playback; qpos linearly interpolated at render fps",
+               "mode": "validated trace playback; qpos interpolated at timeline source times",
                "fps": fps, "start_time": start, "end_time": end,
-               "interpolation": "linear between stored qpos samples; no new physics integration",
+               "source_duration_sec": end-start,
+               "presentation_duration_sec": timeline["total_duration_sec"] if timeline else (frame_count-1)/fps,
+               "playback_speed": (end-start)/timeline["total_duration_sec"] if timeline else 1.0,
+               "timeline": timeline,
+               "interpolation": "linear between stored qpos samples at frame-mapped source time; no new physics integration",
                "coordinate_mapping": {"source": "MuJoCo right-handed world frame, Z-up, meters",
                                      "target": "Blender right-handed world frame, Z-up, meters",
                                      "transform": "identity; positions and rotations copied after FK"},
@@ -182,10 +204,12 @@ def main() -> None:
     parser.add_argument("--model", type=Path, default=ROOT / "assets/unitree_h1/mjcf/h1_with_hand.xml")
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--fps", type=int, default=30)
+    parser.add_argument("--timeline", type=Path)
     args = parser.parse_args()
     subprocess.run([sys.executable, str(ROOT / "core/shared-data/validate_trace.py"),
                     str(args.trace.resolve())], check=True)
-    path = export(args.trace.resolve(), args.model.resolve(), args.out.resolve(), args.fps)
+    path = export(args.trace.resolve(), args.model.resolve(), args.out.resolve(), args.fps,
+                  args.timeline.resolve() if args.timeline else None)
     print(f"PASS: trace/model provenance and {args.fps}fps render payload -> {path}")
 
 

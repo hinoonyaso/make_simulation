@@ -12,6 +12,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from core.mechanism.registry import MechanismRegistry
+from core.mechanism.renderer_routing import VISUAL_GOALS, decide_renderer
+from core.mechanism.run_management import asset_tree_hash
 
 
 def environment_status(row: dict) -> str:
@@ -45,6 +47,11 @@ def main() -> int:
     parser.add_argument("--domain")
     parser.add_argument("--topic")
     parser.add_argument("--json", action="store_true", help="print full capability records")
+    parser.add_argument("--preflight", action="store_true", help="execute lightweight renderer process checks")
+    parser.add_argument("--render", choices=("auto", "manim", "blender"), default="auto")
+    parser.add_argument("--visual-goal", choices=VISUAL_GOALS, default="auto")
+    parser.add_argument("--trace", type=Path, help="optional validated trace JSON for topic-specific routing")
+    parser.add_argument("--model", type=Path, help="optional local model asset path for Blender preflight")
     args = parser.parse_args()
     registry = MechanismRegistry()
     if args.topic:
@@ -52,6 +59,33 @@ def main() -> int:
         if row is None:
             raise SystemExit(f"unknown topic or alias: {args.topic}")
         row["current_machine_runtime"] = environment_status(row)
+        if args.preflight:
+            trace = json.loads(args.trace.read_text(encoding="utf-8")) if args.trace else {}
+            model_path = args.model
+            if row["topic"] == "robot_kinematics" and model_path is None:
+                model_path = ROOT / "assets/unitree_h1/mjcf/h1_with_hand.xml"
+            try:
+                if args.trace:
+                    adapter = registry.load_adapter(row["topic"])
+                    errors = adapter.validate(trace)
+                    if errors:
+                        row["renderer_decision"] = {"status": "BLOCKED",
+                            "reason": "trace validation failed: " + "; ".join(errors)}
+                        print(json.dumps(row, ensure_ascii=False, indent=2))
+                        return 0
+                decision = decide_renderer(topic=row["topic"], requested_renderer=args.render,
+                    visual_goal=args.visual_goal, trace=trace, model_path=model_path)
+                row["renderer_decision"] = decision
+                if model_path and Path(model_path).is_file():
+                    model_root = Path(model_path).resolve().parent.parent
+                    row["model_asset_preflight"] = {"status": "PRESENT",
+                        "model_path": str(Path(model_path).resolve()),
+                        "asset_tree_sha256": asset_tree_hash(model_root)}
+                elif model_path:
+                    row["model_asset_preflight"] = {"status": "BLOCKED",
+                        "reason": f"model file is missing: {model_path}"}
+            except (OSError, ValueError, json.JSONDecodeError) as exc:
+                row["renderer_decision"] = {"status": "BLOCKED", "reason": str(exc)}
         print(json.dumps(row, ensure_ascii=False, indent=2))
         return 0
     rows = registry.list_capabilities()
