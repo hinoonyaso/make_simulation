@@ -36,6 +36,12 @@ Do not preload the bundle. Route from the artifact that exists now.
 - Storyboard beats follow validated trace stages and content. `--narration-duration` only applies a supplied measured audio duration to beat timing; TTS, caption rendering, Reviewer and final narrated delivery are still separate and must not be reported complete from a silent render.
 - For robot kinematics, the current common renderer replays the H1 trace as a Manim plot; use a separately validated Blender mesh path when 3D is required, and report unavailable Blender honestly.
 
+## V11.3 integrated render paths
+- `--render blender` is supported for `robot_kinematics` only and invokes the existing H1 trace exporter plus Blender scene. It replays recorded MuJoCo joint states; no new physics is run by Blender. Set `BLENDER_BIN` for a non-discoverable install. A requested Blender failure must remain a failure.
+- `object_detection` is distinct from synthetic `nms`. Actual execution requires both `--input` and `--model`, the local verified YOLO11n checkpoint, and optional Ultralytics 8.3.0. Replay validates the trace and original image SHA-256, then renders without inference.
+- RAG Preview/Final must be selected by subreport key and validated as the requested media size before copy. Run reuse also requires matching media hash, metadata and in-run path.
+- Common storyboard beats are linked to renderer transitions by `phase_id`; never assume an array index is the semantic stage. Trace-dependent phase omission is allowed only when the matching renderer transition is also omitted.
+
 ## Skip rules
 - no preview -> no Reviewer
 - no edit request/assets -> no Resolve

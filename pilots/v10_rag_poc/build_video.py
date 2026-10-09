@@ -15,6 +15,7 @@ HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
 DEFAULT_MANIFEST = HERE / "visual_manifest.json"
 THREE = ROOT / "pilots/v10_threejs_rag"
+RAG_PHASE_IDS = ("chunking", "embeddings", "retrieval", "context")
 
 
 def load_module(name: str, path: Path):
@@ -50,6 +51,9 @@ def load_manifest(path: Path, trace_path: Path) -> tuple[dict, list[float]]:
     data = json.loads(path.read_text(encoding="utf-8"))
     if len(data["beats"]) != 4:
         raise SystemExit("RAG scene currently requires four manifest beats: chunking, vectors, retrieval, context")
+    phase_ids = [beat.get("phase_id") for beat in data["beats"]]
+    if phase_ids != list(RAG_PHASE_IDS):
+        raise SystemExit(f"RAG manifest phases must match renderer transitions {list(RAG_PHASE_IDS)}; got {phase_ids}")
     declared = {(path.parent / beat["trace"]).resolve()
                 for beat in data["beats"] if beat.get("trace")}
     if len(declared) != 1 or declared != {trace_path.resolve()} or any(not beat.get("trace") for beat in data["beats"]):
@@ -66,7 +70,8 @@ def render_manim(mode: str, trace_path: Path, manifest_path: Path,
     log = out_dir / f"{mode}_manim.log"
     env = os.environ.copy()
     env["V10_AI_TRACE"] = str(trace_path.resolve())
-    env["V10_RAG_DURATIONS"] = json.dumps(durations)
+    env["V10_RAG_DURATIONS"] = json.dumps(dict(zip(RAG_PHASE_IDS, durations)))
+    env["V10_RAG_PHASE_IDS"] = json.dumps(RAG_PHASE_IDS)
     manim_bin = env.get("V10_MANIM_BIN")
     command = ([manim_bin] if manim_bin else ["uv", "run", "manim"])
     with log.open("w", encoding="utf-8") as stream:

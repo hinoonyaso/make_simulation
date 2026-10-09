@@ -107,6 +107,11 @@ def main():
     payload = json.loads(payload_path.read_text(encoding="utf-8"))
     if payload.get("schema") != "h1-blender-trace-payload/v1":
         raise RuntimeError("unsupported Blender trace payload")
+    expected_mapping = {"source": "MuJoCo right-handed world frame, Z-up, meters",
+                       "target": "Blender right-handed world frame, Z-up, meters",
+                       "transform": "identity; positions and rotations copied after FK"}
+    if payload.get("coordinate_mapping") != expected_mapping:
+        raise RuntimeError("MuJoCo-to-Blender frame/unit mapping is missing or unsupported")
     if args.fps != payload["fps"]:
         raise RuntimeError("render fps must match exported trace payload fps")
 
@@ -136,8 +141,8 @@ def main():
         "arm": mat_principled("H1 | actuated left arm", (.015, .19, .47), .32, .18),
         "joint": mat_principled("H1 | dark joint elastomer", (.055, .075, .095), .52, .04),
     }
-    ink = mat_emission("Overlay ink", (.055, .075, .095))
-    muted = mat_emission("Overlay muted", (.28, .32, .36))
+    ink = mat_emission("Overlay ink", (.018, .027, .04))
+    muted = mat_emission("Overlay muted", (.075, .09, .11))
     target_mat = mat_emission("Target amber", (.88, .39, .045), 1.2)
     actual_mat = mat_emission("Actual blue", (.015, .32, .72), 1.2)
     white = mat_emission("Overlay white", (.98, .99, 1.0))
@@ -211,11 +216,11 @@ def main():
             font = bpy.data.fonts.load(str(args.font))
         except RuntimeError:
             font = None
-    title = add_text("Title", "Unitree H1 | 물리 실행 trace", .12, (-1.92, 1.04, -2.0), ink, font, camera)
+    title = add_text("Title", "Unitree H1 | 물리 실행 trace", .12, (.20, 1.04, -2.0), ink, font, camera)
     subtitle = add_text("Subtitle", "MuJoCo 관절 상태를 Blender 3D 메시와 그래프에 동기화", .064,
-                        (-1.91, .86, -2.0), muted, font, camera)
+                        (.20, .86, -2.0), muted, font, camera)
     scope = add_text("Scope", "고정 골반 · PD 토크 제어 · trace playback", .052,
-                     (-1.91, .73, -2.0), muted, font, camera)
+                     (.20, .73, -2.0), muted, font, camera)
 
     # Graph of actual and commanded left-shoulder angles from the same trace.
     gx0, gx1 = .20, 1.91

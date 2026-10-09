@@ -64,6 +64,21 @@ uv run python scripts/manage_assets.py search --category environment
 
 These are silent technical previews, not narrated/reviewed finished videos. Self-Attention uses toy numerical vectors, not a trained Transformer. The secure pinned-archive helper exists, but no environment currently has enough verified metadata to download, and no environment has passed a simulator load/render test on this host. Clearpath/Gazebo, ManiSkill/SAPIEN and robosuite status is documented in [environment validation](docs/v11/environments/ENVIRONMENT_VALIDATION.md). Other catalog topics remain planned or trace-only unless the registry says otherwise. See [V11 implementation and limits](docs/v11/IMPLEMENTATION_REPORT.md).
 
+## V11.3 integrated render backends
+
+The common CLI now routes `robot_kinematics --render blender` through the existing H1 mesh trace exporter/renderer, and `object_detection` through the verified YOLO11n CPU inference adapter. Blender plays the validated MuJoCo trace; it does not rerun physics. YOLO uses the pinned checkpoint hash and records the original image hash; replay checks the same image and does not rerun inference. Install Ultralytics 8.3.0 in the active environment only when real YOLO inference is requested.
+
+```bash
+uv run python scripts/produce_video.py --topic robot_kinematics --robot unitree_h1 \
+  --mode replay --trace pilots/v10_mujoco_arm/data/trace.json --render blender --preview
+uv run --with ultralytics==8.3.0 python scripts/produce_video.py --topic object_detection \
+  --input /path/to/image.jpg --model /path/to/verified-yolo11n.pt --preview
+uv run python scripts/produce_video.py --topic object_detection --mode replay \
+  --trace output/runs/object_detection-<run-id>/trace.json --preview
+```
+
+RAG Preview and Final select their respective report entries and validate the reported media, dimensions, 30 fps and full decode. Cache reuse also checks the expected output path, render specification, media metadata and SHA-256. Storyboard beats carry explicit phase IDs which the common Manim scene checks against its transition map. See the dated [V11.3 integration report](docs/v11/V11_3_INTEGRATION_REPORT.md) for actual local evidence and unrun remote CI status.
+
 ## Explanation craft
 
 Director now plans the visible cause, decisive comparison/constraint, and consequence of the central question. Manim/Blender expose that evidence with purposeful framing and phrase timing; Reviewer reports educational inspection separately from technical PASS. Narration guidance includes deliberate pauses and Korean terminology pronunciation. The next real preview must demonstrate these changes; existing published videos are unchanged. Reference sources, access limits, decisions, and tradeoffs are in [SOURCE_PATTERNS.md](SOURCE_PATTERNS.md#2026-10-explanation-craft-update-user-selected-references).

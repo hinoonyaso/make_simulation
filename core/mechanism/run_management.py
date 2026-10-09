@@ -6,20 +6,49 @@ import json
 from pathlib import Path
 import subprocess
 import sys
+import math
 from typing import Any
 
 ROOT = Path(__file__).resolve().parents[2]
 ADAPTER_VERSION = "mechanism-adapter-contract/v1"
 
 
-def _validate_cached_media(path: Path) -> bool:
+def media_metadata(path: Path) -> dict[str, Any]:
+    result = subprocess.run(["ffprobe", "-v", "error", "-count_frames", "-select_streams", "v:0",
+        "-show_entries", "stream=codec_name,width,height,r_frame_rate,avg_frame_rate,nb_read_frames,nb_frames",
+        "-show_entries", "format=duration", "-of", "json", str(path)],
+        capture_output=True, text=True, check=True)
+    data = json.loads(result.stdout)
+    streams = data.get("streams", [])
+    if len(streams) != 1:
+        raise ValueError("media must contain exactly one video stream")
+    stream = streams[0]
+    rate_text = stream.get("avg_frame_rate") or stream.get("r_frame_rate")
+    numerator, denominator = (int(part) for part in rate_text.split("/", 1))
+    fps = numerator / denominator if denominator else 0
+    duration = float(data.get("format", {}).get("duration", 0))
+    frames = stream.get("nb_read_frames") or stream.get("nb_frames")
+    return {"codec": stream.get("codec_name"), "width": int(stream.get("width", 0)),
+            "height": int(stream.get("height", 0)), "fps": fps, "duration_sec": duration,
+            "frame_count": int(frames) if frames and frames != "N/A" else None}
+
+
+def _validate_cached_media(path: Path, spec: dict[str, Any], reported: dict[str, Any]) -> bool:
     try:
         subprocess.run([sys.executable, str(ROOT / "scripts/validate_delivery.py"), str(path),
-                        "--min-width", "540", "--min-height", "540", "--fps", "30",
+                        "--min-width", str(spec["width"]), "--min-height", str(spec["height"]), "--fps", "30",
                         "--full-decode"], cwd=ROOT,
                        capture_output=True, text=True, check=True)
-        return True
-    except (OSError, subprocess.CalledProcessError):
+        actual = media_metadata(path)
+        return (actual["width"] >= spec["width"] and actual["height"] >= spec["height"]
+                and math.isclose(actual["fps"], 30.0, abs_tol=.01)
+                and actual["codec"] == (reported.get("codec") or spec["codec"])
+                and actual["width"] == int(reported["width"])
+                and actual["height"] == int(reported["height"])
+                and math.isclose(actual["fps"], float(reported["fps"]), abs_tol=.01)
+                and math.isclose(actual["duration_sec"], float(reported["duration_sec"]), abs_tol=.04)
+                and (reported.get("frame_count") is None or actual["frame_count"] == int(reported["frame_count"])))
+    except (OSError, KeyError, TypeError, ValueError, subprocess.CalledProcessError):
         return False
 
 
@@ -72,8 +101,20 @@ def code_fingerprint() -> str:
     paths = [ROOT / "scripts/produce_video.py", ROOT / "core/mechanism/renderer.py",
              ROOT / "core/mechanism/manim_scene.py", ROOT / "core/mechanism/storyboard.py",
              ROOT / "core/mechanism/run_management.py", ROOT / "core/mechanism/registry.py",
+             ROOT / "core/mechanism/catalog.json", ROOT / "scripts/produce_ai_video.py",
+             ROOT / "scripts/run_yolo_inference.py", ROOT / "scripts/validate_delivery.py",
              ROOT / "core/mechanism/trace_contract.py", ROOT / "core/shared-data/validate_trace.py",
+             ROOT / "core/robotics-simulation/mujoco_adapter.py",
              ROOT / "core/robotics-ai-visual-director-skill/templates/validate_visual_manifest.py",
+             ROOT / "pilots/v10_rag_poc/build_video.py", ROOT / "pilots/v10_rag_poc/rag_mechanism_scene.py",
+             ROOT / "pilots/v11_2_yolo/render_scene.py", ROOT / "pilots/v11_2_h1_blender/export_trace.py",
+             ROOT / "pilots/v11_2_h1_blender/render_trace.py",
+             ROOT / "core/manim-robotics-education-skill/templates/manim_kit.py",
+             ROOT / "core/blender-robotics-simulation-skill/templates/studio_utils.py",
+             ROOT / "pilots/v10_threejs_rag/index.html", ROOT / "pilots/v10_threejs_rag/src/main.js",
+             ROOT / "pilots/v10_threejs_rag/src/style.css", ROOT / "pilots/v10_threejs_rag/scripts/build_projection.py",
+             ROOT / "pilots/v10_threejs_rag/scripts/capture_video.js",
+             ROOT / "pilots/v10_threejs_rag/package-lock.json",
              *sorted((ROOT / "core/mechanism/adapters").glob("*.py"))]
     return canonical_hash({str(path.relative_to(ROOT)): file_hash(path)
                           for path in paths if path.is_file()})
@@ -85,17 +126,22 @@ def make_run_identity(*, topic: str, config: dict[str, Any], trace: dict[str, An
                       asset_revision: str | None = None) -> dict[str, str]:
     input_hash = canonical_hash({"request": request or {}, "config": config,
                                  "source_file_sha256": file_hash(config_path)})
+    render_mode = "preview" if renderer.endswith(":preview") else "final"
+    render_spec = {"mode": render_mode, "width": 960 if render_mode == "preview" else 1920,
+                   "height": 540 if render_mode == "preview" else 1080, "fps": 30, "codec": "h264"}
     config_hash = canonical_hash({"config": config, "mode": mode, "renderer": renderer,
-                                  "resolution": "540p30" if mode == "preview" else "1080p30"})
+                                  "render_spec": render_spec})
     trace_hash = canonical_hash(trace)
     renderer_hash = canonical_hash({"renderer": renderer, "mode": mode, "fps": 30})
     material = {"topic": topic, "input_hash": input_hash, "config_hash": config_hash,
                 "trace_hash": trace_hash, "adapter_version": ADAPTER_VERSION,
                 "asset_revision": asset_revision or "local-registry-default",
-                "renderer_hash": renderer_hash, "code_revision": git_revision(),
+                "renderer_hash": renderer_hash,
                 "code_fingerprint": code_fingerprint()}
     run_id = f"{topic}-{canonical_hash(material)[:20]}"
-    return {"run_id": run_id, **material}
+    return {"run_id": run_id, **material, "code_revision": git_revision(),
+            "render_spec": render_spec, "renderer": renderer, "mode": mode,
+            "trace_sha256": trace_hash, "config_sha256": config_hash}
 
 
 def prepare_run_dir(root: Path, run_id: str, *, reuse: bool = True,
@@ -110,9 +156,30 @@ def prepare_run_dir(root: Path, run_id: str, *, reuse: bool = True,
             try:
                 data = json.loads(report.read_text(encoding="utf-8"))
                 media = Path(data["media"])
-                if (data.get("technical_decode") == "PASS" and media.is_file() and media.stat().st_size > 0
+                media = media.resolve()
+                expected_media = (candidate / ("preview.mp4" if data.get("identity", {}).get("render_spec", {}).get("mode") == "preview" else "final.mp4")).resolve()
+                spec = data.get("identity", {}).get("render_spec", {})
+                actual_hash = file_hash(media) if media.is_file() else None
+                trace_path = Path(data.get("trace", ""))
+                if not trace_path.is_absolute():
+                    trace_path = candidate / trace_path
+                trace_path = trace_path.resolve()
+                trace_value = json.loads(trace_path.read_text(encoding="utf-8")) if trace_path.is_file() else None
+                stored_trace_hash = canonical_hash(trace_value) if trace_value is not None else None
+                if (media == expected_media and media.is_file() and media.stat().st_size > 0
+                        and data.get("technical_decode") == "PASS"
+                        and data.get("topic") == data.get("identity", {}).get("topic")
+                        and data.get("render_mode") == spec.get("mode")
+                        and data.get("renderer")
+                        and data.get("renderer") == str(data.get("identity", {}).get("renderer", "")).split(":", 1)[0]
+                        and data.get("renderer_settings") == spec
+                        and data.get("media_sha256") == actual_hash
+                        and data.get("output_path") == str(media)
+                        and data.get("media_metadata")
+                        and trace_path.parent == candidate
+                        and stored_trace_hash == data.get("identity", {}).get("trace_hash")
                         and (expected_identity is None or data.get("identity") == expected_identity)
-                        and _validate_cached_media(media)):
+                        and _validate_cached_media(media, spec, data["media_metadata"])):
                     return candidate, True
             except (OSError, KeyError, TypeError, json.JSONDecodeError):
                 pass

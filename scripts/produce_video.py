@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import argparse
-import hashlib
+from importlib import metadata as importlib_metadata
 import json
 from pathlib import Path
 import re
@@ -12,12 +12,15 @@ import subprocess
 import sys
 import tempfile
 import time
+import hashlib
+import importlib.util
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from core.mechanism.protocol import MechanismRequest
 from core.mechanism.registry import MechanismRegistry
-from core.mechanism.run_management import make_run_identity, prepare_run_dir, validate_replay_trace
+from core.mechanism.run_management import (file_hash, make_run_identity, media_metadata,
+                                           prepare_run_dir, validate_replay_trace)
 from core.mechanism.storyboard import build_storyboard
 
 
@@ -48,6 +51,23 @@ def _write_json(path: Path, value: dict) -> None:
     path.write_text(json.dumps(value, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
+def _effective_renderer(topic: str, requested: str, trace: dict) -> str:
+    if topic == "robot_kinematics" and requested == "blender":
+        return "blender_h1_trace_playback"
+    if topic == "object_detection":
+        return "manim_yolo_image_space"
+    if topic == "rag" and requested == "auto":
+        path = ROOT / "pilots/v10_rag_poc/build_video.py"
+        spec = importlib.util.spec_from_file_location("v10_rag_build_for_identity", path)
+        if spec is None or spec.loader is None:
+            raise RuntimeError(f"cannot inspect RAG renderer capabilities from {path}")
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        if module.has_vectors(trace) and module.threejs_available():
+            return "manim+threejs"
+    return "manim"
+
+
 def _run_rag(trace_path: Path, run_dir: Path, *, preview: bool, render: str) -> Path:
     render_root = run_dir / "rag_render"
     command = [sys.executable, str(ROOT / "scripts/produce_ai_video.py"), "--topic", "rag",
@@ -60,15 +80,32 @@ def _run_rag(trace_path: Path, run_dir: Path, *, preview: bool, render: str) -> 
     if len(reports) != 1:
         raise RuntimeError(f"RAG renderer report missing or ambiguous in {render_root}")
     report = _load_json(reports[0], "RAG production report")
-    media_info = report.get("preview", {})
+    key = "preview" if preview else "final"
+    media_info = report.get(key, {})
+    if media_info.get("status") != "PASS":
+        raise RuntimeError(f"RAG {key} render did not pass: status={media_info.get('status')!r}")
     media_value = media_info.get("media")
     if not media_value:
-        raise RuntimeError("RAG renderer did not report a preview")
+        raise RuntimeError(f"RAG renderer did not report {key} media")
     media = Path(media_value)
     if not media.is_absolute():
         media = ROOT / media
+    if not media.is_file() or media.stat().st_size == 0:
+        raise RuntimeError(f"RAG {key} media is missing or empty: {media}")
+    expected_width = 960 if preview else 1920
+    expected_height = 540 if preview else 1080
+    subprocess.run([sys.executable, str(ROOT / "scripts/validate_delivery.py"), str(media),
+                    "--min-width", str(expected_width), "--min-height", str(expected_height),
+                    "--fps", "30", "--full-decode"], cwd=ROOT, check=True)
+    metadata = media_metadata(media)
+    if metadata["width"] != expected_width or metadata["height"] != expected_height:
+        raise RuntimeError(f"RAG {key} dimensions are {metadata['width']}x{metadata['height']}, "
+                           f"expected {expected_width}x{expected_height}")
     destination = run_dir / "preview.mp4" if preview else run_dir / "final.mp4"
     shutil.copy2(media, destination)
+    if destination.resolve() != media.resolve() and file_hash(destination) != file_hash(media):
+        destination.unlink(missing_ok=True)
+        raise RuntimeError(f"RAG {key} copy hash mismatch")
     return destination
 
 
@@ -76,7 +113,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--topic", required=True, help="registered mechanism ID or unique alias")
     parser.add_argument("--mode", choices=("executable", "replay", "illustration"), default="executable")
-    parser.add_argument("--render", choices=("auto", "manim"), default="auto")
+    parser.add_argument("--render", choices=("auto", "manim", "blender"), default="auto")
     parser.add_argument("--preview", action="store_true", help="540p30 technical preview; default is 1080p30")
     parser.add_argument("--config", type=Path, help="JSON adapter options")
     parser.add_argument("--trace", type=Path, help="validated input trace for --mode replay")
@@ -94,6 +131,7 @@ def main() -> int:
                         help="bypass reuse and create a timestamped sibling; preserves the original run")
     parser.add_argument("--asset", help="asset ID required by a robotics adapter")
     parser.add_argument("--robot", help="robot model ID for robotics adapters")
+    parser.add_argument("--model", type=Path, help="local model checkpoint for real object_detection inference")
     parser.add_argument("--narration-duration", type=float,
                         help="measured total TTS duration in seconds for beat timing allocation")
     args = parser.parse_args()
@@ -120,13 +158,24 @@ def main() -> int:
         parser.error(f"unsupported: {topic}; status={capability['implementation_status']}")
     if args.input and topic != "object_detection":
         parser.error(f"{topic} has no input-image/data adapter")
-    if args.input and topic == "object_detection":
-        parser.error("object_detection has no ready inference adapter; refusing synthetic NMS fallback")
+    if args.model and topic != "object_detection":
+        parser.error(f"{topic} has no model-checkpoint adapter")
 
     adapter = registry.load_adapter(topic)
     config = _load_json(args.config, "adapter config") if args.config else {}
+    if topic == "object_detection":
+        if args.mode == "executable":
+            if not args.input or not args.model:
+                parser.error("actual object_detection inference requires both --input and --model")
+            config.update({"image": str(args.input.resolve()), "model": str(args.model.resolve())})
+        elif args.input or args.model:
+            parser.error("object_detection replay uses image provenance embedded in the trace; omit --input/--model")
+    if args.render == "blender" and topic != "robot_kinematics":
+        parser.error("--render blender is currently available only for robot_kinematics")
     if topic == "rag":
-        if args.mode == "executable" and not (args.document or config):
+        rag_manifest = ROOT / "pilots/v10_rag_poc/visual_manifest.json"
+        config["manifest_sha256"] = file_hash(rag_manifest)
+        if args.mode == "executable" and not args.document and not args.config:
             # Keep the repository's checked-in V10 trace as the explicit default input.
             args.mode = "replay"
             args.trace = ROOT / "pilots/v10_rag_poc/data/ai_trace.json"
@@ -143,7 +192,8 @@ def main() -> int:
 
     if args.mode == "replay":
         trace = _load_json(args.trace.resolve(), "trace")
-        errors = validate_replay_trace(topic, capability["trace_schema"], trace, adapter)
+        errors = (adapter.validate(trace) if topic == "object_detection" else
+                  validate_replay_trace(topic, capability["trace_schema"], trace, adapter))
         if errors:
             parser.error("trace validation failed: " + "; ".join(errors))
     else:
@@ -164,8 +214,9 @@ def main() -> int:
     identity_config = {key: value for key, value in config.items() if key != "output_dir"}
     if args.narration_duration is not None:
         identity_config["measured_narration_seconds"] = args.narration_duration
+    effective_renderer = _effective_renderer(topic, args.render, trace)
     identity = make_run_identity(topic=topic, config=identity_config, trace=trace, mode=args.mode,
-        renderer=f"{args.render}:manim:{'preview' if args.preview else 'final'}", config_path=args.config,
+        renderer=f"{effective_renderer}:{'preview' if args.preview else 'final'}", config_path=args.config,
         trace_path=args.trace if args.mode == "replay" else None,
         request={"topic": topic, "mode": args.mode, "robot": args.robot, "asset": args.asset})
     run_id = args.run_id or identity["run_id"]
@@ -203,6 +254,9 @@ def main() -> int:
             beat["trace"] = trace_path.name
         _write_json(run_dir / "visual_manifest.json", manifest)
         _validate_manifest(run_dir / "visual_manifest.json")
+        selected = _load_json(source_report.parent / "renderer_selection.json", "RAG renderer selection")
+        renderer_backend = selected.get("selected") or "unknown"
+        renderer_details = selected
     else:
         plan = adapter.build_visual_plan(trace)
         plan.setdefault("title", {
@@ -221,14 +275,47 @@ def main() -> int:
         _validate_manifest(manifest_path)
         manifest["_path"] = str(manifest_path)
         manifest["render_mode"] = mode_name
+        manifest["_trace_path"] = str(trace_path)
         media_name = "preview.mp4" if args.preview else "final.mp4"
-        preview = adapter.render(plan, manifest, run_dir / media_name)
+        if topic == "robot_kinematics" and args.render == "blender":
+            from core.mechanism.renderer import render_h1_blender
+            model_path = Path(config.get("model", ROOT / "assets/unitree_h1/mjcf/h1_with_hand.xml"))
+            preview = render_h1_blender(trace_path, run_dir / media_name, model_path,
+                                         "preview" if args.preview else "final")
+            renderer_details = _load_json(run_dir / "blender_backend/renderer_provenance.json",
+                                          "Blender renderer provenance")
+        else:
+            preview = adapter.render(plan, manifest, run_dir / media_name)
+        renderer_backend = ("blender_h1_trace_playback" if topic == "robot_kinematics" and args.render == "blender"
+                            else "manim_yolo_image_space" if topic == "object_detection" else "manim")
+        if topic == "object_detection":
+            renderer_details = {"backend": renderer_backend, "runtime": trace["model"]["runtime"],
+                "runtime_version": trace["model"]["runtime_version"], "device": trace["model"]["device"],
+                "model_sha256": trace["model"]["sha256"], "input_image_sha256": trace["input_image"]["sha256"],
+                "raw_predictions": trace["raw_prediction_count"], "trace_candidates": trace["trace_candidate_count"],
+                "confidence_pass": trace["confidence_pass_count"], "final_detections": len(trace["kept_ids"])}
+        elif not (topic == "robot_kinematics" and args.render == "blender"):
+            try:
+                renderer_version = importlib_metadata.version("manim")
+            except importlib_metadata.PackageNotFoundError:
+                renderer_version = "unknown"
+            renderer_details = {"backend": renderer_backend, "version": renderer_version,
+                                "requested_renderer": args.render}
+    media = Path(preview).resolve()
+    actual_spec = media_metadata(media)
     report = {"topic": topic, "run_id": run_id, "base_run_id": identity["run_id"],
         "identity": identity, "mode": "trace_replay" if args.mode == "replay" else "executable_simulation",
+        "render_mode": "preview" if args.preview else "final",
         "trace": str(trace_path), "trace_sha256": trace_digest,
         "manifest": str(run_dir / "visual_manifest.json"),
-        "renderer": "manim" if topic != "rag" or args.render == "manim" else "Manim with optional trace-matched Three.js",
-        "media": str(preview), "media_mode": "silent technical preview" if args.preview else "silent technical render",
+        "renderer": renderer_backend,
+        "renderer_requested": args.render,
+        "renderer_details": renderer_details,
+        "renderer_settings": identity["render_spec"],
+        "storyboard_phase_ids": [beat.get("phase_id") for beat in manifest.get("beats", [])],
+        "media": str(media), "output_path": str(media), "media_sha256": file_hash(media),
+        "media_metadata": actual_spec,
+        "media_mode": "silent technical preview" if args.preview else "silent technical render",
         "narration": "NOT_GENERATED", "captions": "manifest text only; burned-in/audio sync NOT_RUN",
         "review": "NOT_RUN", "technical_decode": "PASS",
         "qa": {"technical": {"trace_schema_and_domain_validation": "PASS",

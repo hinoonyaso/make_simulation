@@ -1,5 +1,7 @@
 # V11.2 implementation notes
 
+> Current V11.3 implementation and validation supersede these notes where they cover RAG selection, phase IDs, cache validation, common H1/YOLO routing, and render integration. See [V11.3 integration report](V11_3_INTEGRATION_REPORT.md).
+
 ## Baseline and scope
 
 - Repository baseline was HEAD `86a1115227f76c9847967dca0168013398ab5cf0`, branch `main` synchronized with `origin/main` at task start.

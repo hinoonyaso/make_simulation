@@ -38,3 +38,16 @@ Reviewed the final 12.70-second silent Manim output at 3, 6, 10 and 12 seconds. 
 The rendered asset `/tmp/v112_h1_blender/h1_trace_blender.mp4` was produced with Blender 5.2.1 and actual imported MuJoCo H1 mesh assets. Frames at 0, 1 and 2 seconds were inspected. The controlled left arm is blue and moves with the trace; the other arm remains in its recorded hold pose. A shared studio floor, materials, camera and lighting render successfully. The graph and robot are driven by the same stored trace. No blocker/high rendering defect was seen in the sampled stills. The excerpt is only 2.03 seconds long, so this is technical render evidence, not a full motion/pacing review or evidence of Blender physics execution.
 
 The two excerpts are silent. Audio, narration, caption synchronization, first-view learner comprehension, and full normal-speed educational review remain unassessed.
+
+## V11.3 integration sample review (2026-10-10)
+
+This is a still-frame review of the current common-CLI output, not a full motion pass. Images were extracted from the actual MP4 files after full-decode checks.
+
+| Output | Sample time/state | Finding |
+|---|---|---|
+| RAG Final, 34.194 s | 8 s, 17 s, 25 s, 33 s | Chunk boundaries/overlap, query and embedding field, ranked actual squared-L2 results and context cards are visible in the sampled states. These stills do not establish continuity or natural pacing. |
+| NMS confidence-rejection preview | Final frame, 12 s | `confidence 통과 0 / 2개` and `최종 유지: 0개` are readable; no blocker/high defect observed in this still. |
+| YOLO actual inference preview | 6 s | Original image, mapped overlapping boxes, actual confidence pass count and IoU suppression explanation are visible. This is a sampled stage only. |
+| H1 Blender preview | 1 s | Initial frame showed subtitle/robot-head overlap and weak overlay contrast. Darkened muted overlays and moved the header over the graph column; the final sample no longer overlaps the robot. |
+
+No blocker/high defect was visible in the inspected V11.3 stills after the H1 correction. The H1 excerpt remains short (2.033 s), so no full motion judgment is claimed. The common Manim style heuristic warning about FadeOut count remains open for a continuous review. No audio or educational comprehension review was performed.

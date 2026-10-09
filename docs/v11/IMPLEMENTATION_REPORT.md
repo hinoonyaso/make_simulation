@@ -1,5 +1,7 @@
 # V11.1 implementation report
 
+> **V11.3 current status:** The integration work at baseline `6012fe4` and its local evidence are recorded in [V11.3 integration report](V11_3_INTEGRATION_REPORT.md). This file remains the historical V11.1 baseline; use the dated [test results](TEST_RESULTS.md) and [render review](RENDER_REVIEW.md) sections for current V11.3 state.
+
 > **V11.2 follow-up:** run management, validated replay, trace-driven storyboards and visualization updates are recorded in [V11.2 implementation notes](V11_2_IMPLEMENTATION.md). The V11.1 report below is the prior baseline; its statements about fixed output paths/replay should be read as historical.
 
 Baseline HEAD before edits: `36e8a85` (`Build V11 universal mechanism video pipeline`); branch `main`, matching `origin/main`. Existing untracked pilot content was preserved. No commit or push was made.

@@ -15,7 +15,9 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y ffmpeg fonts-nanum
-          python -m pip install numpy manim
+          python -m pip install numpy==2.2.6 manim==0.21.0 mujoco==3.7.0
+      - name: Run mechanism and replay regression tests
+        run: python -m unittest discover -s tests -v
       - name: Render and decode the trace-driven preview
         env:
           V10_MANIM_BIN: manim
@@ -32,14 +34,21 @@ jobs:
           test -n "$trace"
           python scripts/produce_video.py --topic quantization --mode replay --trace "$trace" \
             --preview --output-dir "$output/replay-runs"
+          cat > "$output/nms-zero.json" <<'JSON'
+          {"boxes":[[0,0,10,10],[20,20,30,30]],"scores":[0.1,0.2],"confidence_threshold":0.5}
+          JSON
+          python scripts/produce_video.py --topic nms --config "$output/nms-zero.json" \
+            --preview --output-dir "$output/nms-runs"
           mkdir -p "$output/artifacts"
           quant_preview="$(find "$output/runs" -path '*/quantization-*/preview.mp4' -print -quit)"
           attention_preview="$(find "$output/runs" -path '*/self_attention-*/preview.mp4' -print -quit)"
           replay_preview="$(find "$output/replay-runs" -path '*/quantization-*/preview.mp4' -print -quit)"
-          test -n "$quant_preview" && test -n "$attention_preview" && test -n "$replay_preview"
+          nms_zero_preview="$(find "$output/nms-runs" -path '*/nms-*/preview.mp4' -print -quit)"
+          test -n "$quant_preview" && test -n "$attention_preview" && test -n "$replay_preview" && test -n "$nms_zero_preview"
           cp "$quant_preview" "$output/artifacts/quantization.mp4"
           cp "$attention_preview" "$output/artifacts/self_attention.mp4"
           cp "$replay_preview" "$output/artifacts/quantization_replay.mp4"
+          cp "$nms_zero_preview" "$output/artifacts/nms_all_confidence_rejected.mp4"
           echo "V11_OUTPUT_DIR=$output/artifacts" >> "$GITHUB_ENV"
       - name: Upload generated mechanism previews
         uses: actions/upload-artifact@v4

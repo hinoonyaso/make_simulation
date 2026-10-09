@@ -15,9 +15,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "core/manim-robotics-education-skill/templates"))
 from manim_kit import apply_theme, txt, P
 
-config.pixel_width = 1920
-config.pixel_height = 1080
-config.frame_rate = 30
+# Resolution and frame rate are selected by the common renderer's CLI flags.
 
 
 class YoloInferenceScene(Scene):
@@ -25,6 +23,11 @@ class YoloInferenceScene(Scene):
         apply_theme(self)
         trace_path = Path(os.environ["YOLO_TRACE_PATH"])
         trace = json.loads(trace_path.read_text(encoding="utf-8"))
+        manifest = json.loads(Path(os.environ["YOLO_MANIFEST_PATH"]).read_text(encoding="utf-8"))
+        phase_ids = [beat.get("phase_id") for beat in manifest.get("beats", [])]
+        expected_phases = ["candidates", "confidence_filter", "iou_comparison", "final_result"]
+        if phase_ids != expected_phases:
+            raise ValueError(f"YOLO scene requires manifest phases {expected_phases}; received {phase_ids}")
         image_path = Path(trace["input_image"]["path"])
         image = ImageMobject(str(image_path)).scale_to_fit_height(5.15).move_to([-3.65, -.05, 0])
         image_frame = RoundedRectangle(width=image.width + .12, height=image.height + .12,

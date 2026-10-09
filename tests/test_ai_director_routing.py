@@ -102,6 +102,13 @@ class DirectorTraceRoutingTests(unittest.TestCase):
             loaded, durations = rag_build.load_manifest(manifest_path, source_trace)
             self.assertEqual(len(loaded["beats"]), 4)
             self.assertEqual(len(durations), 4)
+            self.assertEqual([beat["phase_id"] for beat in loaded["beats"]],
+                             ["chunking", "embeddings", "retrieval", "context"])
+            manifest["beats"][1]["phase_id"] = "final_result"
+            manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+            with self.assertRaisesRegex(SystemExit, "manifest phases"):
+                rag_build.load_manifest(manifest_path, source_trace)
+            manifest["beats"][1]["phase_id"] = "embeddings"
             del manifest["beats"][2]["trace"]
             manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
             with self.assertRaisesRegex(SystemExit, "shared trace path"):

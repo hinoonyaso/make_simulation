@@ -60,6 +60,15 @@
       "software_requirements": ["Python 3.12", "NumPy"],
       "known_limitations": ["Synthetic candidates; no YOLO model inference, image preprocessing, or dataset accuracy claim."]
     },
+    "object_detection": {
+      "domain": "computer_vision", "support_level": "L3", "implementation_status": "ready",
+      "adapter": "core.mechanism.adapters.object_detection:ObjectDetectionAdapter", "execution_backend": "Ultralytics YOLO11n COCO on CPU",
+      "trace_schema": "object-detection-execution-trace/v1", "renderers": ["manim_yolo_image_space"],
+      "supported_features": ["actual local image inference", "pre-NMS tensor capture", "confidence filtering", "class-aware IoU NMS", "trace replay with input-image SHA-256 verification", "image-space bounding-box visualization"],
+      "software_requirements": ["Python 3.12", "optional Ultralytics 8.3.0", "PyTorch", "Manim"],
+      "asset_requirements": ["verified YOLO11n COCO checkpoint SHA-256"],
+      "known_limitations": ["Only the verified YOLO11n COCO checkpoint is supported; no other model is inferred by filename.", "CPU image inference only; no depth, video tracking, robot execution, or dataset accuracy claim.", "Optional Ultralytics dependency must be available to the active Python environment."]
+    },
     "mcu_pid": {
       "domain": "mcu_embedded", "support_level": "L3", "implementation_status": "ready",
       "adapter": "core.mechanism.adapters.mcu_pid:MCUPIDAdapter", "execution_backend": "deterministic discrete-time motor model",
@@ -70,10 +79,11 @@
     "robot_kinematics": {
       "domain": "robotics", "support_level": "L3", "implementation_status": "ready",
       "adapter": "core.mechanism.adapters.mujoco_arm:MuJoCoArmAdapter", "execution_backend": "MuJoCo 3.7.0",
-      "trace_schema": "robotics-visual-trace/v1", "renderers": ["manim"],
-      "asset_requirements": ["blender.unitree_h1.v1"], "software_requirements": ["Python 3.12", "MuJoCo 3.7.0"],
+      "trace_schema": "robotics-visual-trace/v1", "renderers": ["manim", "blender_h1_trace_playback"],
+      "asset_requirements": ["blender.unitree_h1.v1"], "software_requirements": ["Python 3.12", "MuJoCo 3.7.0", "optional Blender 5.2+"],
       "hardware_requirements": [], "benchmark_requirements": ["fixed-base H1 model, timestep, controller settings"],
-      "known_limitations": ["Fixed-pelvis H1 arm experiment; no ROS2/hardware claim. Existing V10 renderer is a silent technical PoC."]
+      "supported_features": ["validated MuJoCo H1 trace replay", "Manim trace plot", "Blender H1 mesh trace playback", "joint-order/limit and FK checks"],
+      "known_limitations": ["Fixed-pelvis H1 arm experiment; no ROS2/hardware claim. Blender interpolates recorded MuJoCo states and does not integrate physics."]
     },
     "mppi": {"domain": "robotics", "support_level": "L2", "implementation_status": "pilot_replay_only", "trace_schema": "robotics-visual-trace/v1", "renderers": ["manim", "blender"], "known_limitations": ["Existing topic material only; no general Nav2 MPPI execution adapter."]},
     "dwb": {"domain": "robotics", "support_level": "L2", "implementation_status": "pilot_replay_only", "trace_schema": "robotics-visual-trace/v1", "renderers": ["manim", "blender"], "known_limitations": ["Existing topic material only; no general Nav2 DWB execution adapter."]},

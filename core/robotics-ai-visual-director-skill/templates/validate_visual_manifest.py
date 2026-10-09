@@ -41,6 +41,11 @@ def _trace_validator(trace_path):
         elif isinstance(schema, str) and schema.startswith("robotics-visual-trace/"):
             validator_path = BUNDLE / "core/shared-data/validate_trace.py"
             module_name = "validate_trace"
+        elif schema == "object-detection-execution-trace/v1":
+            if str(BUNDLE) not in sys.path:
+                sys.path.insert(0, str(BUNDLE))
+            validator_path = BUNDLE / "core/mechanism/adapters/object_detection.py"
+            module_name = "validate_object_detection_trace"
         else:
             return [f"unsupported trace schema: {schema!r}"]
         try:
@@ -70,7 +75,12 @@ def _trace_validator(trace_path):
                     else:
                         errors.append(f"mechanism topic {data.get('topic')!r} has no ready domain validator")
                 except Exception as exc:
-                    errors.append(f"domain trace validation failed safely: {type(exc).__name__}: {exc}")
+                        errors.append(f"domain trace validation failed safely: {type(exc).__name__}: {exc}")
+            elif schema == "object-detection-execution-trace/v1":
+                if str(BUNDLE) not in sys.path:
+                    sys.path.insert(0, str(BUNDLE))
+                from core.mechanism.adapters.object_detection import ObjectDetectionAdapter
+                errors = ObjectDetectionAdapter().validate(data)
             else:
                 errors = module.validate(str(target))
             return list(errors)

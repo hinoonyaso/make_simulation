@@ -64,6 +64,20 @@ def export(trace_path: Path, model_path: Path, out_dir: Path, fps: int = 30) -> 
     data = mujoco.MjData(model)
     if model.nq != len(samples[0]["qpos"]):
         raise ValueError(f"trace qpos length {len(samples[0]['qpos'])} != model nq {model.nq}")
+    ordered_joint_ids = np.argsort(model.jnt_qposadr)
+    model_joint_names = [mujoco.mj_id2name(model, mujoco.mjtObj.mjOBJ_JOINT, int(joint_id))
+                         for joint_id in ordered_joint_ids]
+    if trace["model"].get("joint_names_in_qpos_order") != model_joint_names:
+        raise ValueError("trace joint names/order do not match the selected MJCF qpos layout")
+    for joint_id in ordered_joint_ids:
+        joint_name = mujoco.mj_id2name(model, mujoco.mjtObj.mjOBJ_JOINT, int(joint_id))
+        qpos_index = int(model.jnt_qposadr[joint_id])
+        if bool(model.jnt_limited[joint_id]):
+            low, high = model.jnt_range[joint_id]
+            for sample_index, sample in enumerate(samples):
+                value = float(sample["qpos"][qpos_index])
+                if value < float(low) - 1e-8 or value > float(high) + 1e-8:
+                    raise ValueError(f"sample {sample_index} {joint_name}={value:g} exceeds MJCF limits [{low:g}, {high:g}]")
     body_indices = {
         key: mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY, name)
         for key, name in (("shoulder_pos", "left_shoulder_pitch_link"),
@@ -150,6 +164,9 @@ def export(trace_path: Path, model_path: Path, out_dir: Path, fps: int = 30) -> 
                "mode": "validated trace playback; qpos linearly interpolated at render fps",
                "fps": fps, "start_time": start, "end_time": end,
                "interpolation": "linear between stored qpos samples; no new physics integration",
+               "coordinate_mapping": {"source": "MuJoCo right-handed world frame, Z-up, meters",
+                                     "target": "Blender right-handed world frame, Z-up, meters",
+                                     "transform": "identity; positions and rotations copied after FK"},
                "joint_names": joint_names,
                "shoulder_index": joint_names.index("left_shoulder_pitch_joint"),
                "visual_geoms": geom_specs, "frames": frames, "hand_path": hand_path,

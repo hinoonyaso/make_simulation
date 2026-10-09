@@ -4,11 +4,16 @@ from __future__ import annotations
 import hashlib
 import json
 from pathlib import Path
+import subprocess
+import sys
+import tempfile
 from typing import Any
 
 import numpy as np
+from core.mechanism.protocol import MechanismRequest
 
 SCHEMA = "object-detection-execution-trace/v1"
+SUPPORTED_YOLO11N_SHA256 = "0ebbc80d4a7680d14987a577cd21342b65ecfd94632bd9a8da63ae6417644ee1"
 
 
 def sha256(path: Path) -> str:
@@ -172,11 +177,15 @@ def run_yolo_inference(image_path: str | Path, model_path: str | Path, output_pa
         from ultralytics.utils import ops
     except ImportError as exc:
         raise RuntimeError("real YOLO inference requires the optional `ultralytics` runtime") from exc
+    if ultralytics.__version__ != "8.3.0":
+        raise RuntimeError(f"YOLO pre-NMS capture was verified with Ultralytics 8.3.0; found {ultralytics.__version__}")
     image_path = Path(image_path).resolve()
     model_path = Path(model_path).resolve()
     output_path = Path(output_path)
     if not image_path.is_file() or not model_path.is_file():
         raise FileNotFoundError("image and model checkpoint must both exist")
+    if sha256(model_path) != SUPPORTED_YOLO11N_SHA256:
+        raise ValueError("this adapter currently supports only the verified Ultralytics YOLO11n COCO checkpoint")
     if not (0 <= trace_display_floor <= confidence_threshold <= 1 and 0 <= iou_threshold <= 1):
         raise ValueError("thresholds must satisfy 0 <= trace display floor <= confidence <= 1 and IoU in [0,1]")
     if imgsz < 32 or display_limit < 1:
@@ -298,3 +307,64 @@ def run_yolo_inference(image_path: str | Path, model_path: str | Path, output_pa
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(json.dumps(trace, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     return trace
+
+
+class ObjectDetectionAdapter:
+    """Common CLI adapter; inference runs in a child process to isolate runtime hooks."""
+
+    def __init__(self, capability: dict[str, Any] | None = None):
+        self.capability = capability or {}
+        self.root = Path(__file__).resolve().parents[3]
+
+    def describe_capability(self):
+        return self.capability
+
+    def prepare(self, request: MechanismRequest):
+        options = dict(request.options)
+        for key in ("image", "model"):
+            if not options.get(key):
+                raise ValueError(f"object_detection requires --{key}")
+            options[key] = str(Path(options[key]).resolve())
+            if not Path(options[key]).is_file():
+                raise FileNotFoundError(f"object-detection {key} does not exist: {options[key]}")
+        return options
+
+    def execute(self, config: dict[str, Any]):
+        with tempfile.TemporaryDirectory(prefix="v11_yolo_inference_") as temp:
+            trace_path = Path(temp) / "trace.json"
+            command = [sys.executable, str(self.root / "scripts/run_yolo_inference.py"),
+                       "--image", config["image"], "--model", config["model"], "--out", str(trace_path),
+                       "--confidence", str(config.get("confidence_threshold", .25)),
+                       "--iou", str(config.get("iou_threshold", .45)),
+                       "--display-limit", str(config.get("display_limit", 12))]
+            subprocess.run(command, cwd=self.root, check=True)
+            return json.loads(trace_path.read_text(encoding="utf-8"))
+
+    def validate(self, trace: dict[str, Any]) -> list[str]:
+        errors = validate_object_detection_trace(trace)
+        image_info = trace.get("input_image", {})
+        image_path = Path(image_info.get("path", ""))
+        if not image_path.is_file():
+            errors.append(f"replay image is unavailable: {image_path}")
+        elif sha256(image_path) != image_info.get("sha256"):
+            errors.append("replay image SHA-256 does not match the inference trace")
+        if trace.get("source") != "Ultralytics YOLO11n image inference; class-aware NMS trace replay":
+            errors.append("trace does not identify the supported real-inference execution path")
+        if trace.get("model", {}).get("sha256") != SUPPORTED_YOLO11N_SHA256:
+            errors.append("trace model SHA-256 is not the supported YOLO11n checkpoint")
+        return errors
+
+    def build_visual_plan(self, trace: dict[str, Any]):
+        return {"kind": "object_detection", "title": "실제 YOLO 추론에서 최종 상자를 고르는 과정",
+                "input_image": trace["input_image"], "model": trace["model"],
+                "raw_prediction_count": trace["raw_prediction_count"],
+                "trace_candidate_count": trace["trace_candidate_count"],
+                "confidence_pass_count": trace["confidence_pass_count"],
+                "kept_ids": trace["kept_ids"], "visualization_candidate_ids": trace["visualization_candidate_ids"],
+                "trace_sha256": hashlib.sha256(json.dumps(trace, sort_keys=True).encode()).hexdigest()}
+
+    def render(self, plan: dict[str, Any], manifest: dict[str, Any], output: Path) -> Path:
+        from core.mechanism.renderer import render_yolo_trace
+        trace_path = Path(manifest["_trace_path"])
+        return render_yolo_trace(trace_path, output, Path(manifest["_path"]),
+                                 manifest.get("render_mode", "preview"))

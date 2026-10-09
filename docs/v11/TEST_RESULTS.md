@@ -37,6 +37,27 @@ V11.2 run identity, cache/reuse, output preservation, legacy replay and storyboa
 
 The active V9/V10 tests and checked-in trace checks passed. This suite result does not convert simulator, model, full production or whole-video review blockers into passes.
 
+## V11.3 integration validation (2026-10-10)
+
+Current evidence and exact media paths are consolidated in [V11.3 integration report](V11_3_INTEGRATION_REPORT.md). This section supersedes prior V11.2 status for the capabilities re-run below.
+
+| Check | Status | Evidence |
+|---|---|---|
+| Baseline regression suite | PASS | Before edits, `uv run python -m unittest discover -s tests -v`: 66 passed. |
+| Full regression suite | PASS | After V11.3 edits, same command: 79 passed. |
+| Compile | PASS | `uv run python -m compileall -q core/mechanism scripts/produce_video.py tests pilots/v10_rag_poc pilots/v11_2_h1_blender pilots/v11_2_yolo`. |
+| Phase contract / NMS zero-kept boundary | PASS | Unit tests verify ID mapping, omitted comparison phase and final zero state; real NMS preview full-decodes and displays 0/2 confidence pass, 0 kept. |
+| RAG preview/final selection | PASS | Separate 960×540 Preview and 1920×1080 Final generated from the checked-in trace. Both full-decode; final path/hash/dimensions checked. |
+| Quantization executable → replay | PASS | Both common-CLI renders full-decode at 960×540/30; replay uses generated trace. |
+| PID / Self-Attention common render | PASS | Both fresh 960×540/30 renders full-decode. |
+| H1 common Blender path | PASS | Blender 5.2.1 imported the existing H1 mesh and rendered the validated trace at 960×540/30; payload coordinate map/provenance and decode checked. |
+| YOLO common adapter | PASS | Actual YOLO11n 8.3.0 inference plus replay each rendered 960×540/30 and full-decoded. |
+| Cache reuse | PASS | Identical RAG final and NMS preview requests returned `REUSED`; cache contract tests also pass. |
+| Scene style | PASS with warning | RAG, YOLO and Blender style checks pass. Common Manim style exits 0 but reports `FadeOut x17 > continuity primitives x8`; see render review. |
+| Workflow YAML | PASS | Ruby YAML parser loaded `.github/workflows/ai-video-integration.yml`. |
+| Remote GitHub Actions run | NOT_RUN | No `gh` CLI/remote dispatch tool or credentials available; changes remain local and unpushed. Workflow URL and instructions are in V11.3 report. |
+| Full motion / audio / learner review | NOT_RUN | Sampled stills only; generated common-CLI media is silent. |
+
 ## V11.2 resumed Blender and YOLO follow-up (2026-10-09)
 
 The rows above describe the earlier implementation pass and are superseded for these two capabilities by the follow-up below.

@@ -10,8 +10,10 @@ import numpy as np
 from manim import *
 
 ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "core/manim-robotics-education-skill/templates"))
 from manim_kit import apply_theme, txt, P
+from core.mechanism.storyboard import validate_phase_contract
 
 
 def text(value, size=24, color=P.fg, width=None):
@@ -40,12 +42,15 @@ class MechanismTraceScene(Scene):
         beats = self.manifest["beats"]
         self.add(text(self.plan["title"], 34, P.fg, 13.2).to_edge(UP, buff=.35))
         graphic, transitions = self._build_graphic()
+        errors = validate_phase_contract(beats, transitions)
+        if errors:
+            raise ValueError("invalid storyboard/renderer phase contract: " + "; ".join(errors))
         for index, beat in enumerate(beats):
             duration = float(beat["sec"])
             caption = text(beat["caption"], 20, P.muted, 12.5).move_to([0, -3.1, 0])
             header = text(f"{index+1:02d} / {len(beats):02d}", 16, P.active).to_corner(UR, buff=.4)
             anims = [FadeIn(header), FadeIn(caption)]
-            state_animations = transitions[index] if index < len(transitions) else []
+            state_animations = transitions[beat["phase_id"]]
             anims.extend(state_animations)
             state_runtime = max([value for animation in state_animations
                                  if isinstance((value := getattr(animation, "run_time", .6)), (int, float))] + [.6])
@@ -56,11 +61,22 @@ class MechanismTraceScene(Scene):
 
     def _build_graphic(self):
         kind = self.plan["kind"]
-        if kind == "quantization": return self._quantization()
+        if kind == "quantization":
+            graphic, rows = self._quantization()
+            keys = ["input", "integer_mapping", "dequantization"]
+            if self.plan.get("activation_quantization"):
+                keys.append("activation_quantization")
+            return graphic, dict(zip(keys, rows))
         if kind == "nms": return self._nms()
-        if kind == "mcu_pid": return self._pid()
-        if kind == "mujoco_arm": return self._mujoco_arm()
-        if kind == "self_attention": return self._self_attention()
+        if kind == "mcu_pid":
+            graphic, rows = self._pid()
+            return graphic, dict(zip(["setpoint", "motor_response", "pid_terms"], rows))
+        if kind == "mujoco_arm":
+            graphic, rows = self._mujoco_arm()
+            return graphic, dict(zip(["robot_setup", "joint_state", "end_effector_motion"], rows))
+        if kind == "self_attention":
+            graphic, rows = self._self_attention()
+            return graphic, dict(zip(["input_projection", "qk_scores", "scaling_mask", "softmax", "weighted_value"], rows))
         raise ValueError(f"no Manim visual plan for mechanism: {kind}")
 
     def _quantization(self):
@@ -134,8 +150,9 @@ class MechanismTraceScene(Scene):
                              20, P.muted).move_to([2.7, 2.3, 0])
             empty = text("비교할 검출 후보가 없습니다.", 23, P.active, 6.5).move_to([-2.3, 0, 0])
             result = text("유지 상자: 없음", 20, P.result).move_to([2.7, -2.45, 0])
-            return VGroup(canvas, threshold, empty, result), [
-                [Create(canvas), FadeIn(threshold), FadeIn(empty)], [FadeIn(result)]]
+            return VGroup(canvas, threshold, empty, result), {
+                "candidates": [Create(canvas), FadeIn(threshold), FadeIn(empty)],
+                "final_result": [FadeIn(result)]}
         lo, hi = boxes[:, :2].min(axis=0), boxes[:, 2:].max(axis=0)
         span = np.maximum(hi - lo, 1.0)
         canvas = Rectangle(width=7.8, height=4.0, color=P.faint).move_to([-2.3, -.1, 0])
@@ -158,7 +175,9 @@ class MechanismTraceScene(Scene):
             labels.add(label)
         threshold = text(f"confidence ≥ {p['confidence_threshold']:.2f}    IoU threshold = {p['iou_threshold']:.2f}",
                          20, P.muted).move_to([2.7, 2.3, 0])
-        result = text("유지: " + ", ".join(p["kept_ids"]), 18, P.result, 6.2).move_to([2.7, -2.45, 0])
+        kept_label = (f"최종 유지: {len(p['kept_ids'])}개" if not p["kept_ids"] else
+                      f"최종 유지: {len(p['kept_ids'])}개 · " + ", ".join(p["kept_ids"]))
+        result = text(kept_label, 18, P.result, 6.2).move_to([2.7, -2.45, 0])
         comparison_label = text("confidence 통과 후보를 점수 순서로 비교", 17, P.active, 5.0).move_to([3.55, .3, 0])
         graphic = VGroup(canvas, candidates, threshold, result, comparison_label)
         steps = p["steps"]
@@ -182,10 +201,13 @@ class MechanismTraceScene(Scene):
         if comparisons:
             comparisons.insert(0, FadeIn(comparison_label))
         comparison_sequence = Succession(*comparisons).set_run_time(3.3) if comparisons else Wait(.1)
-        return graphic, [[Create(canvas), FadeIn(threshold), FadeIn(candidates)],
-                         [*filtered, FadeIn(filter_label)], [comparison_sequence],
-                         [*[mob.animate.set_stroke(color=P.result if item in p["kept_ids"] else P.muted)
-                            for item, mob in box_mobs.items()], FadeIn(result)]]
+        transitions = {"candidates": [Create(canvas), FadeIn(threshold), FadeIn(candidates)],
+                       "confidence_filter": [*filtered, FadeIn(filter_label)],
+                       "final_result": [*[mob.animate.set_stroke(color=P.result if item in p["kept_ids"] else P.muted)
+                                           for item, mob in box_mobs.items()], FadeIn(result)]}
+        if steps:
+            transitions["iou_comparison"] = [comparison_sequence]
+        return graphic, transitions
 
     def _pid(self):
         p = self.plan

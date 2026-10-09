@@ -21,7 +21,7 @@ from core.simulation.environments.loader import EnvironmentLoader
 class MechanismAdapterTests(unittest.TestCase):
     def test_registry_routes_ready_adapters_and_marks_unimplemented_topics(self):
         registry = MechanismRegistry()
-        for topic in ("quantization", "nms", "mcu_pid", "rag", "robot_kinematics"):
+        for topic in ("quantization", "nms", "mcu_pid", "rag", "robot_kinematics", "object_detection"):
             self.assertEqual(registry.require_executable(topic)["implementation_status"], "ready")
         self.assertEqual(registry.resolve("VLA")["implementation_status"], "planned")
         self.assertIn("self_attention", {row["topic"] for row in registry.list_capabilities()})

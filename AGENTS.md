@@ -30,7 +30,7 @@ For full narrated explainers, validate the hardest inference in a cheap moving e
 
 For this user’s robotics episodes where physical motion/contact is relevant, retain the discovery explanation and use an actual capable physics engine for Blender setup/consequence. Share the same run with Manim; keep reference plans distinct from physical response. Do not relabel old trace playback or prescribed robot poses as physical simulation. Verify run provenance and physical checks separately from schema/media validation.
 
-## V11.2 mechanism runs
+## V11 mechanism runs
 
 - Use `scripts/produce_video.py` only after checking the Mechanism Registry. Ready topics support `--mode executable`; validated traces can use `--mode replay --trace <path>` where the registry schema matches.
 - Each invocation writes to `output/runs/<topic>-<run-id>/`. The run ID includes input/config/trace, renderer mode, code fingerprint, adapter contract, and model provenance. Completed matching media is reused only after full decode; failed/colliding run folders stay intact. `--force` creates a timestamped sibling; it never overwrites.
@@ -38,3 +38,12 @@ For this user’s robotics episodes where physical motion/contact is relevant, r
 - The storyboard is derived from trace content. Estimated visual timing and measured narration timing are distinct. `--narration-duration` distributes an existing measured duration; it does not generate audio.
 - Production reports separate technical decode from visual and educational review. Silent preview decode does not imply audio, caption, reviewer, learner, 3D mesh, or L4 completion.
 - Existing robotics/AI assets and traces are preferred. Do not change old pilot outputs to make run management pass. Do not acquire new maps/worlds in this V11.2 scope.
+
+## V11.3 integration notes
+
+- The RAG dispatcher selects `preview.media` or `final.media` from the matching successful subreport, then verifies the file, exact requested dimensions, 30 fps and full decode before copying it.
+- Every generated common storyboard beat has a `phase_id`; the Manim scene rejects missing, duplicate, unused or unmapped phases. Dynamic NMS can omit IoU comparison when the validated trace has no selected candidates, but must still show its final result.
+- Cache reuse requires the expected in-run output path, identity, preview/final render spec, recorded media metadata, matching media SHA-256 and a fresh full decode. Fingerprints cover render-input code paths rather than the Git commit/README.
+- `object_detection` is actual, local YOLO11n inference only with the verified checkpoint hash. It is separate from synthetic `nms`; replay verifies the source image hash and performs no inference. Ultralytics is optional and its runtime hooks run in a child process.
+- `robot_kinematics --render blender` uses the existing H1 MJCF and Blender trace pilot. The exporter checks source hash, joint order/limits and FK; Blender renders interpolated MuJoCo states and does not integrate physics again. Set `BLENDER_BIN` when automatic executable discovery does not work; explicit Blender failure is never downgraded to Manim.
+- Render Integration CI remains manual. A local PASS is not a remote Actions PASS; report remote dispatch as NOT_RUN when no dispatch credential/UI is available.
