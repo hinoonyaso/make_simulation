@@ -17,7 +17,9 @@ from core.mechanism.storyboard import validate_phase_contract
 from core.mechanism.timeline import validate_timeline
 from core.mechanism.pid_playback import PIDPlayback
 from core.mechanism.engineering_playback import (
-    engineering_state_for_frame, interpolation_for_signal, source_time_to_x,
+    build_signal_axis_groups, decimate_plot_samples, engineering_state_for_frame,
+    interpolation_for_signal, map_signal_value_to_y, shared_signal_axis_range,
+    source_time_to_x,
 )
 
 
@@ -169,8 +171,9 @@ class MechanismTraceScene(Scene):
             source_range = self.timeline.get("source_range_sec")
             if not source_range or len(source_range) != 2 or source_range[1] <= source_range[0]:
                 raise ValueError("engineering waveform requires a positive shared source-time range")
-            units = {signal["unit"] for _, signal in available}
-            stacked = len(units) > 1
+            axis_groups = build_signal_axis_groups(dict(available))
+            unit_order = list(axis_groups)
+            stacked = len(axis_groups) > 1
             palette = [active, result, sensor, P.error]
             short_names = {"position":"x", "velocity":"v", "kinetic_energy":"K", "potential_energy":"U",
                            "total_energy":"E", "external_force":"F", "analytic_position":"x analytic",
@@ -188,27 +191,33 @@ class MechanismTraceScene(Scene):
                            text(f"{source_range[1]:.4g} s",13,muted).move_to([x1-.35,plot_bottom-.2,0]))
             anims = [FadeIn(graph[0]), Create(graph[1]), Create(graph[2]),
                      FadeIn(graph[3]), FadeIn(graph[4])]
-            lane_height = (plot_top - plot_bottom) / max(1, len(available)) if stacked else plot_top-plot_bottom
+            lane_height = (plot_top - plot_bottom) / max(1, len(unit_order)) if stacked else plot_top-plot_bottom
+            unit_slots = {unit: [name for name, signal in available if signal["unit"] == unit]
+                          for unit in unit_order}
+            baselines = set()
             for idx, (name, signal) in enumerate(available):
-                times = np.asarray(signal.get("timestamps", p.get("timestamps", [])), dtype=float)
-                values = np.asarray(signal["values"], dtype=float)
-                stride = max(1, len(values)//700)
-                indices = list(range(0, len(values), stride))
-                if indices[-1] != len(values)-1:
-                    indices.append(len(values)-1)
-                times, values = times[indices], values[indices]
+                all_times = np.asarray(signal.get("timestamps", p.get("timestamps", [])), dtype=float)
+                all_values = np.asarray(signal["values"], dtype=float)
+                policy = interpolation_for_signal(name)
+                indices, overview = decimate_plot_samples(all_times, all_values, policy, max_points=1400)
+                times, values = all_times[indices], all_values[indices]
                 if len(times) < 2: continue
                 xs = [source_time_to_x(float(t), source_range, x0, x1) for t in times]
-                low, high = float(np.min(values)), float(np.max(values))
-                if abs(high-low) < 1e-12:
-                    low, high = low-1, high+1
+                low, high = shared_signal_axis_range(axis_groups[signal["unit"]])
+                unit_index = unit_order.index(signal["unit"])
                 if stacked:
-                    lane_bottom = plot_bottom + idx*lane_height + .08
-                    lane_top = plot_bottom + (idx+1)*lane_height - .08
+                    lane_bottom = plot_bottom + unit_index*lane_height + .08
+                    lane_top = plot_bottom + (unit_index+1)*lane_height - .08
                 else:
                     lane_bottom, lane_top = plot_bottom+.08, plot_top-.08
-                ys = lane_bottom + (values-low)/(high-low)*(lane_top-lane_bottom)
-                policy = interpolation_for_signal(name)
+                ys = [map_signal_value_to_y(float(value), (low, high), (lane_bottom, lane_top))
+                      for value in values]
+                if signal["unit"] not in baselines and low <= 0 <= high:
+                    zero_y = map_signal_value_to_y(0.0, (low, high), (lane_bottom, lane_top))
+                    baseline = Line([x0, zero_y, 0], [x1, zero_y, 0], color=P.faint, stroke_width=1)
+                    graph.add(baseline)
+                    anims.append(Create(baseline))
+                    baselines.add(signal["unit"])
                 points = []
                 if policy == "zero_order_hold":
                     for sample_index, (x_value, y_value) in enumerate(zip(xs, ys)):
@@ -221,18 +230,18 @@ class MechanismTraceScene(Scene):
                     if times[-1] < source_range[1]:
                         points.append([x1, float(ys[-1]), 0])
                 line = polyline(points, palette[idx % len(palette)], 3)
+                same_unit_names = unit_slots[signal["unit"]]
+                within_unit = same_unit_names.index(name)
                 if stacked:
-                    tag_x = x0 + min(2.2, (x1 - x0) * .2)
+                    tag_x = x0 + (within_unit + .5) * (x1 - x0) / len(same_unit_names)
                     tag_y = lane_top-.13
-                    tag_width = 4.3
+                    tag_width = min(4.2, (x1 - x0) / len(same_unit_names) - .15)
                 else:
-                    # Same-unit curves share one quantitative axis. Present
-                    # their value ranges as a compact horizontal legend so
-                    # labels do not overlap while descending over the plot.
-                    tag_x = x0 + (idx + .5) * (x1 - x0) / len(available)
+                    tag_x = x0 + (within_unit + .5) * (x1 - x0) / len(same_unit_names)
                     tag_y = 1.48
-                    tag_width = min(3.2, (x1 - x0) / len(available) - .15)
-                tag = text(f"{short_names.get(name, name)} · {signal['unit']}  [{low:.3g}, {high:.3g}]", 14 if stacked else 16,
+                    tag_width = min(3.2, (x1 - x0) / len(same_unit_names) - .15)
+                overview_tag = " · OVERVIEW" if overview else ""
+                tag = text(f"{short_names.get(name, name)} · {signal['unit']}  [{low:.3g}, {high:.3g}]{overview_tag}", 13 if overview else (14 if stacked else 16),
                            palette[idx % len(palette)], tag_width)
                 tag.move_to([tag_x, tag_y, 0])
                 graph.add(line, tag)
@@ -287,11 +296,17 @@ class MechanismTraceScene(Scene):
             setup = VGroup(label("Classical CAN 2.0A · 표준 11비트 프레임",1.2,muted,22),request_lines)
             bits = np.asarray(p["bits"],dtype=int)
             fields = p["fields"]
-            def digital_view(title, end, marked=False):
-                end=max(1,min(int(end),len(bits)))
-                start_x=-5.5; width=11.0/end
+            def digital_view(title, end_boundary=None, marked=False):
+                end = len(bits) if end_boundary is None else int(end_boundary)
+                if not 1 <= end <= len(bits):
+                    raise ValueError("CAN display boundary must be within the physical bit sequence")
+                display_slots = p.get("arbitration_display_slots", end + 1) if marked else end
+                if display_slots < end or display_slots > len(bits) + 1:
+                    raise ValueError("CAN display slots must reserve space after the displayed boundary")
+                start_x=-5.5; width=11.0/display_slots
                 top=1.0; low=-.7
                 g=VGroup(label(title,1.8,muted,21),Line([-5.5,-1.05,0],[5.5,-1.05,0],color=P.faint))
+                extra_mobs=[]
                 points=[]
                 for i,b in enumerate(bits[:end]):
                     x=start_x+i*width; yy=top if b else low
@@ -301,22 +316,35 @@ class MechanismTraceScene(Scene):
                 marker_mobs=[]
                 if end <= 24:
                     for i,b in enumerate(bits[:end]):
-                        g.add(text(str(int(b)),12,active if b==0 else muted).move_to([start_x+(i+.5)*width,-1.32,0]))
+                        bit_label=text(str(int(b)),12,active if b==0 else muted).move_to([start_x+(i+.5)*width,-1.32,0])
+                        g.add(bit_label)
+                        extra_mobs.append(bit_label)
                 if marked:
+                    legend = text("빨강: 패배 비트     초록: 승자 경계", 13, muted, 4.8)
+                    legend.move_to([0, -1.82, 0])
+                    g.add(legend)
+                    extra_mobs.append(legend)
                     for item in p["events"]:
-                        if item["event"] in {"ARBITRATION_LOST","ARBITRATION_WON"}:
-                            xx=start_x+min(item["timestamp"],end)*width
+                        if item["event"] in {"ARBITRATION_LOST","ARBITRATION_WON","IDENTICAL_ARBITRATION_FIELDS"}:
+                            tick = int(item["timestamp"])
+                            if item["event"] == "ARBITRATION_LOST" and not 0 <= tick < end:
+                                raise ValueError("CAN loser marker must point inside arbitration bits")
+                            if item["event"] != "ARBITRATION_LOST" and tick != end:
+                                raise ValueError("CAN winner marker must point at arbitration boundary")
+                            xx=start_x+tick*width
                             marker=DashedLine([xx,-1.65,0],[xx,1.15,0],
                                               color=P.error if item["event"]=="ARBITRATION_LOST" else result)
                             marker_mobs.append(marker)
                             g.add(marker)
                 return g, [FadeIn(g[0]),Create(g[1]),Create(wave),
+                           *[FadeIn(mob) for mob in extra_mobs],
                            *[Create(marker) for marker in marker_mobs]]
             request=VGroup(label("동시에 송신 요청",.55,active,25),*[
                 text(f"{row['node']} → ID 비트 전송",19,sensor).move_to([0,.05-i*.42,0])
                 for i,row in enumerate(requests)])
-            arbitration,arb_anim=digital_view("중재 필드 · dominant 0이 recessive 1을 덮음", min(13,len(bits)), True)
-            frame,frame_anim=digital_view("실제 생성된 프레임 비트열 · stuffing 포함",len(bits),False)
+            arbitration_end = p["arbitration_end_wire_tick"]
+            arbitration,arb_anim=digital_view("중재 필드 · stuffed wire bits · 경계 여백 포함", arbitration_end, True)
+            frame,frame_anim=digital_view("실제 생성된 프레임 비트열 · stuffing 포함",None,False)
             status=VGroup(label("승자: "+(", ".join(p["winners"]) or "없음"),.75,result,27),
                           label(f"bitrate {p['bitrate_hz']/1000:g} kbit/s · {p['bit_count']} bits · ACK {'수신' if p['acknowledged'] else '없음'}",-.05,active,20),
                           label("CRC-15/CAN 0x4599 · receiver가 없으면 ACK 실패",-.8,muted,17))

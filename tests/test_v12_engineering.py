@@ -352,6 +352,81 @@ class V12EngineeringTests(unittest.TestCase):
             self.assertEqual(first["signals"]["speed_rad_s"]["value"],0.0)
             self.assertEqual(last["signals"]["speed_rad_s"]["value"],30.0)
 
+    def test_engineering_plot_axes_share_scale_per_unit(self):
+        from core.mechanism.engineering_playback import (
+            build_signal_axis_groups, map_signal_value_to_y, shared_signal_axis_range,
+        )
+        signals = {
+            "speed_reference": {"unit":"rad/s", "values":[0,25,50,75,100]},
+            "speed_rad_s": {"unit":"rad/s", "values":[0,20,50,60,80]},
+            "load_torque": {"unit":"N·m", "values":[0,.25,.5]},
+        }
+        groups = build_signal_axis_groups(signals)
+        self.assertEqual(set(groups), {"rad/s", "N·m"})
+        speed_axis = shared_signal_axis_range(groups["rad/s"])
+        self.assertEqual(speed_axis, (0.0, 100.0))
+        reference_values = signals["speed_reference"]["values"]
+        actual_values = signals["speed_rad_s"]["values"]
+        self.assertEqual(map_signal_value_to_y(reference_values[0], speed_axis, (-1, 1)),
+                         map_signal_value_to_y(actual_values[0], speed_axis, (-1, 1)))
+        self.assertEqual(map_signal_value_to_y(reference_values[2], speed_axis, (-1, 1)),
+                         map_signal_value_to_y(actual_values[2], speed_axis, (-1, 1)))
+        self.assertGreater(map_signal_value_to_y(100, speed_axis, (-1, 1)),
+                           map_signal_value_to_y(80, speed_axis, (-1, 1)))
+        torque_axis = shared_signal_axis_range(groups["N·m"])
+        self.assertNotEqual(speed_axis, torque_axis)
+        with self.assertRaisesRegex(ValueError, "same unit"):
+            shared_signal_axis_range(signals)
+        constant = shared_signal_axis_range({"constant":{"unit":"A","values":[4,4,4]}})
+        self.assertLess(constant[0], 4)
+        self.assertGreater(constant[1], 4)
+        negative_mixed = shared_signal_axis_range({"mixed":{"unit":"A","values":[-2,3]}})
+        self.assertLess(negative_mixed[0], 0)
+        self.assertGreater(negative_mixed[1], 0)
+
+    def test_plot_decimation_preserves_zoh_short_pulses_and_marks_overviews(self):
+        from core.mechanism.engineering_playback import decimate_plot_samples
+        times = [index / 1000 for index in range(1500)]
+        values = [0.0] * len(times)
+        values[751] = 0.8
+        indices, overview = decimate_plot_samples(times, values, "zero_order_hold", max_points=700)
+        self.assertFalse(overview)
+        self.assertLess(len(indices), 700)
+        self.assertTrue({750, 751, 752}.issubset(indices))
+        self.assertEqual([times[index] for index in (751, 752)], [.751, .752])
+        unchanged, unchanged_overview = decimate_plot_samples(times, [1.0]*len(times),
+            "zero_order_hold", max_points=700)
+        self.assertFalse(unchanged_overview)
+        self.assertEqual(unchanged, [0, len(times)-1])
+        last_change = [0.0] * 1001
+        last_change[-1] = 1.0
+        end_indices, _ = decimate_plot_samples(list(range(len(last_change))), last_change,
+            "zero_order_hold", max_points=700)
+        self.assertTrue({len(last_change)-2, len(last_change)-1}.issubset(end_indices))
+        alternating = [float(index % 2) for index in range(2001)]
+        overview_indices, is_overview = decimate_plot_samples(list(range(len(alternating))),
+            alternating, "zero_order_hold", max_points=700)
+        self.assertTrue(is_overview)
+        self.assertLessEqual(len(overview_indices), 700)
+        self.assertIn(0, overview_indices)
+        self.assertEqual(len(alternating)-1, overview_indices[-1])
+
+    def test_can_arbitration_visual_extent_tracks_stuffed_wire_boundary(self):
+        from core.simulation_engines.communication.can_protocol import arbitration_wire_extent
+        for arbitration_id, expected_minimum in ((0x555, 13), (0x000, 14)):
+            result = arbitrate([{"node":"winner","id":arbitration_id,"data":""},
+                                {"node":"loser","id":0x7ff,"data":""}], receivers=["rx"])
+            end_tick, display_slots = arbitration_wire_extent(result["events"], len(result["physical_bits"]))
+            prefix = [0, *[(arbitration_id >> i) & 1 for i in range(10,-1,-1)], 0]
+            expected_end = len(bit_stuff(prefix)[0])
+            self.assertEqual(end_tick, expected_end)
+            self.assertGreaterEqual(end_tick, expected_minimum)
+            self.assertEqual(display_slots, end_tick + 1)
+            loss = next(event for event in result["events"] if event["event"] == "ARBITRATION_LOST")
+            self.assertLess(loss["timestamp"], end_tick)
+            marker_x = -5.5 + end_tick / display_slots * 11.0
+            self.assertLess(marker_x, 5.5)  # winner is an end boundary with reserved visible space
+
 
 if __name__ == "__main__":
     unittest.main()

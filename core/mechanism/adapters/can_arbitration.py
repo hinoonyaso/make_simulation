@@ -11,7 +11,7 @@ import cantools
 from core.mechanism.engineering_trace import validate_discrete_events
 from core.mechanism.protocol import MechanismRequest
 from core.mechanism.trace_contract import make_envelope, validate_envelope
-from core.simulation_engines.communication.can_protocol import arbitrate
+from core.simulation_engines.communication.can_protocol import arbitrate, arbitration_wire_extent
 
 ROOT = Path(__file__).resolve().parents[3]
 DBC_PATH = ROOT / "assets/v12/engineering_demo.dbc"
@@ -144,12 +144,16 @@ class CANArbitrationAdapter:
 
     def build_visual_plan(self, trace):
         p = trace["payload"]
+        arbitration_end_tick, arbitration_display_slots = arbitration_wire_extent(
+            p["events"], len(p["physical_bits"]))
         return {"kind": "engineering", "domain": trace["domain"], "topic": trace["topic"],
                 "title": "Classical CAN: 비트 중재와 프레임 전송", "trace_id": trace["trace_id"],
                 "timestamps": trace["timestamps"], "events": p["events"],
                 "bits": p["physical_bits"], "fields": p["field_bits"], "requests": p["requests"],
                 "winners": p["winners"], "losers": p["losers"], "acknowledged": p["acknowledged"],
                 "bitrate_hz": p["bitrate_hz"], "bit_count": p["bit_count"],
+                "arbitration_end_wire_tick": arbitration_end_tick,
+                "arbitration_display_slots": arbitration_display_slots,
                 "visualization": "digital_timing_diagram",
                 "source_time_unit": "bit_time"}
 

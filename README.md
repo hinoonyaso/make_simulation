@@ -1,174 +1,303 @@
-# Robotics / AI Visual Video V9 — Source-Informed Lite
+# Engineering Visual Lab
 
-High-quality, low-token Codex pipeline for robotics/AI educational videos.
+**Engineering Education Through Visualization**
 
-Default route: `Director -> optional shared trace -> Manim/Blender -> one real-render review -> Resolve -> optional YouTube`.
+공학·과학 개념을 재현 가능한 계산과 시각 자료로 설명하는 교육 영상 제작 프로젝트입니다. Manim으로 수식·그래프·2D 도식을 만들고, 필요한 장면은 Blender로 3D 구조와 동작을 보여줍니다. 일부 주제는 검증된 trace나 수치 모델을 렌더링에 연결하지만, CAD·FEM·CFD·전자기 Solver 자체를 제공하지는 않습니다.
 
-V9 keeps V8 Lite's small agent graph, but strengthens **production primitives** using general patterns found in public source repositories from 3Blue1Brown, Welch Labs, Reducible, Primer, and Sebastian Lague. No creator scene code is copied. `SOURCE_PATTERNS.md` is provenance only and should not be preloaded.
+> V12.1 정확도 개선은 `main`의 `d0e868c`에 merge commit으로 반영됐습니다. V13 교육 제작 기능은 아직 `v13-education-first` 브랜치에 있으며, 이 브랜치의 main 통합 PR 검증이 끝나기 전에는 main에 포함된 것으로 간주하지 마세요.
 
-Key upgrades:
-- state-transition storytelling instead of slide replacement;
-- shared computed traces for data/model/simulation visuals;
-- selective-density helpers for networks/attention/graphs;
-- reusable stateful Blender objects + `.blend` assets;
-- automatic camera framing from object bounds;
-- deterministic manifest/trace/delivery gates;
-- 1080p minimum, 1440p preferred for line/text-heavy masters.
+## Quick Start
 
-Start with `ROUTING.md`.
-
-## V11.2 run isolation and trace replay
-
-The V11 mechanism CLI now writes each run under `output/runs/<topic>-<run-id>/` with the request, adapter config, validated trace, visual plan, V9-compatible manifest, media and production report. The ID partitions by topic, normalized input/config, validated trace, renderer mode, adapter/code fingerprint and the trace's asset provenance. A completed matching run is reused by default only after its media passes full decode again. Incomplete or conflicting directories are kept intact and rejected; `--force` creates a timestamped sibling. `--run-id` is an explicit directory name and will never overwrite an existing run.
+Ubuntu 24.04 / WSL2에서 Python 3.12와 `uv`를 준비한 뒤 프로젝트 환경을 설치합니다.
 
 ```bash
-# Execute a numerical adapter and render a 540p30 technical preview.
-uv run python scripts/produce_video.py --topic quantization --preview
-
-# Replay the exact saved trace without generating a new mechanism result.
-uv run python scripts/produce_video.py --topic quantization --mode replay \
-  --trace output/runs/quantization-<run-id>/trace.json --preview
-
-# Use the completed run cache; use --no-reuse to refuse a cache hit.
-uv run python scripts/produce_video.py --topic quantization --preview
+git clone --branch v13-education-first --single-branch https://github.com/hinoonyaso/make_simulation.git
+cd make_simulation
+sudo apt update
+sudo apt install -y build-essential python3-dev pkg-config libcairo2-dev libpango1.0-dev ffmpeg fonts-nanum
+uv sync --locked --group sim-render
 ```
 
-The replay validator checks schema, topic (including legacy V9 asset/family identity), and the domain equations before planning or rendering. Beat count follows the validated topic stages and trace content; duration is estimated from trace complexity unless an already measured narration duration is supplied with `--narration-duration`. This value only allocates visual beat time; it does not create speech or captions. V11.2 currently emits silent technical previews/renders. It does not claim full production.
-
-## V10 RAG production
-
-The current runnable V10 AI path supports RAG only. Replay a checked-in AI trace, or execute a new local lexical TF-IDF run from a document and question. It does not claim semantic embeddings or LLM generation. `--render auto` includes the trace-matched Three.js projection when local browser tooling is available and records a Manim fallback otherwise.
+가벼운 제작 계획 검증:
 
 ```bash
-uv run python scripts/produce_ai_video.py \
-  --topic rag \
-  --trace pilots/v10_rag_poc/data/ai_trace.json \
-  --render auto --silent
+uv run python scripts/produce_lesson.py \
+  --spec examples/education/education_smoke.json --plan-only
 ```
 
-For a fresh local lexical run, replace `--trace ...` with `--document path/to/document.txt --question "your question"`. Preview and final artifacts are written to `pilots/v10_rag_poc/output/runs/`. See the [V10 RAG README](pilots/v10_rag_poc/README.md) for execution limits, validation and optional audio instructions. Remote GitHub Actions and normal-speed audio review must be reported from actual runs; local PASS does not imply either.
+짧은 무음 미리보기 렌더:
 
-## V11 universal mechanism previews
+```bash
+uv run python scripts/produce_lesson.py \
+  --spec examples/education/education_smoke.json --preview --manim-only
+```
 
-The additive V11 capability registry currently runs RAG, NumPy quantization (weight-only or separate weights and activations), synthetic-candidate IoU/NMS, a numerical MCU PID motor model, a NumPy single-head Self-Attention calculation, and the existing fixed-base MuJoCo H1 arm experiment. Korean aliases and ambiguity are resolved by the registry. Inspect actual levels and limitations before routing a topic:
+기본 출력 위치는 `pilots/v13_education/output/lessons/<run-id>/`입니다. Preview는 960×540, 30 fps이며, 영상과 문장 자막 파일을 생성합니다. 생성물은 Git에서 추적하지 않습니다.
+
+## Overview
+
+프로젝트는 학습 주제에 맞춰 설명 계획, 시각 장면, 계산 또는 trace, 영상 출력을 연결합니다. 교육용 asset library에는 절차적으로 만든 재사용 가능한 Blender 모델이 포함됩니다. 영상의 사실성은 사용한 모델·trace·수치 엔진의 범위에 따라 달라지며, 보기 좋은 렌더가 물리적 검증을 대신하지 않습니다.
+
+## Key Features
+
+| 기능 | 상태 | 범위 |
+|---|---|---|
+| 교육 lesson 제작 | Experimental | spec 기반 계획, Manim Preview, 선택적 TTS·자막 |
+| 2D 수식·그래프 | Implemented | Manim 장면 및 기존 robotics/AI/engineering renderer |
+| 3D 장면 | Optional | Blender 렌더·trace 재생. Blender 실행 환경 별도 필요 |
+| 공학 계산 trace | Implemented by topic | oscillator, CAN arbitration, PMSM FOC 등 구현된 어댑터만 |
+| Robotics / AI trace | Experimental | registry의 지원 수준과 입력 조건을 확인해야 함 |
+| Asset registry | Implemented | 목록, 검색, 경로·메타데이터 검증 |
+| TTS 및 자막 | Optional | `--with-tts`에서 Edge TTS와 음성 정렬 사용 |
+| 전문 CAD·FEM·CFD 해석 | Not integrated | 별도 Solver 설치만으로 제작 파이프라인에 연결되지 않음 |
+
+## Demo & Examples
+
+저장소에는 일부 교육 asset의 PNG 미리보기는 있지만, 완성 MP4는 Git에 포함하지 않습니다. 아래 이미지는 모델 형상을 보여주는 asset preview이며, 시뮬레이션 결과나 완성 영상을 뜻하지 않습니다.
+
+| 주제 | 자료 | 표현 |
+|---|---|---|
+| 베어링 6204 | [PNG](assets/education/generated/bearing_6204.png) · [spec](examples/education/bearing.json) | Blender asset 및 lesson |
+| BLDC 모터 개념 모델 | [PNG](assets/education/generated/bldc_motor_concept.png) | 교육용 3D 자산 미리보기 |
+| 적층 PCB | [PNG](assets/education/generated/pcb_layered.png) | 교육용 3D 자산 미리보기 |
+| RAG | [trace](pilots/v10_rag_poc/data/ai_trace.json) | trace 기반 예시, 제한은 [pilot 문서](pilots/v10_rag_poc/README.md) 참조 |
+
+위 파일이 현재 체크아웃에서 존재하는지 먼저 확인하세요. Preview 영상은 로컬 실행으로 생성하며, 무음 Preview는 나레이션 완성본이 아닙니다.
+
+## Supported Environments
+
+| 구성요소 | 확인된 버전·환경 | 필요 여부 | 참고 |
+|---|---|---:|---|
+| Linux | Ubuntu 24.04 / WSL2 | 권장 | 로컬 Python·Manim 경로 확인 |
+| Python | `>=3.12`, 로컬 확인 3.12.3 | 필수 | `pyproject.toml` 기준 |
+| uv | 로컬 확인 0.12.3 | 필수 | lockfile 환경 설치 |
+| Manim Community | 0.21.0 | 렌더에 필요 | `sim-render` group |
+| FFmpeg | 로컬 확인 6.1.1 | 미디어 출력에 필요 | 인코딩·검증 경로 |
+| Blender | 로컬 확인 5.2.1 LTS (Windows) | 3D 장면에 선택 | WSL2에서 Windows 실행 연동은 환경별 설정 필요 |
+| GPU | 요구하지 않음 | 선택 | 문서화된 CPU 계산·미리보기 경로 사용 가능 |
+
+Ubuntu/WSL2 외 OS는 이 저장소에서 동일한 제작 절차가 검증됐다고 보장하지 않습니다. Windows Blender 실행은 설치 위치와 WSL interop에 따라 달라집니다. Blender 공식 설치 안내는 [blender.org](https://www.blender.org/download/)를 참고하세요.
+
+## Requirements
+
+기본 프로젝트 환경은 `uv.lock`에 고정된 Python dependency를 사용합니다. Manim의 Linux native dependency는 Cairo, Pango, compiler 도구와 FFmpeg를 포함합니다. 설치 세부 사항은 [Manim Linux 설치 문서](https://docs.manim.community/en/stable/installation/linux.html)를 참고하세요.
+
+Blender는 Blender 장면이나 Blender asset을 생성·검증할 때만 필요합니다. STEP 자산을 다루는 일부 변환 경로에는 FreeCAD 같은 별도 변환기가 필요할 수 있습니다. TTS는 외부 Edge TTS 서비스에 텍스트를 보내므로 명시적으로 켤 때만 실행합니다.
+
+## Installation & Setup
+
+### 1. Clone 및 브랜치
+
+```bash
+git clone --branch v13-education-first --single-branch https://github.com/hinoonyaso/make_simulation.git
+cd make_simulation
+```
+
+`main`과 V13 브랜치는 이 README 작성 시점에 기능 차이가 있으므로 V13 lesson CLI가 필요하면 명령에 지정된 브랜치를 사용합니다.
+
+### 2. 시스템 패키지
+
+```bash
+sudo apt update
+sudo apt install -y build-essential python3-dev pkg-config libcairo2-dev libpango1.0-dev ffmpeg fonts-nanum
+```
+
+`fonts-nanum`은 한국어 글꼴 렌더를 위해 CI와 로컬 경로에서 사용합니다.
+
+### 3. Python 환경
+
+```bash
+uv sync --locked --group sim-render
+```
+
+저장소는 Python `>=3.12`를 요구합니다. `sim-render`는 Manim 렌더 의존성을 추가합니다. 기본 dependency에는 PyTorch 등 용량이 큰 패키지도 있으므로 첫 설치에 시간이 걸릴 수 있습니다. 설치하지 않은 선택 group의 주제를 실행할 때는 해당 group을 추가합니다.
+
+```bash
+uv sync --locked --group sim-math --group sim-can --group sim-motor --group sim-render
+```
+
+설치된 공학 엔진의 준비 상태를 확인합니다.
+
+```bash
+uv run python scripts/inspect_engineering_env.py
+```
+
+`uv` 설치는 [공식 안내](https://docs.astral.sh/uv/getting-started/installation/)를 따르세요.
+
+### 4. Blender (선택)
+
+Blender 기반 3D 제작에는 Blender 실행 파일이 필요합니다. 실행 경로는 제작 코드에서 `BLENDER_BIN` 환경 변수 또는 자동 탐색으로 정합니다. WSL2에서 Windows Blender를 쓸 경우 Linux 경로에서 실행 가능한지 먼저 점검하세요. 시스템 설치 및 interop 설정은 환경별로 다르며, WSL에서 Windows `.exe` 실행이 막힌 경우 Blender 장면은 해당 환경에서 렌더할 수 없습니다.
+
+## Video Production
+
+### Education lesson
+
+```bash
+# 입력과 장면 계획만 확인
+uv run python scripts/produce_lesson.py --spec examples/education/bearing.json --plan-only
+
+# 960x540, 30 fps 미리보기
+uv run python scripts/produce_lesson.py --spec examples/education/bearing.json --preview
+
+# Manim만 사용해 무음 preview
+uv run python scripts/produce_lesson.py \
+  --spec examples/education/education_smoke.json --preview --manim-only
+```
+
+`--preview`는 저해상도 검토 경로입니다. 기본 출력 root는 `pilots/v13_education/output/lessons`; `--output-root`로 변경할 수 있습니다. `--run-id`를 지정하면 해당 ID로 run 디렉터리를 만듭니다. 같은 경로를 재사용할 때는 기존 파일 덮어쓰기 여부를 먼저 확인하세요.
+
+### Narration
+
+기본 렌더는 무음입니다. 나레이션을 만들 때만 `--with-tts`를 추가합니다.
+
+```bash
+uv run python scripts/produce_lesson.py \
+  --spec examples/education/bearing.json --preview --with-tts
+```
+
+이 경로는 대본을 Microsoft Edge TTS 서비스로 보내 음성을 만들고 Whisper 기반 정렬로 자막 타이밍을 산출합니다. 외부 서비스 연결과 모델 dependency가 필요합니다. 문장 자막은 lesson의 영상 산출물에 포함되며 세부 파일은 run 폴더에 생성됩니다.
+
+### Existing topic renderer
+
+기존 공학 주제는 registry를 확인한 뒤 topic CLI를 사용합니다.
 
 ```bash
 uv run python scripts/inspect_capabilities.py
-uv run python scripts/produce_video.py --topic quantization --preview
-uv run python scripts/produce_video.py --topic nms --preview
-uv run python scripts/produce_video.py --topic mcu_pid --preview
-uv run python scripts/produce_video.py --topic 자기주의 --preview
-uv run python scripts/produce_video.py --topic robot_kinematics --robot unitree_h1 --preview
+uv run python scripts/produce_video.py --topic physics_oscillator \
+  --config examples/v12/oscillator.json --preview
+uv run python scripts/produce_video.py --topic can_arbitration \
+  --config examples/v12/can_arbitration.json --preview
+uv run python scripts/produce_video.py --topic motor_foc \
+  --config examples/v12/pmsm_foc.json --preview
+```
+
+이 경로는 technical preview이며, lesson 제작 CLI의 출력 형식·나레이션·완성도와 같다고 가정하지 마세요. Topic, dependency group, renderer 옵션은 [routing 안내](ROUTING.md)와 각 문서를 확인하세요.
+
+## Engineering Simulation Engines
+
+| 주제 | 구현된 계산·실행 | 중요한 범위 |
+|---|---|---|
+| Physics oscillator | SymPy / SciPy 기반 수치 모델 | 설정된 질량·감쇠·강성 조건에 한정 |
+| CAN arbitration | 결정론적 Classical CAN 모델, `python-can` VirtualBus, `cantools` | 전기적 버스 파형이나 CAN FD가 아님 |
+| PMSM FOC | `motulator` PMSM/vector-control 예제 | 데모 파라미터와 averaged converter 가정 |
+| MuJoCo H1 arm | MuJoCo 3.7 trace 실행 | 모델·고정 베이스·제어 가정을 문서에서 확인 |
+| YOLO object detection | 옵션 Ultralytics YOLO11n CPU 추론 | 필요한 weight와 Ultralytics 버전 별도 필요 |
+| RAG | 로컬 lexical TF-IDF 또는 저장 trace | semantic embedding이나 LLM 생성 아님 |
+| Quantization / NMS / PID / Self-Attention | 교육용 수치·합성 입력 모델 | 해당 모델이 실제 제품 runtime을 실행하지 않음 |
+
+`scripts/inspect_capabilities.py`는 주제별 지원 수준을 출력합니다. DWB, MPPI, TEB, A* 등 일부 항목은 trace replay 또는 pilot 수준이며, 모두 실행 가능한 planner라고 보면 안 됩니다. PyBaMM, Renode, FEMM, Elmer, CalculiX, OpenFOAM 등의 전문 solver는 현재 통합 기능으로 문서화되어 있지 않습니다.
+
+## 3D Assets & Sources
+
+### Education asset library
+
+교육용 procedural asset은 [catalog](assets/education/catalog.json)에 등록되어 있고 해당 폴더의 [README](assets/education/README.md)에 범위와 라이선스를 기록합니다. 현재 catalog에는 베어링, 기어, BLDC 개념 모델, PCB 층 구조, shaft/coupling assembly, 열·구조 부품 등 6개 생성 모델이 있습니다. 교육용 단순 형상이며 제품 CAD 치수, 전자기·접촉·열 해석 결과가 아닙니다.
+
+`assets/education/LICENSE`는 프로젝트에서 직접 만든 교육용 asset에 CC0 1.0을 적용합니다. 이 라이선스는 외부 robotics asset이나 저장소 전체에 적용되지 않습니다.
+
+### Robotics and device assets
+
+모델의 출처와 사용 조건은 [asset index](assets/README.md), 개별 모델 README, [source/license matrix](docs/assets/SOURCE_LICENSE_MATRIX.md)에 기록합니다. 저장소에 포함된 로봇·센서 메시지는 원본 출처의 라이선스와 고지를 따릅니다. 각 폴더의 라이선스를 확인한 뒤 재사용하세요.
+
+일부 원본 vendor CAD/STEP 파일은 크기·배포 조건 때문에 로컬 전용이며 Git clone에 포함되지 않습니다. 따라서 asset registry의 항목 수가 곧 clone에 실제 파일이 있다는 뜻은 아닙니다. 누락 및 변환 제한은 [missing asset report](docs/assets/MISSING_ASSETS.md), 현황은 [library status](docs/assets/LIBRARY_STATUS.md)를 참고하세요.
+
+## Asset Management
+
+```bash
+# 등록 자산 목록 및 검색
+uv run python scripts/manage_assets.py list
 uv run python scripts/manage_assets.py search --category environment
+
+# 현재 clone의 asset 파일 검증
+uv run python core/visual-assets/asset_registry.py validate
+uv run python scripts/acquire_education_assets.py --validate
 ```
 
-These are silent technical previews, not narrated/reviewed finished videos. Self-Attention uses toy numerical vectors, not a trained Transformer. The secure pinned-archive helper exists, but no environment currently has enough verified metadata to download, and no environment has passed a simulator load/render test on this host. Clearpath/Gazebo, ManiSkill/SAPIEN and robosuite status is documented in [environment validation](docs/v11/environments/ENVIRONMENT_VALIDATION.md). Other catalog topics remain planned or trace-only unless the registry says otherwise. See [V11 implementation and limits](docs/v11/IMPLEMENTATION_REPORT.md).
+`acquire_education_assets.py --plan`은 다운로드 계획을 검토합니다. 실제 다운로드는 명시적 허용 옵션과 출처·라이선스·크기·hash 검증 정보를 요구합니다. 사용 가능한 후보가 검증되지 않은 경우 다운로드가 거부됩니다. 변환 기능은 설정된 converter와 입력 형식에 제한되므로 자동으로 임의 STEP 파일을 변환한다고 가정하지 마세요.
 
-## V11.3 integrated render backends
+## Project Structure
 
-The common CLI now routes `robot_kinematics --render blender` through the existing H1 mesh trace exporter/renderer, and `object_detection` through the verified YOLO11n CPU inference adapter. Blender plays the validated MuJoCo trace; it does not rerun physics. YOLO uses the pinned checkpoint hash and records the original image hash; replay checks the same image and does not rerun inference. Install Ultralytics 8.3.0 in the active environment only when real YOLO inference is requested.
+```text
+core/                    공통 trace, renderer, asset registry
+scripts/                 제작·검증·환경 확인 CLI
+examples/education/      lesson spec 예제
+examples/v12/            engineering trace 설정 예제
+assets/education/        교육용 생성 asset 및 catalog
+assets/<model>/          출처·라이선스별 robotics/device asset
+pilots/                  주제별 PoC 및 실험
+topics/                  기존 주제별 episode 자료
+docs/                    아키텍처, 검증, asset 출처 문서
+.github/workflows/       CI workflow 정의
+```
 
-## V11.4 routing and timeline
+## Validation & Testing
 
-`--visual-goal` steers renderer selection by the evidence the explanation needs: H1 `motion_3d` requires the Blender trace renderer, H1 comparison stays in Manim, YOLO uses image-space Manim, and RAG can use the recorded-vector Three.js embedding segment. `--render auto` runs a lightweight process preflight; `scripts/inspect_capabilities.py --topic <topic> --preflight` shows the decision before rendering. Explicit Blender failures remain blocked.
-
-Each run stores a `mechanism-timeline/v1` contract with contiguous integer frame ranges. Manim, YOLO, H1 trace export and the existing four-beat RAG scene use that timeline. H1 source time is mapped separately from presentation time. RAG's Three.js section uses the exact embedding-phase frame range. Run identity includes renderer choice, visual goal, timeline, relevant code/runtime versions and local asset hash. See [V11.4 routing](docs/v11/V11_4_RENDERER_ROUTING.md), [timeline contract](docs/v11/V11_4_TIMELINE_CONTRACT.md), and [integration report](docs/v11/V11_4_INTEGRATION_REPORT.md).
+프로젝트의 전체 단위 검증:
 
 ```bash
-uv run python scripts/produce_video.py --topic robot_kinematics --robot unitree_h1 \
-  --mode replay --trace pilots/v10_mujoco_arm/data/trace.json --render blender --preview
-uv run --with ultralytics==8.3.0 python scripts/produce_video.py --topic object_detection \
-  --input /path/to/image.jpg --model /path/to/verified-yolo11n.pt --preview
-uv run python scripts/produce_video.py --topic object_detection --mode replay \
-  --trace output/runs/object_detection-<run-id>/trace.json --preview
+uv run --offline python -m unittest discover -s tests -v
+uv run --offline python -m compileall -q core scripts tests assets/education
+uv run python core/visual-assets/asset_registry.py validate
+uv run python scripts/acquire_education_assets.py --validate
+uv run python scripts/inspect_engineering_env.py --check all
+git diff --check
 ```
 
-RAG Preview and Final select their respective report entries and validate the reported media, dimensions, 30 fps and full decode. Cache reuse also checks the expected output path, render specification, media metadata and SHA-256. Storyboard beats carry explicit phase IDs which the common Manim scene checks against its transition map. See the dated [V11.3 integration report](docs/v11/V11_3_INTEGRATION_REPORT.md) for actual local evidence and unrun remote CI status.
+Manim smoke preview는 Quick Start 명령으로 실제 미디어를 생성하고 FFmpeg로 검사합니다. Blender 검증은 Blender 설치 및 실행 가능한 환경에서 수행합니다. CI 정의는 [workflow](.github/workflows/v13-education.yml)를 참고하세요.
 
-## Explanation craft
+**CI 상태 (2026-10-11):** [AI trace run #29](https://github.com/hinoonyaso/make_simulation/actions/runs/38062554626)와 push 후 [run #30](https://github.com/hinoonyaso/make_simulation/actions/runs/38063673583)이 성공했고, 원격 로그에서 전체 155개 unittest PASS를 확인했습니다. V12.1 PR의 [run #7](https://github.com/hinoonyaso/make_simulation/actions/runs/38033443003)도 7개 check 모두 성공해 Merge Commit `d0e868c`로 main에 반영됐습니다. run #28의 Vendor CAD 오류는 9a43b20에서 수정되어, CAD가 없는 clone에서도 catalog·license·재배포 정책·Git 미추적 검사는 유지되고 로컬 파일 검사는 파일이 있을 때만 실행됩니다.
 
-Director now plans the visible cause, decisive comparison/constraint, and consequence of the central question. Manim/Blender expose that evidence with purposeful framing and phrase timing; Reviewer reports educational inspection separately from technical PASS. Narration guidance includes deliberate pauses and Korean terminology pronunciation. The next real preview must demonstrate these changes; existing published videos are unchanged. Reference sources, access limits, decisions, and tradeoffs are in [SOURCE_PATTERNS.md](SOURCE_PATTERNS.md#2026-10-explanation-craft-update-user-selected-references).
+V13 전용 workflow는 교육 테스트만 실행하며, Python/Manim 패키지는 `uv.lock`의 `sim-render` group으로 설치합니다. education asset 검증, 계획 검증, Manim-only smoke, 960×540·30 fps·H.264 metadata, VTT와 production report, FFmpeg 전체 디코드를 검사하고 로그·미디어·리포트를 Artifact로 보관합니다. 교육 관련 경로를 바꾼 PR, `main`/`v13-education-first`의 관련 파일 push, 수동 dispatch에서 실행됩니다. 전체 회귀는 `ai-trace.yml`이 계속 담당합니다. [V13 run #1](https://github.com/hinoonyaso/make_simulation/actions/runs/38063673678)과 [전체 회귀 run #30](https://github.com/hinoonyaso/make_simulation/actions/runs/38063673583)은 성공했습니다. 이번 main 통합 후보의 PR checks는 별도로 확인해야 합니다.
 
-## Discovery and critical-preview update
+| 검증 | 상태 | 범위 |
+|---|---|---|
+| AI trace 전체 unittest | PASS, 155/155 | GitHub Actions run #29 및 push 후 run #30 |
+| V13 education unittest | PASS, 16/16 | `sim-render` locked environment |
+| Asset registry / education asset validation | PASS | Registry 39 entries, 6 generated models |
+| Education plan | PASS | `education_smoke.json`, concept-only |
+| Manim smoke preview | PASS | [GitHub Actions V13 run #1](https://github.com/hinoonyaso/make_simulation/actions/runs/38063673678), 960×540, 30 fps, silent, VTT/report present, full decode |
+| Blender render | PASS (기록된 R6 로컬 검증) | Windows Blender 5.2.1 from WSL; Ubuntu CI에서는 실행하지 않음 |
+| Narration/TTS | NOT TESTED | Smoke는 무음이며 외부 TTS를 호출하지 않음 |
+| 최종 1080p 영상 검증 | NOT TESTED | CI preview는 960×540 무음 smoke |
 
-Full explainers now validate their hardest inference as a short moving excerpt with measured narration before full rendering. Director plans expectation, visible test, mechanism and supported transfer in existing manifest fields. Reviewer records interpretation before consulting source data, and separates comprehension, motion and voice inspection. Unavailable playback/listening remains incomplete, even with technical PASS. This preserves the single-manifest interface and uses local implementations when shared kits are protected.
+## Current Capabilities & Limitations
 
-The change addresses observed pilot limitations: detached 3D/2D presentation, insufficiently tested inference, and frame/timing checks being mistaken for full audio/motion acceptance. It does not establish creator parity. Tradeoff: an extra small preview/listening pass before the expensive render; it can reuse previously approved equivalent media. Shared kits, original episodes and existing video outputs are not changed by this skill update. Behavioral effectiveness still requires the next real production and viewer feedback.
+- V13 lesson pipeline은 실험적이며, 주제별 출력과 renderer 지원이 다릅니다.
+- 로컬에서 검증한 무음 smoke preview는 960×540, 30 fps입니다. 이는 1080p 완성 영상 검증이 아닙니다.
+- TTS는 별도 선택이며, Edge TTS 서버로 대본 텍스트가 전송됩니다.
+- Blender 렌더는 Blender 실행 파일과 환경 연동이 필요합니다. 현재 개발 환경에서 Windows Blender 5.2.1을 확인했지만 모든 WSL 설정에서 실행된다는 뜻은 아닙니다.
+- Registry에는 clone에 없는 로컬 vendor 파일이 있을 수 있습니다. 자산별 README와 validation 결과를 확인하세요.
+- 전문 해석기 미통합 상태를 플러그인 설치만으로 해결할 수 없습니다. 향후 통합 계획은 [TODO](assets/TODO.md)와 주제 문서를 확인하세요.
+- 저장소 최상위에는 공통 `LICENSE`가 없습니다. 파일별·asset별 권리를 확인해야 합니다.
 
-Validation for this update: five skill folders pass `skill-creator/scripts/quick_validate.py`; Director/Reviewer TOML and review-template YAML parse; `scripts/validate_codex_setup.py` passes all 10 agent configurations; `git diff --check` passes. Skill validation used system Python because the project environment lacks PyYAML; no dependency was added. These checks establish format and wiring, not the educational quality of a future video.
+## Troubleshooting
 
-## Physics-backed robotics production
+| 증상 | 확인할 내용 |
+|---|---|
+| Manim 빌드가 Cairo/Pango를 찾지 못함 | 위 Ubuntu 패키지 설치 후 `uv sync --locked --group sim-render` 재실행 |
+| 한글이 □로 출력됨 | `fonts-nanum` 설치 및 장면이 선택한 font family 확인 |
+| `ffmpeg`를 찾지 못함 | `ffmpeg -version` 확인, 실행 파일이 `PATH`에 있는지 확인 |
+| Blender subprocess가 WSL에서 시작되지 않음 | WSL interop, Windows 실행 파일 경로, `BLENDER_BIN` 설정 확인. 실패 시 Ubuntu native Blender 사용 |
+| STEP 파일이 clone에 없음 | [asset status](docs/assets/LIBRARY_STATUS.md)에서 로컬 전용 여부와 converter 상태 확인 |
+| SoX 관련 경고 | 무음 Manim smoke에서 경고만 발생하고 FFmpeg 출력 검증이 통과할 수 있음. 음성 처리 경로는 별도로 확인 |
+| TTS 생성 실패 | 외부 연결, Edge TTS dependency와 서비스 응답 확인. `--with-tts`를 빼면 무음 경로 사용 가능 |
+| 선택 엔진 누락 | `uv sync`에 해당 `sim-*` group을 추가하고 `inspect_engineering_env.py` 결과 확인 |
 
-The user's selected next direction preserves the current discovery explanation and adds physics-backed Blender setup/consequence. A capable installed engine computes actuation/contact first; Manim and Blender then explain/render the same recorded run. Blender may be the renderer for another simulator. Reference plans and actual body trajectories remain separate; pose replay, kinematic integration and contact-resolving physics are explicitly distinguished.
+## References & Documentation
 
-The detailed run contract is in [Blender evidence rules](core/blender-robotics-simulation-skill/references/evidence.md). Existing manifest evidence enums and V9 schema are unchanged. Physics acceptance now has a separate review field: solver provenance and relevant physical checks cannot be replaced by realistic rendering or schema PASS. Shared kits and finished episodes are untouched. This update supplies production/review instructions; it does not execute or validate a new physical simulation. Engine choice, model fidelity and solver stability still require the next episode's environment inspection and experiment.
+- [Routing and topic selection](ROUTING.md)
+- [V13 education pipeline](docs/v13/README.md)
+- [Asset index](assets/README.md)
+- [Education asset library](assets/education/README.md)
+- [Asset source/license matrix](docs/assets/SOURCE_LICENSE_MATRIX.md)
+- [Asset library status](docs/assets/LIBRARY_STATUS.md)
+- [Missing asset and conversion report](docs/assets/MISSING_ASSETS.md)
+- [V12 architecture](docs/v12/V12_ARCHITECTURE.md)
+- [V12 integration evidence](docs/v12/INTEGRATION_REPORT.md)
+- [Manim Community Linux installation](https://docs.manim.community/en/stable/installation/linux.html)
+- [uv installation](https://docs.astral.sh/uv/getting-started/installation/)
+- [Blender download](https://www.blender.org/download/)
 
-Physics skill update validation: four affected skill folders pass `quick_validate.py`; updated agent TOML and review YAML parse; `validate_codex_setup.py` passes all 10 agent configs; `git diff --check` passes. Cross-skill evidence links were corrected to their actual bundle paths after the wiring check identified unresolved references. These checks validate instructions/configuration only, not a physics engine or runtime experiment.
+## License & Attribution
 
-## MuJoCo local environment
-
-The project pins the official MuJoCo Python bindings to `3.7.0` in `pyproject.toml` and `uv.lock`. Install or synchronize with `uv sync`, then verify an included MJCF model with:
-
-```bash
-uv run python scripts/smoke_mujoco.py assets/unitree_h1/mjcf/h1.xml --steps 1000
-```
-
-This headless smoke test loads the existing Unitree H1 model, advances MuJoCo's physics state, and checks finite joint position/velocity values. It does not validate an actuator policy or V10 trace adapter. The bundled H1 asset is attributed and licensed BSD-3-Clause in `assets/unitree_h1/README.md`.
-
-## Defined craft completion (revision_08 feedback)
-
-Requested flagship refinement now starts with a small set of observed weaknesses and completion criteria in the existing episode README. Director retains accepted beats and exposes inputs before a prediction/answer; Manim checks changing text through its transition; Blender diagnoses imported surfaces and checks cut entry/event/exit; finishing checks composed overlays; Reviewer records optional target results separately from technical, educational and learner evidence. Met targets reopen for regressions or changed scope, rather than an ever-expanding aesthetic standard.
-
-Evidence: `pilots/05_moving_obstacle/revision_08/output/final_review.json` documents glyph-transition observations, imported facets/pastel paths, and corrected camera crop/occlusion. Those findings support targeted checks, not a claim of novice misunderstanding or creator parity. The earlier blocker/high-only instructions conflicted with requested craft refinement; they now permit defined craft targets and observations while preserving severity boundaries. No shared kit or episode renderer was changed by this skill update.
-
-Tradeoff: inexpensive boundary/transition previews add focused review work before full rendering, while target completion limits unrelated redesign. Missing novice/playback evidence remains unverified, and required educational inspection cannot be marked PASS merely because the craft pass ends. Five skill folders pass `quick_validate.py`; review YAML parses; all 10 agent configurations pass `validate_codex_setup.py`; `git diff --check` passes. These validate instructions and wiring; effectiveness still needs application to newly rendered media.
-
-## Linked discovery and studio craft (revision_09 follow-up)
-
-The requested next upgrade strengthens two remaining craft directions: each inference should provide the next question's visible input, and physical detail shots should diagnose geometry/shading/light/framing separately. Director now audits adjacent discovery links without creating another beat list or lengthening a lesson by default; Manim carries the resolved relation into the next input; Blender compares a faithful surface/view candidate at the same solver pose; Reviewer states the specific benefit and its evidence. Accepted narration and bounded completion targets remain the starting point.
-
-Evidence: R09's final review and README record successful local sentence replacement, corrected direction labels, stronger reference/actual contrast and remaining angular asset silhouettes. These support a narrower next craft comparison, not a claim that novice understanding failed or that creator parity was established. Existing kit angle smoothing means another smoothing instruction alone cannot repair a coarse silhouette. Reused B01 goal material states were made reproducible and checked against actual frame183; frame628 remained pixel-identical after the provenance patch.
-
-Tradeoff: adjacent-link previews and same-state surface candidates add focused preparation, while preserving the single manifest, measured narration, solver geometry and defined stopping criteria. Shared kits and topics are unchanged. This skill-only follow-up does not rerender R09 or prove future narrative/surface improvement; the next requested production must supply that evidence. Format/wiring validation results are recorded after the checks below.
-
-Validation of this follow-up: five skill folders pass `quick_validate.py`; review-template YAML parses; all 10 Codex agent configurations pass `validate_codex_setup.py`; `git diff --check` passes. No new render or learner evaluation was run for this instruction update.
-
-## Reference-level mechanism update (2026-10-06)
-
-bRd/3Blue1BrownKR 각4편의 공개 자료와 원본1080p 핵심 발췌를 조사했다. [조사·결정 근거](research/channel_craft_2026_10/STUDY.md), [검사 범위](research/channel_craft_2026_10/evidence.json)에 접근 한계까지 기록했다. Director는 같은 입력의 부품→도형→수식→응답을 설계하고, Manim은 표현 간 값/역할 대응을 보존하며, Blender는 충실한 부품의 작동 관계를 국소적으로 드러낸다. Finishing은 연결된 설명의 리듬을 보존하고 Reviewer는 여섯 비교 항목의 양쪽 증거를 기록한다.
-
-스킬5개 형식,10개 에이전트 설정,리뷰 YAML 및8개 발췌 증거 경로/1080p/음성 검증 PASS. 공용 키트와 topics/기존 파일럿은 변경하지 않았다. 이번 변경은 제작 지침 개선이며 새 영상의 동급 판정은 아니다. 연속 재생·청취와 첫 이해의 검증은 다음 실제 렌더에서 남은 항목이다.
-
-## R14 observed craft follow-up (2026-10-07)
-
-User-requested skill refinement and push after R14 comparison. Actual final-frame observations support four targets: wheel close-ups have excess floor/small deciding parts; B05/B07/B09 prediction arrows cross redundant prompt text; B14 displacement bars leave distance-to-heading geometry weak; some formula transitions fragment intermediate glyphs. Director now selects task-led compositions and an explicitly ideal no-slip distance/angle construction. Blender frames the swept component/contact region. Manim preserves term objects and checks overlay sweeps. Reviewer verifies those same targets in composited frames and reports playback/listening separately.
-
-Decision: narrow the next production to these observed gaps while retaining the accepted explanation, measured timing and physical evidence. Considered adding broad cinematic rules or increasing duration; neither addresses the named defects. Tradeoff: a focused geometric excerpt and same-state framing candidates require extra preview work. The ideal relation Δs=bθ is a teaching construction, not a new assertion about Bullet slip/contact. Existing single manifest and review report remain the interfaces. Missing helpers stay pilot-local while kits are protected.
-
-Evidence: local `pilots/05_moving_obstacle/revision_14/output/final_review_report.json` and R14 README describe the inspected final and remaining scope. This skill change does not rerender R14, establish novice understanding or certify parity with reference creators. Prior pending viewer-feedback skill edits are retained in this skill commit; pending long-form validator and pilot artifacts are excluded. Validation: five involved skill folders pass `quick_validate.py`; all 10 agent configurations pass `uv run python scripts/validate_codex_setup.py`; `git diff --check` passes. These are format/wiring checks; effectiveness awaits the next rendered application.
-
-## V10 MuJoCo arm environment and PoC (2026-10)
-
-MuJoCo is now pinned in the project environment. `scripts/run_mujoco_arm_poc.py` executes a fixed-base, PD torque-controlled H1 arm run, records actual MuJoCo joint/body state to the existing V9 robotics trace format, and validates the hand pose through a separate forward-kinematics pass. `scripts/validate_mujoco_sensitivity.py` compares 2 ms and 1 ms physics steps. The resulting trace is rendered by the existing Manim renderer in `pilots/v10_mujoco_arm/`; it is a stylized trace visualization, not a Blender mesh render or narrated episode.
-
-The run validates engine/model/trace/render connectivity. Contact counts and fixed-base/controller assumptions are recorded. Blender CLI and SoX are absent in the current WSL container; OS package installation is blocked by the container's `no new privileges` setting. The Three.js Phase 4 PoC now renders a 3D RAG embedding view in a managed Playwright Chromium browser and captures it to MP4. Remotion remains deferred because the fixed composition is covered by Three.js frame capture and FFmpeg without a React timeline. See the pilot READMEs for exact commands and limits.
-
-## V11.5 execution and playback accuracy
-
-H1 auto routing analyzes the whole joint trajectory, including return motion, with unit-specific noise thresholds. Its Blender overlay reports each motion phase's speed and marks holds explicitly. PID visuals now map each video frame to one recorded controller/encoder sample through the shared timeline, preserving discrete PWM and counts.
-
-YOLO and MuJoCo now consult a validated execution cache before loading a model or integrating physics. Default storage is `output/executions/<topic>/<execution_id>/`; media stays in existing run directories. `--force` rerenders with reusable computation; `--force-execution` reruns computation into a preserved sibling; `--no-execution-cache` bypasses execution reuse. Small per-invocation reports record hit/miss and actual adapter calls. See [motion validation](docs/v11/V11_5_MOTION_VALIDATION.md), [cache contract](docs/v11/V11_5_EXECUTION_CACHE.md), and [measured results](docs/v11/V11_5_INTEGRATION_REPORT.md).
-
-## V12 engineering simulation previews
-
-V12 adds three executable topics to the existing registry/trace/storyboard/timeline/Manim pipeline: a SymPy/SciPy mass-spring-damper model, deterministic Classical CAN arbitration with python-can VirtualBus and cantools DBC checks, and motulator PMSM field-oriented control. Domain traces retain units, solver settings, assumptions, and independent sample clocks. CAN wire ticks are integers. The FOC example uses demonstration parameters and an averaged converter; it does not claim a specific user's motor or show switching PWM. BLDC six-step, Battery/BMS, firmware/RTOS, Renode, CAN FD and coupled co-simulation remain unimplemented.
-
-```bash
-uv sync --group sim-math --group sim-can --group sim-motor
-uv run python scripts/inspect_engineering_env.py
-uv run python scripts/produce_video.py --topic physics_oscillator --config examples/v12/oscillator.json --preview
-uv run python scripts/produce_video.py --topic can_arbitration --config examples/v12/can_arbitration.json --preview
-uv run python scripts/produce_video.py --topic motor_foc --config examples/v12/pmsm_foc.json --preview
-```
-
-`scripts/setup_v12_ubuntu.sh --check` is read-only; `--install` installs only missing listed apt packages and the three uv groups, and may require administrator rights. The CI-only requirements exporter traverses the selected dependency groups from `uv.lock` and excludes unused PyTorch from motulator's tested drive path. See [V12 architecture](docs/v12/V12_ARCHITECTURE.md), [integration evidence](docs/v12/INTEGRATION_REPORT.md), [observed environment](docs/v12/observed_environment.json), and [WSL2 limits](docs/v12/WSL2_LIMITATIONS.md). A workflow definition does not imply a remote GitHub Actions run.
+최상위 공통 라이선스는 현재 제공되지 않습니다. 코드, 개별 모델, 외부 trace와 생성 asset의 라이선스 및 출처는 각각의 파일·폴더 문서에서 확인하세요. 외부 모델을 복사하거나 변환해 재배포할 때는 upstream license와 attribution 조건을 그대로 따라야 합니다. 교육용 procedural asset의 CC0 고지는 [해당 LICENSE](assets/education/LICENSE)에 한정됩니다.

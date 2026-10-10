@@ -1,5 +1,21 @@
 # V12 test and render evidence
 
+## V12.1 final plot and CAN timing fix — local evidence (2026-10-10)
+
+Base branch/commit: `v12.1-accuracy` / `5a6ba2727af5d0421bd2b3ff8e941e1632c9c2f2`. Three additional regression tests cover same-unit shared-axis mapping, ZOH pulse/transition preservation with over-budget overview behavior, and actual stuffed CAN arbitration boundaries. The final full suite passes **139 tests** (136 existing + 3 new). `compileall` and `git diff --check` pass.
+
+The same saved traces from the earlier V12.1 preview runs were replayed exactly: each new `trace.json` compares equal to the corresponding prior run. Only the plotting and marker presentation changed. Three new silent MP4 previews were rendered with the production CLI and fully decoded at 960×540, 30 fps:
+
+| Topic | New run directory (under `pilots/v12_engineering/output/v12_1_final_fix/runs/`) | Duration | Frames | Full decode | Trace unchanged |
+|---|---|---:|---:|---|---|
+| Physics oscillator | `physics_oscillator-ab9854a5a1d1797aa8cc-rerun-20261010T074247-253027885` | 26.466341 s | 794 | PASS | exact JSON equality |
+| CAN arbitration | `can_arbitration-afd01e8c832a0766aafb-rerun-20261010T074635-024550311` | 22.066667 s | 662 | PASS | exact JSON equality |
+| PMSM FOC | `motor_foc-58cd92018b82a0100560-rerun-20261010T074455-883613823` | 23.400000 s | 702 | PASS | exact JSON equality |
+
+`validate_mechanism_render.py` passed for all three reports; Physics and FOC also passed frame-by-frame renderer cursor/source-sample mapping checks. Extracted frames at matching phase times were inspected before and after. Physics retains independent `m` and `m/s` lanes. FOC speed reference and feedback now share `[0, 100] rad/s`, so the 80 rad/s response is visibly below a 100 rad/s reference. Its load-disturbance chart keeps N·m, A_peak and rad/s in separate lanes; high-density signals are explicitly labeled `OVERVIEW`. CAN now shows bit labels, the loss marker on the physical wire slot, and the winner marker at the post-arbitration boundary with one visible margin slot. Contact sheet and reviewed frames are in `pilots/v12_engineering/output/v12_1_final_fix/review_frames/`.
+
+The checked-in workflows already include a three-topic render-smoke job and a full `unittest discover` regression job; their path filters include the modified mechanism and test files. **Remote GitHub Actions for this final patch: NOT_RUN** because the task forbids pushing without explicit approval. The earlier green Actions runs validate the previous V12.1 commit, not these new tests or frames. No push or merge was performed. Asset acquisition was not performed; the candidate and license review is in [ASSET_ACQUISITION_PLAN.md](ASSET_ACQUISITION_PLAN.md).
+
 ## V12.1 accuracy hardening — local evidence (2026-10-10)
 
 Base commit: `2af957f442d8919946cabd32e30152113bc47a20` (`origin/main` at task start). The pre-change full suite passed **129 tests**. Current local full suite passes **136 tests** (7 added tests), including non-divisible Physics duration, final timestamp/sample/analytic/energy checks, invalid timestamp input boundaries, CAN bit-slot and ACK checks, rehashed trace/cache evidence mutations, a CRC-15/CAN catalogue check value, and timeline/frame interpolation and FPS invariants.

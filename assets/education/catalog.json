@@ -1,0 +1,176 @@
+{
+  "schema": "engineering-education-assets/v1",
+  "default_acquisition_mode": "plan",
+  "generated_model_license": "CC0-1.0",
+  "models": [
+    {
+      "id": "edu.bearing_6204.v1",
+      "category": "mechanical/bearings",
+      "name": "6204-envelope deep groove ball bearing",
+      "status": "GENERATED",
+      "source": "assets/education/generate_assets.py",
+      "path": "assets/education/generated/bearing_6204.blend",
+      "rights": {
+        "youtube_commercial_use": "allowed",
+        "redistribution": "allowed",
+        "license": "CC0-1.0"
+      },
+      "dimensions": {
+        "bore_mm": 20,
+        "outer_diameter_mm": 47,
+        "width_mm": 14
+      },
+      "detail": "Boundary envelope follows 6204 standard dimensions; ball count and internal groove geometry are educational estimates.",
+      "animation_ready": true
+    },
+    {
+      "id": "edu.spur_gears_20_40.v1",
+      "category": "mechanical/gears",
+      "name": "20T:40T spur gear pair",
+      "status": "GENERATED",
+      "source": "assets/education/generate_assets.py",
+      "path": "assets/education/generated/spur_gears_20_40.blend",
+      "rights": {
+        "youtube_commercial_use": "allowed",
+        "redistribution": "allowed",
+        "license": "CC0-1.0"
+      },
+      "dimensions": {
+        "module_mm": 2,
+        "center_distance_mm": 60,
+        "ratio": 2
+      },
+      "detail": "Stylized polygonal non-involute teaching teeth. Center distance follows 20T/40T pitch radii at 2 mm module.",
+      "animation_ready": true
+    },
+    {
+      "id": "edu.bldc_motor_concept.v1",
+      "category": "electromechanical/bldc_motor",
+      "name": "9-slot 6-pole BLDC concept assembly",
+      "status": "GENERATED",
+      "source": "assets/education/generate_assets.py",
+      "path": "assets/education/generated/bldc_motor_concept.blend",
+      "rights": {
+        "youtube_commercial_use": "allowed",
+        "redistribution": "allowed",
+        "license": "CC0-1.0"
+      },
+      "detail": "Educational topology only; no product specification, electromagnetic model or torque solver.",
+      "animation_ready": true
+    },
+    {
+      "id": "edu.pcb_layered.v1",
+      "category": "electronics/pcb",
+      "name": "Layered four-copper-plane PCB concept",
+      "status": "GENERATED",
+      "source": "assets/education/generate_assets.py",
+      "path": "assets/education/generated/pcb_layered.blend",
+      "rights": {
+        "youtube_commercial_use": "allowed",
+        "redistribution": "allowed",
+        "license": "CC0-1.0"
+      },
+      "detail": "Schematic traces and layer stack; not a fabrication design or electrical netlist.",
+      "animation_ready": true
+    },
+    {
+      "id": "edu.mechanical_primitives.v1",
+      "category": "mechanical/shafts_couplings_springs_fasteners",
+      "name": "Shaft, coupling, spring and fastener study set",
+      "status": "GENERATED",
+      "source": "assets/education/generate_assets.py",
+      "path": "assets/education/generated/shaft_coupling_spring_fastener_battery.blend",
+      "rights": {
+        "youtube_commercial_use": "allowed",
+        "redistribution": "allowed",
+        "license": "CC0-1.0"
+      },
+      "detail": "Generic parametric teaching geometry; no product/standards conformity claim.",
+      "animation_ready": true
+    },
+    {
+      "id": "edu.energy_structural_thermal.v1",
+      "category": "energy/structural/thermal_fluid",
+      "name": "18650 concept, beam, bracket, heatsink and fan",
+      "status": "GENERATED",
+      "source": "assets/education/generate_assets.py",
+      "path": "assets/education/generated/beam_bracket_heatsink_fan.blend",
+      "rights": {
+        "youtube_commercial_use": "allowed",
+        "redistribution": "allowed",
+        "license": "CC0-1.0"
+      },
+      "detail": "Concept geometry only; no electrochemistry, stress, thermal or CFD solver claims.",
+      "animation_ready": true
+    }
+  ],
+  "restricted_existing": [
+    {
+      "id": "blender.livox_mid360.v1",
+      "path": "assets/livox_mid360/",
+      "status": "LOCAL_USE_ONLY",
+      "redistribution": "not established",
+      "reproducible_clone": false
+    },
+    {
+      "id": "blender.ouster_os0.v1",
+      "path": "assets/ouster_os0/",
+      "status": "LOCAL_USE_ONLY",
+      "redistribution": "not established",
+      "reproducible_clone": false
+    },
+    {
+      "id": "blender.ouster_os1.v1",
+      "path": "assets/ouster_os1/",
+      "status": "LOCAL_USE_ONLY",
+      "redistribution": "not established",
+      "reproducible_clone": false
+    },
+    {
+      "id": "blender.ouster_osdome.v1",
+      "path": "assets/ouster_osdome/",
+      "status": "LOCAL_USE_ONLY",
+      "redistribution": "not established",
+      "reproducible_clone": false
+    },
+    {
+      "id": "blender.zed2i.v1",
+      "path": "assets/zed2i/",
+      "status": "LOCAL_USE_ONLY",
+      "redistribution": "not established",
+      "reproducible_clone": false
+    },
+    {
+      "id": "blender.raspberry_pi5.v1",
+      "path": "assets/raspberry_pi5/raspberry_pi5.step",
+      "status": "LOCAL_USE_ONLY",
+      "redistribution": "local license file says MIT but permission chain not independently verified",
+      "reproducible_clone": false
+    }
+  ],
+  "manual_or_blocked": [
+    {
+      "name": "NSK 6204 factory CAD",
+      "status": "MANUAL_REQUIRED",
+      "reason": "official catalog provides CAD; exact CAD terms forbid unlicensed copying/use; this task's video/redistribution scope needs confirmation",
+      "source_url": "https://www.nsk.com/kr-ko/catalogs-and-cad/"
+    },
+    {
+      "name": "MISUMI shafts, linear motion and fasteners",
+      "status": "BLOCKED",
+      "reason": "CAD terms scope use to design/layout checking and restrict other use absent permission",
+      "source_url": "https://jp.misumi-ec.com/contents/terms/cad_use.html"
+    },
+    {
+      "name": "KiCad official 3D package models",
+      "status": "PLAN_ONLY",
+      "reason": "CC-BY-SA 4.0 with project-file exception; no local installation found, and per-file provenance/license needs pinning before bulk collection",
+      "source_url": "https://gitlab.com/kicad/libraries/kicad-packages3D"
+    },
+    {
+      "name": "Jetson Orin Nano, STM32 Nucleo F446RE, Hailo-8 M.2",
+      "status": "MANUAL_REQUIRED",
+      "reason": "vendor gate/account/form previously observed; no authentication bypass or scraping"
+    }
+  ]
+}

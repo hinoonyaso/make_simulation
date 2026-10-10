@@ -1,0 +1,164 @@
+{
+  "blender_version": "5.2.1 LTS",
+  "assets": [
+    {
+      "file": "bearing_6204.blend",
+      "size_bytes": 237173,
+      "scene": "EDU | Deep groove bearing assembly | 6204 envelope",
+      "sha256": "b352ab136b6a7f9a29f64e412ee34605d53975dc9019bd15b4bd2d0568c8fbb6",
+      "units": "m",
+      "object_count": 21,
+      "mesh_object_count": 19,
+      "keyframed_object_count": 10,
+      "bounds_m": [
+        [
+          0.005499998107552528,
+          0.04699999839067459
+        ],
+        [
+          0.005499999038875103,
+          0.04699999839067459
+        ],
+        [
+          0.0005600000149570405,
+          0.014000000432133675
+        ]
+      ],
+      "validation": "PASS"
+    },
+    {
+      "file": "spur_gears_20_40.blend",
+      "size_bytes": 135189,
+      "scene": "EDU | Spur gears | 20:40",
+      "sha256": "104e336318474d0e30b94abbf84372a17506e5a0f253aafbae1bc0896c0df636",
+      "units": "m",
+      "object_count": 4,
+      "mesh_object_count": 4,
+      "keyframed_object_count": 2,
+      "bounds_m": [
+        [
+          0.012000000104308128,
+          0.08391875773668289
+        ],
+        [
+          0.012000000104308128,
+          0.08391875773668289
+        ],
+        [
+          0.00800000037997961,
+          0.00800000037997961
+        ]
+      ],
+      "validation": "PASS"
+    },
+    {
+      "file": "bldc_motor_concept.blend",
+      "size_bytes": 178415,
+      "scene": "EDU | Three phase BLDC motor concept",
+      "sha256": "6478b90527c611c6b45ee50734e6caa679e8eae5ca61c3c8cb7d6826485811c2",
+      "units": "m",
+      "object_count": 28,
+      "mesh_object_count": 27,
+      "keyframed_object_count": 7,
+      "bounds_m": [
+        [
+          0.012000000104308128,
+          0.1599999964237213
+        ],
+        [
+          0.012000000104308128,
+          0.1599999964237213
+        ],
+        [
+          0.005999999586492777,
+          0.07000000029802322
+        ]
+      ],
+      "validation": "PASS"
+    },
+    {
+      "file": "pcb_layered.blend",
+      "size_bytes": 123948,
+      "scene": "EDU | Layered PCB teaching model",
+      "sha256": "a492df346ac6e20c97037649248292f54474bf37e41af4ceb08ae8dcfbc5bf85",
+      "units": "m",
+      "object_count": 38,
+      "mesh_object_count": 38,
+      "keyframed_object_count": 4,
+      "bounds_m": [
+        [
+          0.0020000000949949026,
+          0.18000000715255737
+        ],
+        [
+          0.0015999999595806003,
+          0.11999999731779099
+        ],
+        [
+          0.00018000000272877514,
+          0.012000000104308128
+        ]
+      ],
+      "validation": "PASS"
+    },
+    {
+      "file": "shaft_coupling_spring_fastener_battery.blend",
+      "size_bytes": 174080,
+      "scene": "EDU | Shafts, coupling, spring, fasteners and battery",
+      "sha256": "d37958e2b25b6deb484dc45ecd5d69cf51c26dde2f6283099d749ef2743a0cc1",
+      "units": "m",
+      "object_count": 28,
+      "mesh_object_count": 27,
+      "keyframed_object_count": 1,
+      "bounds_m": [
+        [
+          0.0020000000949949026,
+          0.07400000095367432
+        ],
+        [
+          0.0020000000949949026,
+          0.07400000095367432
+        ],
+        [
+          0.0020000000949949026,
+          0.18000000715255737
+        ]
+      ],
+      "validation": "PASS"
+    },
+    {
+      "file": "beam_bracket_heatsink_fan.blend",
+      "size_bytes": 167421,
+      "scene": "EDU | Bracket, beam, heatsink and fan",
+      "sha256": "7437e82721c1c6c4b459a09c3da8958ef8b47e481bfa0703bd2471849ba0ed2d",
+      "units": "m",
+      "object_count": 23,
+      "mesh_object_count": 23,
+      "keyframed_object_count": 5,
+      "bounds_m": [
+        [
+          0.003000000026077032,
+          0.23999999463558197
+        ],
+        [
+          0.003000000026077032,
+          0.10000000149011612
+        ],
+        [
+          0.004000000189989805,
+          0.11999999731779099
+        ]
+      ],
+      "validation": "PASS"
+    }
+  ],
+  "preview_pngs": [
+    "beam_bracket_heatsink_fan.png",
+    "bearing_6204.png",
+    "bldc_motor_concept.png",
+    "pcb_layered.png",
+    "shaft_coupling_spring_fastener_battery.png",
+    "spur_gears_20_40.png"
+  ],
+  "all_previews_present": true
+}

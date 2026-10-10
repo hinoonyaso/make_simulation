@@ -1,0 +1,172 @@
+name: V13 education smoke
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, ready_for_review]
+    paths:
+      - '.github/workflows/v13-education.yml'
+      - '.python-version'
+      - 'pyproject.toml'
+      - 'uv.lock'
+      - 'assets/education/**'
+      - 'core/education/**'
+      - 'core/mechanism/timeline.py'
+      - 'core/mechanism/renderer.py'
+      - 'core/visual-assets/**'
+      - 'core/visual_primitives/**'
+      - 'core/manim-robotics-education-skill/**'
+      - 'core/robotics-ai-visual-director-skill/templates/**'
+      - 'scripts/acquire_education_assets.py'
+      - 'scripts/produce_lesson.py'
+      - 'scripts/validate_blender_education_assets.py'
+      - 'scripts/validate_delivery.py'
+      - 'examples/education/**'
+      - 'pilots/v13_education/**'
+      - 'tests/test_education_assets.py'
+      - 'tests/test_education_first.py'
+  push:
+    branches: [main, v13-education-first]
+    paths:
+      - '.github/workflows/v13-education.yml'
+      - '.python-version'
+      - 'pyproject.toml'
+      - 'uv.lock'
+      - 'assets/education/**'
+      - 'core/education/**'
+      - 'core/mechanism/timeline.py'
+      - 'core/mechanism/renderer.py'
+      - 'core/visual-assets/**'
+      - 'core/visual_primitives/**'
+      - 'core/manim-robotics-education-skill/**'
+      - 'core/robotics-ai-visual-director-skill/templates/**'
+      - 'scripts/acquire_education_assets.py'
+      - 'scripts/produce_lesson.py'
+      - 'scripts/validate_blender_education_assets.py'
+      - 'scripts/validate_delivery.py'
+      - 'examples/education/**'
+      - 'pilots/v13_education/**'
+      - 'tests/test_education_assets.py'
+      - 'tests/test_education_first.py'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  concept-preview:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install uv 0.12.3
+        uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          version: '0.12.3'
+          enable-cache: true
+
+      - name: Install Manim system requirements
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg fonts-nanum pkg-config libcairo2-dev libpango1.0-dev
+
+      - name: Prepare artifact directory
+        run: mkdir -p "$RUNNER_TEMP/v13-education"
+
+      - name: Install locked render dependencies only
+        run: uv sync --locked --only-group sim-render --no-install-project
+
+      - name: Run V13 education tests
+        run: |
+          set -o pipefail
+          uv run --locked --no-sync python -m unittest \
+            tests.test_education_assets tests.test_education_first -v \
+            2>&1 | tee "$RUNNER_TEMP/v13-education/education-tests.log"
+
+      - name: Validate asset registries and education plan
+        run: |
+          set -o pipefail
+          uv run --locked --no-sync python core/visual-assets/asset_registry.py validate \
+            2>&1 | tee "$RUNNER_TEMP/v13-education/asset-registry.log"
+          uv run --locked --no-sync python scripts/acquire_education_assets.py --validate \
+            2>&1 | tee "$RUNNER_TEMP/v13-education/education-assets.log"
+          uv run --locked --no-sync python scripts/produce_lesson.py \
+            --spec examples/education/education_smoke.json --plan-only \
+            --output-root "$RUNNER_TEMP/v13-education/plan-output" \
+            --run-id "plan-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" \
+            2>&1 | tee "$RUNNER_TEMP/v13-education/plan-validation.log"
+
+      - name: Check V13 Python syntax
+        run: |
+          set -o pipefail
+          uv run --locked --no-sync python -m compileall -q \
+            core/education core/visual_primitives scripts/produce_lesson.py \
+            scripts/acquire_education_assets.py scripts/validate_blender_education_assets.py \
+            tests/test_education_assets.py tests/test_education_first.py \
+            2>&1 | tee "$RUNNER_TEMP/v13-education/compileall.log"
+
+      - name: Render Manim-only smoke preview
+        env:
+          V11_MANIM_BIN: manim
+        run: |
+          set -o pipefail
+          uv run --locked --no-sync python scripts/produce_lesson.py \
+            --spec examples/education/education_smoke.json \
+            --preview --manim-only \
+            --output-root "$RUNNER_TEMP/v13-education/output" \
+            --run-id "smoke-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" \
+            2>&1 | tee "$RUNNER_TEMP/v13-education/manim-smoke.log"
+
+      - name: Verify smoke media, captions, report and full decode
+        run: |
+          set -o pipefail
+          run_dir="$RUNNER_TEMP/v13-education/output/smoke-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          preview="$run_dir/preview.mp4"
+          test -s "$preview"
+          test -s "$run_dir/subtitles.ko.vtt"
+          test -s "$run_dir/production_report.json"
+          python - "$run_dir" <<'PY' | tee "$RUNNER_TEMP/v13-education/media-metadata-validation.log"
+          import json
+          import subprocess
+          import sys
+          from pathlib import Path
+
+          run_dir = Path(sys.argv[1])
+          preview = run_dir / "preview.mp4"
+          report = json.loads((run_dir / "production_report.json").read_text(encoding="utf-8"))
+          if report.get("status") != "SILENT_PREVIEW":
+              raise SystemExit(f"unexpected production status: {report.get('status')}")
+          if report.get("audio_status") != "not generated":
+              raise SystemExit("smoke preview unexpectedly reports audio")
+          if not json.loads((run_dir / "visual_manifest.json").read_text(encoding="utf-8")).get("beats"):
+              raise SystemExit("visual manifest has no beats")
+          probe = subprocess.run([
+              "ffprobe", "-v", "error", "-select_streams", "v:0",
+              "-show_entries", "stream=codec_name,width,height,r_frame_rate",
+              "-of", "json", str(preview),
+          ], check=True, capture_output=True, text=True)
+          stream = json.loads(probe.stdout)["streams"][0]
+          expected = {"codec_name": "h264", "width": 960, "height": 540, "r_frame_rate": "30/1"}
+          for key, value in expected.items():
+              if stream.get(key) != value:
+                  raise SystemExit(f"{key}: expected {value!r}, got {stream.get(key)!r}")
+          print(json.dumps({"status": "PASS", "video": str(preview), "metadata": stream,
+                            "captions": str(run_dir / 'subtitles.ko.vtt'),
+                            "production_report": str(run_dir / 'production_report.json')},
+                           ensure_ascii=False, indent=2))
+          PY
+          uv run --locked --no-sync python scripts/validate_delivery.py "$preview" \
+            --min-width 960 --min-height 540 --fps 30 --full-decode \
+            2>&1 | tee "$RUNNER_TEMP/v13-education/full-decode-validation.log"
+
+      - name: Upload preview, reports, validation and logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v13-education-${{ github.run_id }}-${{ github.run_attempt }}
+          if-no-files-found: error
+          path: ${{ runner.temp }}/v13-education/
