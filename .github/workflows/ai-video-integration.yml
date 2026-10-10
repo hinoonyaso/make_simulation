@@ -48,7 +48,8 @@ jobs:
             run_dir="$(dirname "$report")"
             evidence="$output/artifacts/evidence/$(basename "$(dirname "$run_dir")")/$(basename "$run_dir")"
             mkdir -p "$evidence"
-            python scripts/validate_mechanism_render.py "$report" | tee "$evidence/media_validation.log"
+            python scripts/validate_mechanism_render.py "$report" </dev/null > "$evidence/media_validation.log"
+            cat "$evidence/media_validation.log"
             cp "$run_dir"/*.json "$evidence/"
           done < <(find "$output/runs" "$output/replay-runs" "$output/nms-runs" -name production_report.json)
           quant_preview="$(find "$output/runs" -path '*/quantization-*/preview.mp4' -print -quit)"

@@ -198,6 +198,11 @@ class FinalHardeningTests(unittest.TestCase):
                 self.assertTrue(validate_timeline(self.timeline(), source_range=bounds))
         for bounds in ((2, 0), (0,), ()):
             self.assertTrue(validate_timeline(self.timeline(stored=bounds)))
+        for value in (float('nan'), float('inf')):
+            tl = self.timeline()
+            tl['source_range_sec'] = [0, value]
+            self.assertTrue(any('source range' in e and 'finite' in e
+                                for e in validate_timeline(tl)))
 
     def test_nonfinite_phase_times(self):
         for value in (float('nan'), float('inf'), -float('inf')):
