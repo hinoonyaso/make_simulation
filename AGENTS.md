@@ -65,3 +65,12 @@ For this user’s robotics episodes where physical motion/contact is relevant, r
 - Check execution cache before heavyweight adapter execution. Verify identity, trace hash, provenance and domain validation. Keep execution fingerprints independent of scene/timeline edits.
 - Preserve incomplete/corrupt cache directories and completed runs. `--force-execution` and disabled execution reuse create independent siblings; `--force` retains its render-only scope.
 - Validate actual media with `scripts/validate_mechanism_render.py`; use optional renderer PID frame debug data for state correspondence. Distinguish numerical/frame evidence from sampled pixel review and full motion playback.
+
+## V12 engineering simulation
+
+- The executable engineering additions are `physics_oscillator`, `can_arbitration`, and `motor_foc`; resolve them through `core/mechanism/catalog.json`. Keep plain `BLDC` distinct from PMSM FOC.
+- Reuse `mechanism-envelope/v1`, `mechanism-timeline/v1`, and the shared `engineering` Manim plan. Preserve physical units, signal-specific sample clocks, and integer event ticks.
+- Physics is a linear educational single-DOF model. CAN protocol bits, VirtualBus transport and DBC signal checks are separate evidence. FOC uses motulator 0.9 demonstration values and an averaged converter, not switching PWM or a user's physical motor.
+- Use `sim-math`, `sim-can`, and `sim-motor` dependency groups. SocketCAN/PyBaMM/Renode are optional and do not block the three CPU execution paths. Check current state with `scripts/inspect_engineering_env.py`.
+- Keep V12 test/render artifacts under `pilots/v12_engineering/`; do not change finished `topics/` episodes. A remote CI PASS requires an observed Actions run. Never push without user approval.
+- Battery/BMS, firmware/RTOS, Renode, CAN FD, BLDC six-step and coupled co-simulation remain design-only; do not register them executable until their implementations and validation exist.

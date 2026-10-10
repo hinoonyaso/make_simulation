@@ -1,0 +1,131 @@
+name: Engineering simulation
+
+on:
+  pull_request:
+    paths:
+      - 'core/mechanism/**'
+      - 'core/simulation_engines/**'
+      - 'examples/v12/**'
+      - 'assets/v12/**'
+      - 'scripts/produce_video.py'
+      - 'scripts/inspect_engineering_env.py'
+      - 'scripts/export_v12_requirements.py'
+      - 'tests/test_v12_engineering.py'
+      - 'pyproject.toml'
+      - 'uv.lock'
+      - '.github/workflows/engineering-sim.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'core/mechanism/**'
+      - 'core/simulation_engines/**'
+      - 'examples/v12/**'
+      - 'assets/v12/**'
+      - 'scripts/produce_video.py'
+      - 'scripts/inspect_engineering_env.py'
+      - 'scripts/export_v12_requirements.py'
+      - 'tests/test_v12_engineering.py'
+      - 'pyproject.toml'
+      - 'uv.lock'
+      - '.github/workflows/engineering-sim.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  math-physics:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: astral-sh/setup-uv@v6
+      - name: Install locked group exporter
+        run: uv pip install --python "$(command -v python)" packaging==26.3
+      - name: Install locked math group without the project AI stack
+        run: |
+          python scripts/export_v12_requirements.py --groups sim-math --output "$RUNNER_TEMP/requirements.txt"
+          uv pip install --python "$(command -v python)" --no-deps --require-hashes --requirements "$RUNNER_TEMP/requirements.txt"
+      - run: python -m unittest tests.test_v12_engineering.V12EngineeringTests.test_oscillator_sympy_scipy_control_energy_and_forced_cases tests.test_v12_engineering.V12EngineeringTests.test_generic_time_series_supports_independent_sample_clocks tests.test_v12_engineering.V12EngineeringTests.test_physics_execution_cache_hits_only_validated_identical_trace -v
+
+  can-protocol:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: astral-sh/setup-uv@v6
+      - name: Install locked group exporter
+        run: uv pip install --python "$(command -v python)" packaging==26.3
+      - name: Install locked CAN group without privileged SocketCAN
+        run: |
+          python scripts/export_v12_requirements.py --groups sim-can --output "$RUNNER_TEMP/requirements.txt"
+          uv pip install --python "$(command -v python)" --no-deps --require-hashes --requirements "$RUNNER_TEMP/requirements.txt"
+      - run: python -m unittest tests.test_v12_engineering.V12EngineeringTests.test_can_crc_bit_stuff_arbitration_ack_and_equal_id_edges tests.test_v12_engineering.V12EngineeringTests.test_can_adapter_virtualbus_dbc_and_domain_integrity -v
+
+  motor-foc:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: astral-sh/setup-uv@v6
+      - name: Install locked group exporter
+        run: uv pip install --python "$(command -v python)" packaging==26.3
+      - name: Install locked motor group
+        run: |
+          python scripts/export_v12_requirements.py --groups sim-motor --output "$RUNNER_TEMP/requirements.txt"
+          uv pip install --python "$(command -v python)" --no-deps --require-hashes --requirements "$RUNNER_TEMP/requirements.txt"
+      - run: python -m unittest tests.test_v12_engineering.V12EngineeringTests.test_motor_foc_trace_uses_motulator_pmsm_and_load_step -v
+
+  trace-timeline-integration:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: astral-sh/setup-uv@v6
+      - name: Install locked group exporter
+        run: uv pip install --python "$(command -v python)" packaging==26.3
+      - name: Install locked engineering groups only
+        run: |
+          python scripts/export_v12_requirements.py --groups sim-math sim-can sim-motor --output "$RUNNER_TEMP/requirements.txt"
+          uv pip install --python "$(command -v python)" --no-deps --require-hashes --requirements "$RUNNER_TEMP/requirements.txt"
+      - run: python -m unittest tests.test_v12_engineering -v
+
+  render-smoke:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: astral-sh/setup-uv@v6
+      - name: Install Manim system build and media dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes pkg-config libcairo2-dev libpango1.0-dev ffmpeg
+      - name: Install locked group exporter
+        run: uv pip install --python "$(command -v python)" packaging==26.3
+      - name: Install locked renderer and engineering groups without PyTorch
+        run: |
+          python scripts/export_v12_requirements.py --groups sim-math sim-can sim-motor sim-render --output "$RUNNER_TEMP/requirements.txt"
+          uv pip install --python "$(command -v python)" --no-deps --require-hashes --requirements "$RUNNER_TEMP/requirements.txt"
+      - name: Render and fully decode three 540p30 previews
+        env:
+          V11_MANIM_BIN: python -m manim
+          FONTCONFIG_FILE: /etc/fonts/fonts.conf
+        run: |
+          mkdir -p "$RUNNER_TEMP/v12-renders"
+          python scripts/produce_video.py --topic physics_oscillator --config examples/v12/oscillator.json --preview --output-dir "$RUNNER_TEMP/v12-renders/runs" --execution-cache-dir "$RUNNER_TEMP/v12-renders/executions"
+          python scripts/produce_video.py --topic can_arbitration --config examples/v12/can_arbitration.json --preview --output-dir "$RUNNER_TEMP/v12-renders/runs" --execution-cache-dir "$RUNNER_TEMP/v12-renders/executions"
+          python scripts/produce_video.py --topic motor_foc --config examples/v12/pmsm_foc.json --preview --output-dir "$RUNNER_TEMP/v12-renders/runs" --execution-cache-dir "$RUNNER_TEMP/v12-renders/executions"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: v12-engineering-preview-renders
+          path: ${{ runner.temp }}/v12-renders/runs/**/preview.mp4
+          if-no-files-found: error

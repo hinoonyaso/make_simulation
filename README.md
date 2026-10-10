@@ -158,3 +158,17 @@ The run validates engine/model/trace/render connectivity. Contact counts and fix
 H1 auto routing analyzes the whole joint trajectory, including return motion, with unit-specific noise thresholds. Its Blender overlay reports each motion phase's speed and marks holds explicitly. PID visuals now map each video frame to one recorded controller/encoder sample through the shared timeline, preserving discrete PWM and counts.
 
 YOLO and MuJoCo now consult a validated execution cache before loading a model or integrating physics. Default storage is `output/executions/<topic>/<execution_id>/`; media stays in existing run directories. `--force` rerenders with reusable computation; `--force-execution` reruns computation into a preserved sibling; `--no-execution-cache` bypasses execution reuse. Small per-invocation reports record hit/miss and actual adapter calls. See [motion validation](docs/v11/V11_5_MOTION_VALIDATION.md), [cache contract](docs/v11/V11_5_EXECUTION_CACHE.md), and [measured results](docs/v11/V11_5_INTEGRATION_REPORT.md).
+
+## V12 engineering simulation previews
+
+V12 adds three executable topics to the existing registry/trace/storyboard/timeline/Manim pipeline: a SymPy/SciPy mass-spring-damper model, deterministic Classical CAN arbitration with python-can VirtualBus and cantools DBC checks, and motulator PMSM field-oriented control. Domain traces retain units, solver settings, assumptions, and independent sample clocks. CAN wire ticks are integers. The FOC example uses demonstration parameters and an averaged converter; it does not claim a specific user's motor or show switching PWM. BLDC six-step, Battery/BMS, firmware/RTOS, Renode, CAN FD and coupled co-simulation remain unimplemented.
+
+```bash
+uv sync --group sim-math --group sim-can --group sim-motor
+uv run python scripts/inspect_engineering_env.py
+uv run python scripts/produce_video.py --topic physics_oscillator --config examples/v12/oscillator.json --preview
+uv run python scripts/produce_video.py --topic can_arbitration --config examples/v12/can_arbitration.json --preview
+uv run python scripts/produce_video.py --topic motor_foc --config examples/v12/pmsm_foc.json --preview
+```
+
+`scripts/setup_v12_ubuntu.sh --check` is read-only; `--install` installs only missing listed apt packages and the three uv groups, and may require administrator rights. The CI-only requirements exporter traverses the selected dependency groups from `uv.lock` and excludes unused PyTorch from motulator's tested drive path. See [V12 architecture](docs/v12/V12_ARCHITECTURE.md), [integration evidence](docs/v12/INTEGRATION_REPORT.md), [observed environment](docs/v12/observed_environment.json), and [WSL2 limits](docs/v12/WSL2_LIMITATIONS.md). A workflow definition does not imply a remote GitHub Actions run.

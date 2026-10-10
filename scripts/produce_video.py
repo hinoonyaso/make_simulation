@@ -130,6 +130,24 @@ def _build_run_timeline(topic: str, trace: dict, manifest: dict,
                                                   "visual_goal": "numerical_explanation"}
                 if beat["phase_id"] == "setpoint":
                     phase_source[beat["phase_id"]].update(source_end_sec=times[0], playback_mode="hold")
+    elif topic in {"physics_oscillator", "motor_foc"}:
+        times = trace.get("payload", {}).get("timestamps", trace.get("timestamps", []))
+        if len(times) < 2:
+            raise ValueError(f"{topic} timeline requires at least two source timestamps")
+        source_range = (float(times[0]), float(times[-1]))
+        for beat in manifest["beats"]:
+            phase_source[beat["phase_id"]] = {"source_start_sec": source_range[0],
+                "source_end_sec": source_range[1], "playback_mode": "replay",
+                "visual_goal": visual_goal}
+    elif topic == "can_arbitration":
+        payload = trace.get("payload", {})
+        source_range = (0.0, float(payload.get("bit_count", 0) / payload.get("bitrate_hz", 1)))
+        if source_range[1] <= source_range[0]:
+            raise ValueError("CAN timeline requires a positive frame duration")
+        for beat in manifest["beats"]:
+            phase_source[beat["phase_id"]] = {"source_start_sec": source_range[0],
+                "source_end_sec": source_range[1], "playback_mode": "replay",
+                "visual_goal": visual_goal}
     return build_timeline(manifest["beats"], fps=fps, source_range=source_range,
                           phase_source=phase_source, default_visual_goal=visual_goal)
 
@@ -230,7 +248,7 @@ def main() -> int:
                   validate_replay_trace(topic, capability["trace_schema"], trace, adapter))
         if errors:
             parser.error("trace validation failed: " + "; ".join(errors))
-    elif topic in {"robot_kinematics", "object_detection"}:
+    elif topic in {"robot_kinematics", "object_detection", "physics_oscillator", "can_arbitration", "motor_foc"}:
         trace, execution_info = execute_cached(topic, config, adapter, args.execution_cache_dir,
                                                enabled=not args.no_execution_cache, force=args.force_execution)
     else:
@@ -248,6 +266,9 @@ def main() -> int:
         "mcu_pid": "엔코더 피드백을 사용하는 PID 모터 시뮬레이션",
         "robot_kinematics": "MuJoCo 로봇팔의 관절 상태와 끝단 이동",
         "self_attention": "토큰 관계 점수로 계산하는 Self-Attention",
+        "physics_oscillator": "실제 수치 적분으로 보는 질량·스프링·댐퍼 진동",
+        "can_arbitration": "Classical CAN 비트 중재와 프레임 전송",
+        "motor_foc": "motulator PMSM field-oriented control 시뮬레이션",
     }.get(topic, topic))
     mode_name = "preview" if args.preview else "final"
     if topic == "rag":

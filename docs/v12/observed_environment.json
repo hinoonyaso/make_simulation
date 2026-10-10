@@ -1,0 +1,99 @@
+{
+  "platform": {
+    "system": "Linux",
+    "distribution": "Ubuntu 24.04.4 LTS",
+    "architecture": "x86_64",
+    "wsl": true,
+    "memory_bytes": 16613257216,
+    "disk_free_bytes": 836040413184
+  },
+  "python": {
+    "status": "READY",
+    "version": "3.12.3"
+  },
+  "uv": {
+    "status": "READY",
+    "path": "/home/sang/.local/bin/uv",
+    "version": "uv 0.12.3 (x86_64-unknown-linux-gnu)"
+  },
+  "groups": {
+    "sim-math": "READY",
+    "sim-can": "READY",
+    "sim-motor": "READY"
+  },
+  "packages": {
+    "sim-math": {
+      "sympy": {
+        "status": "READY",
+        "version": "1.14.0"
+      },
+      "scipy": {
+        "status": "READY",
+        "version": "1.18.1"
+      },
+      "python_control": {
+        "status": "READY",
+        "version": "0.10.2"
+      }
+    },
+    "sim-can": {
+      "python_can": {
+        "status": "READY",
+        "version": "4.6.1"
+      },
+      "cantools": {
+        "status": "READY",
+        "version": "44.2.1"
+      }
+    },
+    "sim-motor": {
+      "motulator": {
+        "status": "READY",
+        "version": "0.9.0"
+      }
+    }
+  },
+  "manim": {
+    "status": "READY",
+    "version": "Manim Community v0.21.0"
+  },
+  "ffmpeg": {
+    "status": "READY",
+    "path": "/usr/bin/ffmpeg",
+    "version": "ffmpeg version 6.1.1-3ubuntu5 Copyright (c) 2000-2023 the FFmpeg developers"
+  },
+  "blender": {
+    "status": "BLOCKED",
+    "installed": true,
+    "path": "/mnt/c/Program Files/Blender Foundation/Blender 5.2/blender.exe",
+    "version": null,
+    "reason": "Blender is installed, but this process cannot launch it. On WSL, Windows Blender may require the approved host-execution route.",
+    "host_execution_evidence": {
+      "status": "READY",
+      "version": "5.2.1 at `C:\\Program Files\\Blender Foundation\\Blender 5.2\\blender.exe`",
+      "evidence": "docs/v11/TEST_RESULTS.md: Installed Blender discovery / H1 mesh render"
+    },
+    "approved_host_execution_probe": {
+      "status": "READY",
+      "version": "Blender 5.2.1 LTS",
+      "command": "/mnt/c/Program Files/Blender Foundation/Blender 5.2/blender.exe --version",
+      "result": "exit 0; read-only version probe executed through approved host execution",
+      "observed_date": "2026-10-10"
+    }
+  },
+  "optional": {
+    "pybamm": {
+      "status": "OPTIONAL_MISSING",
+      "version": null
+    },
+    "renode": {
+      "status": "OPTIONAL_MISSING",
+      "path": null,
+      "version": null
+    },
+    "socketcan_vcan": {
+      "status": "BLOCKED",
+      "reason": "Cannot open netlink socket: Operation not permitted"
+    }
+  }
+}

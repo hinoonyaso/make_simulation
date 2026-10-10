@@ -50,22 +50,34 @@ class MechanismTraceScene(Scene):
         if fps != 30:
             raise ValueError("common Manim renderer requires a 30 fps shared timeline")
         phases = {phase["phase_id"]: phase for phase in timeline["phases"]}
-        self.add(text(self.plan["title"], 34, P.fg, 13.2).to_edge(UP, buff=.35))
+        title_mob = text(self.plan["title"], 34, P.fg, 13.2).to_edge(UP, buff=.35)
+        self.add(title_mob)
         if self.plan["kind"] == "mcu_pid":
             self._render_pid(timeline)
             return
+        isolate_phases = self.plan["kind"] == "engineering"
         graphic, transitions = self._build_graphic()
         errors = validate_phase_contract(beats, transitions)
         if errors:
             raise ValueError("invalid storyboard/renderer phase contract: " + "; ".join(errors))
         for index, beat in enumerate(beats):
+            if isolate_phases:
+                self.clear()
+                self.add(title_mob)
             phase = phases[beat["phase_id"]]
             duration_frames = phase["presentation_end_frame"] - phase["presentation_start_frame"]
             duration = duration_frames / fps
             caption = text(beat["caption"], 20, P.muted, 12.5).move_to([0, -3.1, 0])
             header = text(f"{index+1:02d} / {len(beats):02d}", 16, P.active).to_corner(UR, buff=.4)
             anims = [FadeIn(header), FadeIn(caption)]
+            # State transitions historically encoded outgoing objects with
+            # FadeOut, but some builders reused a parent VGroup or omitted
+            # stale children. Replace the complete per-beat scene state and
+            # run only its incoming animations for deterministic isolation.
             state_animations = transitions[beat["phase_id"]]
+            if isolate_phases:
+                state_animations = [animation for animation in state_animations
+                                    if not isinstance(animation, FadeOut)]
             anims.extend(state_animations)
             state_runtime = max([value for animation in state_animations
                                  if isinstance((value := getattr(animation, "run_time", .6)), (int, float))] + [.6])
@@ -75,7 +87,10 @@ class MechanismTraceScene(Scene):
                                  f"only {duration_frames} presentation frames are available")
             self.play(*anims, run_time=minimum_frames / fps)
             self.wait((duration_frames - minimum_frames) / fps)
-            self.remove(header, caption)
+            if isolate_phases:
+                self.clear()
+            else:
+                self.remove(header, caption)
 
     def _build_graphic(self):
         kind = self.plan["kind"]
@@ -92,7 +107,150 @@ class MechanismTraceScene(Scene):
         if kind == "self_attention":
             graphic, rows = self._self_attention()
             return graphic, dict(zip(["input_projection", "qk_scores", "scaling_mask", "softmax", "weighted_value"], rows))
+        if kind == "engineering": return self._engineering()
         raise ValueError(f"no Manim visual plan for mechanism: {kind}")
+
+    def _engineering(self):
+        """Shared trace based waveforms, event lanes, labels and equation state views."""
+        p, topic = self.plan, self.plan["topic"]
+        muted, active, result, sensor = P.muted, P.active, P.result, P.sensor
+        board = Line([-5.8, -2.35, 0], [5.8, -2.35, 0], color=P.faint, stroke_width=1)
+
+        def label(value, y=1.9, color=muted, size=24):
+            return text(value, size, color, 11.5).move_to([0, y, 0])
+
+        def curve_group(signal_names, title_text, *, duration=2.0, x0=-5.5, x1=5.5, y0=-.35, yscale=1.45):
+            signals = p["signals"]
+            available = [(name, signals[name]) for name in signal_names if name in signals]
+            if not available:
+                return VGroup(label(title_text), label("Trace 표본 없음", 0, P.error)), []
+            all_values = [float(value) for _, signal in available for value in signal["values"]]
+            low, high = min(all_values), max(all_values)
+            if abs(high-low) < 1e-12: low, high = low-1, high+1
+            palette = [active, result, sensor, P.error]
+            short_names = {"position":"x", "velocity":"v", "kinetic_energy":"K", "potential_energy":"U",
+                           "total_energy":"E", "external_force":"F", "analytic_position":"x analytic",
+                           "position_undamped":"c=0", "position_critical":"critical c",
+                           "position_overdamped":"over c",
+                           "phase_current_a":"i_a", "phase_current_b":"i_b", "phase_current_c":"i_c",
+                           "current_d":"i_d", "current_q":"i_q", "torque":"τ", "torque_reference":"τ ref",
+                           "current_d_reference":"i_d ref", "current_q_reference":"i_q ref",
+                           "current_d_feedback":"i_d fb", "current_q_feedback":"i_q fb",
+                           "speed_rad_s":"ω", "speed_reference":"ω ref", "speed_rpm":"rpm", "load_torque":"τ load"}
+            graph = VGroup(label(title_text, 2.0, muted, 22),
+                           Line([x0,y0,0],[x1,y0,0],color=P.faint),
+                           Line([x0,-1.85,0],[x0,1.45,0],color=P.faint))
+            anims = [FadeIn(graph[0]), Create(graph[1]), Create(graph[2])]
+            for idx, (name, signal) in enumerate(available):
+                times = np.asarray(signal.get("timestamps", p.get("timestamps", [])), dtype=float)
+                values = np.asarray(signal["values"], dtype=float)
+                stride = max(1, len(values)//700)
+                times, values = times[::stride], values[::stride]
+                if len(times) < 2: continue
+                tlo, thi = float(times[0]), float(times[-1])
+                if thi <= tlo: continue
+                xs = x0 + (times-tlo)/(thi-tlo)*(x1-x0)
+                ys = -1.75 + (values-low)/(high-low)*3.0
+                line = polyline([[float(x),float(y),0] for x,y in zip(xs,ys)], palette[idx % len(palette)], 3)
+                tag = text(f"{short_names.get(name, name)} · {signal['unit']}", 16,
+                           palette[idx % len(palette)], 2.9)
+                tag.move_to([x0+1.4, 1.45-idx*.34, 0])
+                graph.add(line, tag)
+                anims.extend([Create(line), FadeIn(tag)])
+            return graph, anims
+
+        if topic == "physics_oscillator":
+            q = p["parameters"]
+            x = float(p["signals"]["position"]["values"][0])
+            mass = Square(.65, color=active, fill_opacity=.35).move_to([-3.3, 0, 0])
+            mass_label = text(f"m={q['mass_kg']:g} kg", 18, P.fg).next_to(mass, DOWN, buff=.15)
+            wall = Line([-5, -.5, 0],[-5, .5, 0],color=muted,stroke_width=5)
+            spring_pts = [[-5+.10*i, .25+.15*((-1)**i),0] for i in range(1, 14)] + [[-3.63,.25,0]]
+            spring = polyline(spring_pts, sensor, 3)
+            dashpot = VGroup(Line([-4.7,-.55,0],[-4.7,-.15,0],color=result,stroke_width=3),
+                             Rectangle(width=.48,height=.24,color=result).move_to([-4.32,-.35,0]),
+                             Line([-4.08,-.35,0],[-3.63,-.35,0],color=result,stroke_width=3))
+            setup = VGroup(wall,spring,dashpot,mass,mass_label,
+                           label(f"초기 변위 x₀={x:.3f} m", -1.05, active, 19),
+                           label("질량의 운동 → 스프링 복원력 + 감쇠력", 1.05, muted, 20))
+            eq = VGroup(label(p["equation"],.75,active,30),
+                        label(f"m={q['mass_kg']:g} kg   c={q['damping_n_s_m']:g} N·s/m   k={q['stiffness_n_m']:g} N/m",-.15,muted,20),
+                        label(f"초기 조건: x(0)={q['initial_displacement_m']:g} m,  ẋ(0)={q['initial_velocity_m_s']:g} m/s",-.85,sensor,18))
+            response, resp_anim = curve_group(["position","velocity"],"SciPy 수치 적분 · 원본 시간축")
+            energy, energy_anim = curve_group(["kinetic_energy","potential_energy","total_energy"],"같은 해에서 계산한 에너지 · J")
+            validation = p["validation"]
+            validation_group = VGroup(label(f"SciPy DOP853 · SymPy 비교 오차 {validation['max_abs_analytic_error_m']:.2g} m" if validation.get("max_abs_analytic_error_m") is not None else "강제 응답: SciPy 적분 결과",.65,result,22),
+                                      label(f"에너지 수지 잔차 {validation['energy_balance_residual_j']:.2g} J",-.05,active,21),
+                                      label("각 곡선은 trace의 실제 계산 표본을 사용",-.8,muted,18))
+            damping, damping_anim = curve_group(["position_undamped","position","position_critical","position_overdamped"],
+                "감쇠별 위치 응답 · m")
+            return VGroup(board,setup,eq,response,energy,validation_group,damping), {
+                "setup":[FadeIn(setup)], "equation":[FadeOut(setup),FadeIn(eq)],
+            "solution":[FadeOut(eq),FadeIn(validation_group)],
+            "response":[FadeOut(validation_group),*resp_anim],
+            "validation":[FadeOut(response),*energy_anim],
+                "damping":[FadeOut(energy),FadeOut(validation_group),*damping_anim]}
+
+        if topic == "can_arbitration":
+            requests = p["requests"]
+            request_lines = VGroup(*[text(f"{row['node']}  ID 0x{row['id']:03X}  {row['data_hex'] or 'RTR'}",
+                                          22, active if row["node"] in p["winners"] else sensor, 10.5)
+                                    for row in requests]).arrange(DOWN,buff=.42).move_to([0,.5,0])
+            setup = VGroup(label("Classical CAN 2.0A · 표준 11비트 프레임",1.2,muted,22),request_lines)
+            bits = np.asarray(p["bits"],dtype=int)
+            fields = p["fields"]
+            def digital_view(title, end, marked=False):
+                end=max(1,min(int(end),len(bits)))
+                start_x=-5.5; width=11.0/end
+                top=1.0; low=-.7
+                g=VGroup(label(title,1.8,muted,21),Line([-5.5,-1.05,0],[5.5,-1.05,0],color=P.faint))
+                points=[]
+                for i,b in enumerate(bits[:end]):
+                    x=start_x+i*width; yy=top if b else low
+                    points.extend(([x,yy,0],[x+width,yy,0]))
+                    if i+1<end and bits[i+1]!=b: points.append([x+width,low if b else top,0])
+                wave=polyline(points,active,3); g.add(wave)
+                if end <= 24:
+                    for i,b in enumerate(bits[:end]):
+                        g.add(text(str(int(b)),12,active if b==0 else muted).move_to([start_x+(i+.5)*width,-1.32,0]))
+                if marked:
+                    for item in p["events"]:
+                        if item["event"] in {"ARBITRATION_LOST","ARBITRATION_WON"}:
+                            xx=start_x+min(item["timestamp"],end)*width
+                            g.add(DashedLine([xx,-1.65,0],[xx,1.15,0],color=P.error if item["event"]=="ARBITRATION_LOST" else result))
+                return g, [FadeIn(g[0]),Create(g[1]),Create(wave)]
+            request=VGroup(label("동시에 송신 요청",.55,active,25),*[
+                text(f"{row['node']} → ID 비트 전송",19,sensor).move_to([0,.05-i*.42,0])
+                for i,row in enumerate(requests)])
+            arbitration,arb_anim=digital_view("중재 필드 · dominant 0이 recessive 1을 덮음", min(13,len(bits)), True)
+            frame,frame_anim=digital_view("실제 생성된 프레임 비트열 · stuffing 포함",len(bits),False)
+            status=VGroup(label("승자: "+(", ".join(p["winners"]) or "없음"),.75,result,27),
+                          label(f"bitrate {p['bitrate_hz']/1000:g} kbit/s · {p['bit_count']} bits · ACK {'수신' if p['acknowledged'] else '없음'}",-.05,active,20),
+                          label("CRC-15/CAN 0x4599 · receiver가 없으면 ACK 실패",-.8,muted,17))
+            return VGroup(board,setup,request,arbitration,frame,status), {
+                "bus_setup":[FadeIn(setup)], "simultaneous_request":[FadeOut(setup),FadeIn(request)],
+                "arbitration":[FadeOut(request),*arb_anim],
+                "frame_transmission":[FadeOut(arbitration),*frame_anim],
+                "result":[FadeOut(frame),FadeIn(status)]}
+
+        # PMSM FOC uses independently sampled solver and controller signals.
+        pmsm_setup=VGroup(label("PMSM + Field-Oriented Control",.9,active,25),
+                          label("motulator 0.9 · sensored model state",.1,muted,20),
+                          label("평균화 인버터 · 고주파 스위칭 파형 미포함",-.7,P.error,18))
+        three,three_anim=curve_group(["phase_current_a","phase_current_b","phase_current_c"],"3상 고정자 전류 · A_peak")
+        dq,dq_anim=curve_group(["current_d","current_q"],"회전자 기준 d/q축 전류 · A_peak")
+        dq_formula=text("theta_e = p * theta_m   |   i_abc -> i_alpha_beta -> i_dq",16,active,8.0).move_to([0,-2.08,0])
+        dq.add(dq_formula); dq_anim.append(FadeIn(dq_formula))
+        torque,torque_anim=curve_group(["current_q_reference","current_q_feedback"],"q축 전류 지령(제어 샘플)과 실제 피드백 · A_peak")
+        speed,speed_anim=curve_group(["speed_reference","speed_rad_s"],"속도 지령(제어 샘플)과 회전자 응답 · rad/s")
+        load,load_anim=curve_group(["load_torque","current_q_feedback","speed_rad_s"],"부하 외란 · 부하 토크, i_q 피드백, 속도")
+        return VGroup(board,pmsm_setup,three,dq,torque,speed,load), {
+            "machine_setup":[FadeIn(pmsm_setup)],
+            "three_phase_current":[FadeOut(pmsm_setup),*three_anim],
+            "dq_transform":[FadeOut(three),*dq_anim],
+            "current_control":[FadeOut(dq),*torque_anim],
+            "speed_response":[FadeOut(torque),*speed_anim],
+            "load_disturbance":[FadeOut(speed),FadeOut(pmsm_setup),*load_anim]}
 
     def _quantization(self):
         p = self.plan

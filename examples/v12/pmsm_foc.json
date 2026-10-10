@@ -1,0 +1,20 @@
+{
+  "duration_s": 0.3,
+  "sample_period_s": 0.0001,
+  "stator_resistance_ohm": 0.3,
+  "inductance_d_h": 0.0015,
+  "inductance_q_h": 0.0015,
+  "pm_flux_wb": 0.08,
+  "pole_pairs": 3,
+  "inertia_kg_m2": 0.002,
+  "dc_bus_v": 48.0,
+  "current_limit_a": 15.0,
+  "speed_reference_rad_s": 100.0,
+  "speed_step_time_s": 0.005,
+  "load_torque_nm": 0.5,
+  "load_step_time_s": 0.1,
+  "current_bandwidth_hz": 500.0,
+  "speed_bandwidth_hz": 20.0,
+  "rtol": 1e-6,
+  "atol": 1e-8
+}

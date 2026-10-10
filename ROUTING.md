@@ -104,3 +104,10 @@ Rendering may use Blender while another engine computes dynamics. Keyframed pose
 - Route H1 auto from full-trajectory motion evidence; analytical goals still select Manim. Blender phase labels derive from the same source mapping as mesh poses, including holds and replay.
 - PID uses initial hold → recorded time series → labelled replay. Every displayed controller/encoder value is taken from one frame-selected discrete sample.
 - Cache provenance belongs to each invocation; reusing media must not overwrite its original production evidence. See `docs/v11/V11_5_EXECUTION_CACHE.md` for force/reuse semantics.
+
+## V12 engineering simulation routing
+- Resolve `physics_oscillator`, `can_arbitration`, or `motor_foc` through `MechanismRegistry`; aliases include `감쇠 진동`, `CAN 중재`, and `PMSM FOC`. Do not map plain `BLDC` to PMSM FOC.
+- Use the matching config in `examples/v12/` and start with `uv run python scripts/produce_video.py --topic <topic> --config <example.json> --preview`. The path executes the adapter, validates its envelope/domain payload, then uses the shared storyboard, timeline and trace-backed Manim scene. `--mode replay --trace <trace.json>` validates and renders a saved trace without rerunning the model.
+- Physics is a linear educational mass-spring-damper model. CAN is a deterministic Classical CAN 2.0A standard-frame model; python-can VirtualBus and DBC tests do not model electrical behavior or perform bit arbitration. FOC uses motulator demonstration parameters and an averaged converter, not a measured user motor or PWM switching waveform.
+- Check current runtimes with `scripts/inspect_engineering_env.py`. `scripts/setup_v12_ubuntu.sh --check` makes no changes; `--install` is an explicit package installation and may require sudo. Do not force SocketCAN changes after a WSL permission failure.
+- Battery/BMS, Firmware/RTOS, Renode, BLDC six-step, CAN FD and multidomain co-simulation are planned only, not executable topics. See `docs/v12/` for assumptions and environment boundaries.
