@@ -1,5 +1,6 @@
 # Environments and caches
 .venv/
+.cache/visual-assets/
 __pycache__/
 *.pyc
 
@@ -25,6 +26,7 @@ assets/audio/
 # ...but keep source images that ship with the asset library
 !assets/**/*.png
 !assets/**/*.jpg
+!assets/education/generated/*.blend
 
 # Third-party papers (copyright) — cite the source URL instead
 topics/*/research/*.pdf

@@ -36,12 +36,23 @@ hierarchy in Blender (Empties or Armature bones) from each robot's urdf/xacro `o
 | `zed2i/` | Stereolabs ZED 2i | stereo depth camera | `blender.zed2i.v1` |
 | `raspberry_pi5/` | Raspberry Pi 5 (With Graphics) | single-board computer | `blender.raspberry_pi5.v1` |
 
-The six entries above are **STEP files, not STL/DAE** — Blender has no native STEP importer, so
-convert via FreeCAD (import + export to STL/OBJ) or a STEP-import addon before use. Licensing
-differs per item: `livox_mid360/`, `ouster_*/`, and `zed2i/` are **proprietary vendor reference
-CAD** (freely downloadable for product-integration use, not OSS — treat as internal reference
-only, don't republish standalone), while `raspberry_pi5/` is genuinely **MIT-licensed**. See each
-subfolder's README.md for the exact download URL and license note.
+The six entries above are **STEP files, not STL/DAE** — Blender has no native STEP importer. A
+FreeCAD executable was not found in the current environment, so these have not been converted or
+Blender-validated here. Their folders exist in this worktree but are ignored by Git; they do not
+appear in a clean clone. Licensing differs per item: `livox_mid360/`, `ouster_*/`, and `zed2i/`
+are proprietary vendor reference CAD with no established public redistribution permission, so
+they remain local-use-only. `raspberry_pi5/` contains a local MIT license, but whether it covers
+the STEP export was not independently confirmed; that file also remains ignored. See
+`docs/assets/EXISTING_ASSET_AUDIT.md` and `docs/assets/SOURCE_LICENSE_MATRIX.md` for the evidence.
+
+## Engineering educational geometry
+
+See [`education/README.md`](education/README.md) for the CC0 procedural Blender library. It
+contains six generated assemblies spanning bearings, gears, shaft/coupling, spring/fasteners,
+BLDC motor, PCB, battery-cell concept, beam/bracket and fan/heatsink, with separate object names,
+metric units, and motion keys where useful. These are educational models with explicit limits,
+not product CAD or solver output. See `docs/assets/` for acquisition, licensing, conversion and
+Blender validation reports.
 
 ## What was deliberately left out
 - **PX4 Iris** was kept instead of adding a second drone-only alternative; RotorS Firefly and PX4
@@ -51,8 +62,8 @@ subfolder's README.md for the exact download URL and license note.
   models, only `xarm6`/`xarm7`/`gripper`/`camera` out of all xArm variants, only `2f_85` out of
   `2f_85`/`2f_140`). This kept the total import at ~340MB instead of several GB; each subfolder's
   own README notes what was dropped and why.
-- **Not imported**, because no anonymous direct-download URL could be found (each needs a vendor
+- **Not included in the clone**, because a vendor form, forum login, or account is required (each needs a human download)
   form, forum login, or account, which can't be automated here) — tracked as pending work in
   `TODO.md`: Jetson Orin Nano Dev Kit + module, STM32 Nucleo-F446RE, Hailo-8 M.2, and
-  BlenderKit's Warehouse Rack / Industrial Assets. (Raspberry Pi 5 was initially miscategorized
-  here too — it does have a direct anonymous download, see `raspberry_pi5/` above.)
+  BlenderKit's Warehouse Rack / Industrial Assets. Local ignored sensor and Pi assets are tracked
+  as audit evidence, but are not included in Git or reported as clone-reproducible.

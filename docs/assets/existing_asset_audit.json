@@ -1,0 +1,4774 @@
+[
+  {
+    "id": "manim.point_p.v1",
+    "source": "core/manim-robotics-education-skill/templates/manim_kit.py",
+    "exists": true,
+    "file_count": 1,
+    "files": [
+      {
+        "path": "core/manim-robotics-education-skill/templates/manim_kit.py",
+        "size_bytes": 11136,
+        "sha256": "030c1e83c8981ac9d409e908c62b268ad6ed6603d6b8d497656ee1fb8f6ce167",
+        "git_tracked": true,
+        "remote_main_tree": true
+      }
+    ],
+    "license": "UNKNOWN",
+    "factory_validation": "NOT_APPLICABLE: code reference"
+  },
+  {
+    "id": "manim.axes2d.v1",
+    "source": "core/manim-robotics-education-skill/templates/manim_kit.py",
+    "exists": true,
+    "file_count": 1,
+    "files": [
+      {
+        "path": "core/manim-robotics-education-skill/templates/manim_kit.py",
+        "size_bytes": 11136,
+        "sha256": "030c1e83c8981ac9d409e908c62b268ad6ed6603d6b8d497656ee1fb8f6ce167",
+        "git_tracked": true,
+        "remote_main_tree": true
+      }
+    ],
+    "license": "UNKNOWN",
+    "factory_validation": "NOT_APPLICABLE: code reference"
+  },
+  {
+    "id": "blender.frame_xyz.v1",
+    "source": "core/blender-robotics-simulation-skill/templates/robotics_visual_utils.py",
+    "exists": true,
+    "file_count": 1,
+    "files": [
+      {
+        "path": "core/blender-robotics-simulation-skill/templates/robotics_visual_utils.py",
+        "size_bytes": 9126,
+        "sha256": "13d4b661778b0b82cdb0b6e42b49095034f445c3aa010b40e1036afb3d729490",
+        "git_tracked": true,
+        "remote_main_tree": true
+      }
+    ],
+    "license": "UNKNOWN",
+    "factory_validation": "NOT_APPLICABLE: code reference"
+  },
+  {
+    "id": "blender.point.v1",
+    "source": "core/blender-robotics-simulation-skill/templates/robotics_visual_utils.py",
+    "exists": true,
+    "file_count": 1,
+    "files": [
+      {
+        "path": "core/blender-robotics-simulation-skill/templates/robotics_visual_utils.py",
+        "size_bytes": 9126,
+        "sha256": "13d4b661778b0b82cdb0b6e42b49095034f445c3aa010b40e1036afb3d729490",
+        "git_tracked": true,
+        "remote_main_tree": true
+      }
+    ],
+    "license": "UNKNOWN",
+    "factory_validation": "NOT_APPLICABLE: code reference"
+  },
+  {
+    "id": "blender.trajectory.v1",
+    "source": "core/blender-robotics-simulation-skill/templates/robotics_visual_utils.py",
+    "exists": true,
+    "file_count": 1,
+    "files": [
+      {
+        "path": "core/blender-robotics-simulation-skill/templates/robotics_visual_utils.py",
+        "size_bytes": 9126,
+        "sha256": "13d4b661778b0b82cdb0b6e42b49095034f445c3aa010b40e1036afb3d729490",
+        "git_tracked": true,
+        "remote_main_tree": true
+      }
+    ],
+    "license": "UNKNOWN",
+    "factory_validation": "NOT_APPLICABLE: code reference"
+  },
+  {
+    "id": "blender.robot_arm.abstract.v2",
+    "source": "core/blender-robotics-simulation-skill/templates/robotics_visual_utils.py",
+    "exists": true,
+    "file_count": 1,
+    "files": [
+      {
+        "path": "core/blender-robotics-simulation-skill/templates/robotics_visual_utils.py",
+        "size_bytes": 9126,
+        "sha256": "13d4b661778b0b82cdb0b6e42b49095034f445c3aa010b40e1036afb3d729490",
+        "git_tracked": true,
+        "remote_main_tree": true
+      }
+    ],
+    "license": "UNKNOWN",
+    "factory_validation": "NOT_APPLICABLE: code reference"
+  },
+  {
+    "id": "blender.jetrover.sensors.v1",
+    "source": "assets/jetrover/meshes/sensors/",
+    "exists": true,
+    "file_count": 2,
+    "files": [
+      {
+        "path": "assets/jetrover/meshes/sensors/imu_link.stl",
+        "size_bytes": 14084,
+        "sha256": "4016bd52396df07cbe3222be3f571aa7d9b752fa275ffc1f1878ac3af3cf2a07",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/jetrover/meshes/sensors/lidar_link.stl",
+        "size_bytes": 115084,
+        "sha256": "1cf6fef70b8fb6105a9fd02c0451b5c983e50e3f47fbf7d3d8073e1edac6300c",
+        "git_tracked": true,
+        "remote_main_tree": true
+      }
+    ],
+    "license": "Apache-2.0 (per source package.xml)",
+    "factory_validation": "PASS"
+  },
+  {
+    "id": "blender.jetrover.body.v1",
+    "source": "assets/jetrover/meshes/body/",
+    "exists": true,
+    "file_count": 4,
+    "files": [
+      {
+        "path": "assets/jetrover/meshes/body/back_shell_black_link.stl",
+        "size_bytes": 367384,
+        "sha256": "17d1ce641505f09bd2e8f3c96ea864b5668404c2bd720be4f0eda7f5791ba3b3",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/jetrover/meshes/body/back_shell_black_link_collision.stl",
+        "size_bytes": 98934,
+        "sha256": "9191a265e3ff6c7358721cf710637c73b2991b572408b3705e0027678ab06f5d",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/jetrover/meshes/body/back_shell_green_link.stl",
+        "size_bytes": 360334,
+        "sha256": "f15b51b1b76cb8ad6f802ede57bd18cd4d026b81b1b23d8139da6eaba47e6895",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/jetrover/meshes/body/back_shell_green_link_collision.stl",
+        "size_bytes": 98534,
+        "sha256": "2cd793f40561d1fe54f0daafc26769d0836a04f1c30eeb4d8258f02224a8bc5e",
+        "git_tracked": true,
+        "remote_main_tree": true
+      }
+    ],
+    "license": "Apache-2.0 (per source package.xml)",
+    "factory_validation": "PASS"
+  },
+  {
+    "id": "blender.jetrover.arm.v1",
+    "source": "assets/jetrover/meshes/arm/",
+    "exists": true,
+    "file_count": 17,
+    "files": [
+      {
+        "path": "assets/jetrover/meshes/arm/camera_connect_link.STL",
+        "size_bytes": 17784,
+        "sha256": "f672b8554113ae682dc7028f8bca79dcae579a1f528fdad8e8fcfb4cf78e4e82",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/jetrover/meshes/arm/depth_cam_link.STL",
+        "size_bytes": 505984,
+        "sha256": "87e72ff1f41110f78c724675a02222d58af83c6a10fd68342b66d1f0cd5b7802",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/jetrover/meshes/arm/depth_cam_link_collision.stl",
+        "size_bytes": 50634,
+        "sha256": "446b56296c35f4f7e2edc9a711e2ac4ad0e5202be998c601b2b66ae3712d810a",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/jetrover/meshes/arm/gripper_link.STL",
+        "size_bytes": 342434,
+        "sha256": "6a441cecabcb89e840ba3a3b2567467cac723efd807f10f251bfd3ee713928ab",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/jetrover/meshes/arm/gripper_link_collision.stl",
+        "size_bytes": 34234,
+        "sha256": "5d8c8714db1ce14df4081c5bbe60fcd0024086874a44a4903eb6877f0039f62f",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/jetrover/meshes/arm/link1.STL",
+        "size_bytes": 85884,
+        "sha256": "4fcb56ef62f7dedbe6382cdeb73ca27539051681eeb1f36a92d05269763b41a3",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/jetrover/meshes/arm/link2.STL",
+        "size_bytes": 307734,
+        "sha256": "1ad77e2313e419c3593d8fbe7f0f69c0ab76c61ba73395e3cc3e30a07736b4d3",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/jetrover/meshes/arm/link2_collision.stl",
+        "size_bytes": 57284,
+        "sha256": "65e347d25a91abd103370d6933e9ec177e72787f2f9981b719ea44b1b60e32c4",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/jetrover/meshes/arm/link3.STL",
+        "size_bytes": 308184,
+        "sha256": "154b9ae0ae34770cfa8a6bfd18213f071ac8a1e5e8807ad6412884ee9e13dcc3",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/jetrover/meshes/arm/link3_collision.stl",
+        "size_bytes": 56834,
+        "sha256": "1718fb80ed11489d71a7ce9beef23014897c0608f62e489142d5f59b6bd10944",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/jetrover/meshes/arm/link4.STL",
+        "size_bytes": 175584,
+        "sha256": "85250882b73abe132f16009988b6138118dc104e8c8e45214ae7e24b25e714dc",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/jetrover/meshes/arm/link4_collision.stl",
+        "size_bytes": 24434,
+        "sha256": "475179a9c7bf24c10a558fec1f196466195b0bc883ce0209f83a056381e471cf",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/jetrover/meshes/arm/link5.STL",
+        "size_bytes": 40734,
+        "sha256": "3465b3928cccc2462c25f21c86f887e8c0515784e2799774d93eead48c48284c",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/jetrover/meshes/arm/servo_link1.STL",
+        "size_bytes": 202734,
+        "sha256": "e9008d8a3741d3472df20f7dd3f780044db8c536c06c593ddf27684733ed674b",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/jetrover/meshes/arm/servo_link1_collision.stl",
+        "size_bytes": 20334,
+        "sha256": "0aa32832cbc0cec52cdd6dafd458576f2a083534d37975db3f508320cf0b86bc",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/jetrover/meshes/arm/servo_link2.STL",
+        "size_bytes": 180684,
+        "sha256": "338063d0bc27c7c54ac6327bb9f4dd2fcace11236c5bef04c999ae0a8403a0bc",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/jetrover/meshes/arm/servo_link2_collision.stl",
+        "size_bytes": 18084,
+        "sha256": "c3d7f0ba39ab708dc1576c61da87a0a55bcf9afd6d989bf2cf47ef14197b155e",
+        "git_tracked": true,
+        "remote_main_tree": true
+      }
+    ],
+    "license": "Apache-2.0 (per source package.xml)",
+    "factory_validation": "PASS"
+  },
+  {
+    "id": "blender.jetrover.gripper.v1",
+    "source": "assets/jetrover/meshes/gripper/",
+    "exists": true,
+    "file_count": 6,
+    "files": [
+      {
+        "path": "assets/jetrover/meshes/gripper/l_in_link.STL",
+        "size_bytes": 13084,
+        "sha256": "ec13b7c4ce769cf3c6521ad6b039d52b45fb7f8c9595a83b67c9d11a810224b0",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/jetrover/meshes/gripper/l_link.STL",
+        "size_bytes": 24334,
+        "sha256": "196519b292059564c3dc9f62cc2efe50ae4ea425c91cc1d54ecc18c6a2b03db6",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/jetrover/meshes/gripper/l_out_link.STL",
+        "size_bytes": 80134,
+        "sha256": "3db09b7aa1de7a5bde3c49ca0fec168485957ad65756223ec118500918ced86d",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/jetrover/meshes/gripper/r_in_link.STL",
+        "size_bytes": 13084,
+        "sha256": "1a76838849e8aaefa9ba441a61a73decf4dd835a4c6cbd7af02432d7d051d0df",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/jetrover/meshes/gripper/r_link.STL",
+        "size_bytes": 19284,
+        "sha256": "6df08ecd230db46e66655c2d6f272b7af2307ddf16d6e1ff2876d458f4bcae9d",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/jetrover/meshes/gripper/r_out_link.STL",
+        "size_bytes": 80484,
+        "sha256": "d51971e443fc653d0bb2dac8998073d715dc362fb351ae2ba204fe5e9466d71a",
+        "git_tracked": true,
+        "remote_main_tree": true
+      }
+    ],
+    "license": "Apache-2.0 (per source package.xml)",
+    "factory_validation": "PASS"
+  },
+  {
+    "id": "blender.jetrover.base_mecanum.v1",
+    "source": "assets/jetrover/meshes/mecanum/",
+    "exists": true,
+    "file_count": 10,
+    "files": [
+      {
+        "path": "assets/jetrover/meshes/mecanum/base_link.stl",
+        "size_bytes": 381484,
+        "sha256": "3f09c842f450eefc28a733b4bf98263e243806bbf0796ad4167dc2ee95e57684",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/jetrover/meshes/mecanum/base_link_collision.stl",
+        "size_bytes": 99084,
+        "sha256": "d6f1d30e125ad3bcbde5f8619a93257413c17a4af3bb3cbe73ba0bec8aa418cb",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/jetrover/meshes/mecanum/wheel_left_back_link.stl",
+        "size_bytes": 515834,
+        "sha256": "74f749efd01c2171d3a956996f38c4f394a745f93d4e037bf319950fc3aa54b5",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/jetrover/meshes/mecanum/wheel_left_back_link_collision.stl",
+        "size_bytes": 33084,
+        "sha256": "1e20a25ed14d9d3faabc9c0a5286ecc6ec477f447fa6721bea2003d5fb1488ef",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/jetrover/meshes/mecanum/wheel_left_front_link.stl",
+        "size_bytes": 514384,
+        "sha256": "509df6f2ad86959bf0fc74f0464b70683c77dc31a23263811d7bb4a1ca26a216",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/jetrover/meshes/mecanum/wheel_left_front_link_collision.stl",
+        "size_bytes": 33084,
+        "sha256": "1e20a25ed14d9d3faabc9c0a5286ecc6ec477f447fa6721bea2003d5fb1488ef",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/jetrover/meshes/mecanum/wheel_right_back_link.stl",
+        "size_bytes": 514434,
+        "sha256": "5cead78dd7b2e5b4aa905914ce898f946ffe92d00e5411ea7e4fb873b45f8700",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/jetrover/meshes/mecanum/wheel_right_back_link_collision.stl",
+        "size_bytes": 33484,
+        "sha256": "265671256dd51133f5f9c2510dac6f5f6ee1982c9aff089d38bbd0c747f446cb",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/jetrover/meshes/mecanum/wheel_right_front_link.stl",
+        "size_bytes": 515984,
+        "sha256": "8d517f4f7521199a661f0fd06f3238b388836b5d57547ec9afa21877af721ee6",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/jetrover/meshes/mecanum/wheel_right_front_link_collision.stl",
+        "size_bytes": 33484,
+        "sha256": "265671256dd51133f5f9c2510dac6f5f6ee1982c9aff089d38bbd0c747f446cb",
+        "git_tracked": true,
+        "remote_main_tree": true
+      }
+    ],
+    "license": "Apache-2.0 (per source package.xml)",
+    "factory_validation": "PASS"
+  },
+  {
+    "id": "blender.jetrover.base_acker.v1",
+    "source": "assets/jetrover/meshes/acker/",
+    "exists": true,
+    "file_count": 6,
+    "files": [
+      {
+        "path": "assets/jetrover/meshes/acker/base_green_link.stl",
+        "size_bytes": 316484,
+        "sha256": "944f6ad2f441f08b96370c705e8eba057401994545628ee7f20beb252941bd06",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/jetrover/meshes/acker/base_link.stl",
+        "size_bytes": 204884,
+        "sha256": "2ddc874d36542f4cf4dd42169a8a8fc880b834738cb781452ad6f021c1f8605d",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/jetrover/meshes/acker/wheel_left_back_link.stl",
+        "size_bytes": 719684,
+        "sha256": "baa0e98f37326ee4b6abe504dfc9f5a5125fee75fa1e15e6d6d5048fa1930f8e",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/jetrover/meshes/acker/wheel_left_front_link.stl",
+        "size_bytes": 709334,
+        "sha256": "5c4ed50beb18e131926e53b636f69a1f6d699d79b86df62859703214297d7bce",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/jetrover/meshes/acker/wheel_right_back_link.stl",
+        "size_bytes": 719584,
+        "sha256": "286b19e53f51074bfc5d106049ce14d76aaecfac39d75798f9dc0df41a9bc9e8",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/jetrover/meshes/acker/wheel_right_front_link.stl",
+        "size_bytes": 708134,
+        "sha256": "03394f0b7b133b0c279167f82bb73cdcad793d628c8178e37a707c6574f213e0",
+        "git_tracked": true,
+        "remote_main_tree": true
+      }
+    ],
+    "license": "Apache-2.0 (per source package.xml)",
+    "factory_validation": "PASS"
+  },
+  {
+    "id": "blender.jetrover.base_tank.v1",
+    "source": "assets/jetrover/meshes/tank/",
+    "exists": true,
+    "file_count": 2,
+    "files": [
+      {
+        "path": "assets/jetrover/meshes/tank/base_link.stl",
+        "size_bytes": 717234,
+        "sha256": "93e10fe3a0a30782d5b33f69464a2fc7c8b615738fe8dfc98908746773ad003c",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/jetrover/meshes/tank/wheel_link.stl",
+        "size_bytes": 5380684,
+        "sha256": "bba5d26bd6dbc5a854a3e6c361d9fa18d18eddcd0592aff04884bd211de388c0",
+        "git_tracked": true,
+        "remote_main_tree": true
+      }
+    ],
+    "license": "Apache-2.0 (per source package.xml)",
+    "factory_validation": "PASS"
+  },
+  {
+    "id": "reference.jetrover.urdf_xacro.v1",
+    "source": "assets/jetrover/urdf/",
+    "exists": true,
+    "file_count": 15,
+    "files": [
+      {
+        "path": "assets/jetrover/urdf/arm.urdf.xacro",
+        "size_bytes": 9840,
+        "sha256": "1ebc88e0173eb8fc6b0cdfa29b55f01aa31e8e00df553b153056f9dd9891f607",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/jetrover/urdf/car_acker.urdf.xacro",
+        "size_bytes": 7573,
+        "sha256": "20bff2e0e6f223d6b04e7d540680f51b104d74394d46a8db09d76a42e3fa9684",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/jetrover/urdf/car_mecanum.urdf.xacro",
+        "size_bytes": 6383,
+        "sha256": "4d59909f3279f61db9cbe65b40bfa18e7815273346af48f02729e572f95af4ae",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/jetrover/urdf/car_tank.urdf.xacro",
+        "size_bytes": 2395,
+        "sha256": "9b4bd344f66979fcd17d71f5e7f62696fa8905b580d98226f3d256f4c8ea06f9",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/jetrover/urdf/common.urdf.xacro",
+        "size_bytes": 2590,
+        "sha256": "f21991945670adce4b99cf3625e9198c063d6cb33fb48cc495aa9725cca1baaf",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/jetrover/urdf/connect.urdf.xacro",
+        "size_bytes": 508,
+        "sha256": "9a03cd4b9896d9c5e25b0fcdc98cdac1d998af8c3c45effc0649b56f44cc17a8",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/jetrover/urdf/depth_camera.urdf.xacro",
+        "size_bytes": 2767,
+        "sha256": "9adf5ff83992eef8a9dd4e914858a37099c7bc7570e0c507ec963b49243299f1",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/jetrover/urdf/gripper.urdf.xacro",
+        "size_bytes": 8175,
+        "sha256": "e177001c9cbdcca44150dce502055197af612e5338bb4a91e8e4afcc25d8ac92",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/jetrover/urdf/imu.urdf.xacro",
+        "size_bytes": 1342,
+        "sha256": "a590889ba53833d8ece92455794be431241ea9b873160cd4e9ce1afc043ed736",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/jetrover/urdf/inertial_matrix.xacro",
+        "size_bytes": 1161,
+        "sha256": "a6e9c97cf27bdb88b19e5281dbb0bda956ed14394c772a15903abea8c112fd26",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/jetrover/urdf/jetrover.xacro",
+        "size_bytes": 1921,
+        "sha256": "51b20e197e0d1190a89c2d7027786ada61a902b54b8600d93cdf9cc2d5c5531b",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/jetrover/urdf/lidar.urdf.xacro",
+        "size_bytes": 1418,
+        "sha256": "a58c448b4e432a58d44960e024e5030c3891c18e785af31ccaceea7f1240f457",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/jetrover/urdf/lidar_a1.urdf.xacro",
+        "size_bytes": 380,
+        "sha256": "46d73e308a156eb7d90df05a31eed656ba4423c1e346a44a39337b11278f016b",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/jetrover/urdf/lidar_g4.urdf.xacro",
+        "size_bytes": 374,
+        "sha256": "fe709239f477a2016f69342388f6119be4ffcce132713774c88718596d4c35e4",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/jetrover/urdf/materials.xacro",
+        "size_bytes": 774,
+        "sha256": "3dbbb155a81bae537ef67c20ebdaddd61112d44110acea63d6def692893daae4",
+        "git_tracked": true,
+        "remote_main_tree": true
+      }
+    ],
+    "license": "Apache-2.0 (per source package.xml)",
+    "factory_validation": "PASS"
+  },
+  {
+    "id": "blender.unitree_go2.v1",
+    "source": "assets/unitree_go2/",
+    "exists": true,
+    "file_count": 32,
+    "files": [
+      {
+        "path": "assets/unitree_go2/CMakeLists.txt",
+        "size_bytes": 279,
+        "sha256": "ccf75e67bda4bfe14bed53d53e71567e09eab9831b43630239a8d05bc3e91efa",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_go2/LICENSE",
+        "size_bytes": 1558,
+        "sha256": "84aac59fd3246e3ddc49d1387644e8fcf43b0def4f0b9fe687f372e90446df2d",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_go2/README.md",
+        "size_bytes": 759,
+        "sha256": "3961a4da4aef4b529ecb22a21c16827f1a0abdecdb643a56bf0387581de5ee81",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_go2/config/joint_names_go2_description.yaml",
+        "size_bytes": 235,
+        "sha256": "d44d6a367e458619d226973a108d704fde69f560678a56da8a9529f03dd4a662",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_go2/config/robot_control.yaml",
+        "size_bytes": 2287,
+        "sha256": "c9f800011ef2b676d06dae36127314622279ead7df3e2024ead4c69ceb3f8cf5",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_go2/dae/base.dae",
+        "size_bytes": 10727399,
+        "sha256": "e52bebbb5c7ff1f6aedee620c9b5b349f6e965360ecc63a9bb743eeff2d0be64",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_go2/dae/calf.dae",
+        "size_bytes": 1125517,
+        "sha256": "29872fa1a435b92bc2b395fdfa7f0aee26101db3c494681896bd4ef24ee7883c",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_go2/dae/calf_mirror.dae",
+        "size_bytes": 1125457,
+        "sha256": "79c66be7ed06760bd5001c067a1fb0ac517f639d8b1a5f89be471903b3f359e1",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_go2/dae/foot.dae",
+        "size_bytes": 506988,
+        "sha256": "ffbd95fd641866ce9bd277aa249b92dafc9148d70131fa2c52709a35ce5b710b",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_go2/dae/hip.dae",
+        "size_bytes": 4666421,
+        "sha256": "8735e10617afe252cef0844c1d139d15bc6d4c653660d742fea9fe05c2704d8f",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_go2/dae/thigh.dae",
+        "size_bytes": 3884136,
+        "sha256": "a622381ae308897ff143b8bbf02f075457c342b22984205040424a5a983246fa",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_go2/dae/thigh_mirror.dae",
+        "size_bytes": 3896575,
+        "sha256": "c7bae0b0565c2aa4b7cc15a538d795e9153e0f10c821cc18429e92693172bdc6",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_go2/launch/check_joint.rviz",
+        "size_bytes": 7200,
+        "sha256": "8c7683b7629d09c6f11a72f74478a4fcf79c90f490fdcb37ca3a7e4ae8bf53f9",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_go2/launch/gazebo.launch",
+        "size_bytes": 554,
+        "sha256": "bde8110f39066b0df5c8e24d663317d842cb90286db739f1e031bb92dbce4026",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_go2/launch/go2_rviz.launch",
+        "size_bytes": 807,
+        "sha256": "2ee85e5a812ec3222dae4701eb56368631ef200a22faedd01765f16a76eb4145",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_go2/meshes/base.dae",
+        "size_bytes": 10727399,
+        "sha256": "e52bebbb5c7ff1f6aedee620c9b5b349f6e965360ecc63a9bb743eeff2d0be64",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_go2/meshes/calf.dae",
+        "size_bytes": 1125517,
+        "sha256": "29872fa1a435b92bc2b395fdfa7f0aee26101db3c494681896bd4ef24ee7883c",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_go2/meshes/calf_mirror.dae",
+        "size_bytes": 1125457,
+        "sha256": "79c66be7ed06760bd5001c067a1fb0ac517f639d8b1a5f89be471903b3f359e1",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_go2/meshes/foot.dae",
+        "size_bytes": 506988,
+        "sha256": "ffbd95fd641866ce9bd277aa249b92dafc9148d70131fa2c52709a35ce5b710b",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_go2/meshes/hip.dae",
+        "size_bytes": 4666421,
+        "sha256": "8735e10617afe252cef0844c1d139d15bc6d4c653660d742fea9fe05c2704d8f",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_go2/meshes/thigh.dae",
+        "size_bytes": 3884136,
+        "sha256": "a622381ae308897ff143b8bbf02f075457c342b22984205040424a5a983246fa",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_go2/meshes/thigh_mirror.dae",
+        "size_bytes": 3896575,
+        "sha256": "c7bae0b0565c2aa4b7cc15a538d795e9153e0f10c821cc18429e92693172bdc6",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_go2/package.xml",
+        "size_bytes": 640,
+        "sha256": "fc1a4712aa4ce5b298b0f429752e4445e7e91e3e1fd4b582b6d0745309fe4b54",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_go2/urdf/Amended_collision_model.png",
+        "size_bytes": 218383,
+        "sha256": "4c2ce468f29313bd65a6109265f99b55b156f8dba8bf3f5c1b9afb0ad666cba6",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_go2/urdf/Normal_collision_model.png",
+        "size_bytes": 205117,
+        "sha256": "4aaa869842b28436e8cf73a7d9cf67eb4f0651808cae4407f8975f0f87434ec5",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_go2/urdf/go2_description.urdf",
+        "size_bytes": 27441,
+        "sha256": "7d19fe48e2e689ee1a032ab99f2a4a8b671d87e73de48d3e65811682a5b48b9e",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_go2/xacro/const.xacro",
+        "size_bytes": 7739,
+        "sha256": "c4f4a69c8ea1b5a5597beb344569e9a8105da81bea65029b303507d64035b071",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_go2/xacro/gazebo.xacro",
+        "size_bytes": 7504,
+        "sha256": "958454496b235413f6b8189b90ac5794b83b709a6cac2df6478be7d84d98f0d3",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_go2/xacro/leg.xacro",
+        "size_bytes": 12300,
+        "sha256": "c26f92bae9ac673dae37ad23247f426dce68cdc600e3295e5306914946d1775a",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_go2/xacro/materials.xacro",
+        "size_bytes": 865,
+        "sha256": "eb45dfe0751c08ee1e2cefafc08f0406fe9737036571e4dc1541fa31d7f753e1",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_go2/xacro/robot.xacro",
+        "size_bytes": 4667,
+        "sha256": "8cc8dfb8259ddda8a3ed515a51557ac0c8acebb954057349cee121eb11cfcf27",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_go2/xacro/transmission.xacro",
+        "size_bytes": 1719,
+        "sha256": "f4a0fc2c5df4414e214d4190a003f9da23c903daad454053447ebced8bc9b223",
+        "git_tracked": true,
+        "remote_main_tree": true
+      }
+    ],
+    "license": "BSD-3-Clause (per repo LICENSE)",
+    "factory_validation": "PASS"
+  },
+  {
+    "id": "blender.unitree_h1.v1",
+    "source": "assets/unitree_h1/",
+    "exists": true,
+    "file_count": 111,
+    "files": [
+      {
+        "path": "assets/unitree_h1/CMakeLists.txt",
+        "size_bytes": 292,
+        "sha256": "c72a35e84f9d8eeb6adcbb192907b66ffe877db0598399371cf34d08b763d5fb",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/LICENSE",
+        "size_bytes": 1558,
+        "sha256": "84aac59fd3246e3ddc49d1387644e8fcf43b0def4f0b9fe687f372e90446df2d",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/README.md",
+        "size_bytes": 787,
+        "sha256": "7868b3616d8d34cc773cd9f1e52e80547ab9145d33a344a0129839ecb5b4351e",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/doc/H1.png",
+        "size_bytes": 863206,
+        "sha256": "b493ace9c9087cc4beb9b1d74b21f7439fa12803fb5bf9d358025b2c6755ace4",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/launch/check_joint.rviz",
+        "size_bytes": 7254,
+        "sha256": "c16dd634bc18d0ca473ed82d21a14fc910f48f32c39813bf4c1402c6741781b5",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/launch/display.launch",
+        "size_bytes": 517,
+        "sha256": "4a37c17b148dd196fb59cdab1bb15b483fcb545f9ee25acf143e866d2e665625",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/launch/gazebo.launch",
+        "size_bytes": 336,
+        "sha256": "bfefc2b06c94b0e4aece1dd9a5058aa2d7c7cfc168fba65d50edc8000a74d8c3",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/L_hand_base_link.STL",
+        "size_bytes": 1448084,
+        "sha256": "33ab4e97801bd5421903a78f5977a44e477ae8653eaf32358d35633e465411e0",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/L_hand_base_link.dae",
+        "size_bytes": 2299524,
+        "sha256": "b9a86e815797d4e231d9845957bfdbdcfe6b0e80d76a98d0b8afa80a403fd0f6",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/Link11_L.STL",
+        "size_bytes": 46584,
+        "sha256": "d87cb704d80de840555d0a393117d32f9bd5e91425e0458363e0a799aa4e5339",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/Link11_L.dae",
+        "size_bytes": 67766,
+        "sha256": "6f1e5240d9f533e55b908dc360242a27461dcfa3a46c8c782c096fef8da897c4",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/Link11_R.STL",
+        "size_bytes": 46884,
+        "sha256": "b49b6463f801f0402bac9c65bb989c4097f6d2c1fa1597ba560aedd640561778",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/Link11_R.dae",
+        "size_bytes": 67769,
+        "sha256": "632803c777fd87bcc830fcc4fa2f331fb475a225e37a2fe784cb6ef4db399da9",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/Link12_L.STL",
+        "size_bytes": 917284,
+        "sha256": "9f35b78a9cab1007ac8b73023a5862ed055d33951b5742f9a783997d38e99551",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/Link12_L.dae",
+        "size_bytes": 1699178,
+        "sha256": "994d1d45f4b1900d9b25b67553016797b3a52ac764bcf192ae8d87f2625e60f5",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/Link12_R.STL",
+        "size_bytes": 921984,
+        "sha256": "347212bdb22d80fb364dd889de934d6fbb935e38d1f24c682caed84f7b6ea8cb",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/Link12_R.dae",
+        "size_bytes": 1703271,
+        "sha256": "7a207d35e8ce4daffd5d8c053fa5ad62ab2cefc1e55d2307ec45adc9a7fc0234",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/Link13_L.STL",
+        "size_bytes": 488584,
+        "sha256": "7e93b55f2ae73fe0f62cd27e81d8a4620211068cb1c9b25e6414e802a37541ee",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/Link13_L.dae",
+        "size_bytes": 899508,
+        "sha256": "d845d855fbfafc3fee309e64ed4022a93d805e4d1fd14a813ad7ce29c4adc838",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/Link13_R.STL",
+        "size_bytes": 483284,
+        "sha256": "c157dfe5b666efb1c3d51342e56f5caad2fc350930ac21ee1e02d956c1034ca3",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/Link13_R.dae",
+        "size_bytes": 897353,
+        "sha256": "f13da55f7af316e2ec6c0f9023c730bbd326d5f1b2761cd5f21ef091d49301a4",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/Link14_L.STL",
+        "size_bytes": 155184,
+        "sha256": "b677bcdcddcd90ff4b005f83daa9e50eb4003d5e67ea4eeefbf857718716c164",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/Link14_L.dae",
+        "size_bytes": 241569,
+        "sha256": "0dad5198cccf03192e611471dff61859446da2d75cd343c5343881e7517910ca",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/Link14_R.STL",
+        "size_bytes": 155584,
+        "sha256": "564aa8c3d2ff0e51b75736a8b01b4c309c7098582a424ea1391ccb75125519d8",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/Link14_R.dae",
+        "size_bytes": 240606,
+        "sha256": "d64b5e3dd4abd8d0df38984c36fc40dfcdced2131b9708d306beb5a95d5d5726",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/Link15_L.STL",
+        "size_bytes": 407184,
+        "sha256": "8c601e7aa8e1c91310a75190dfb6b95a8dc981b707e5f104f9ca9ecbea118b34",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/Link15_L.dae",
+        "size_bytes": 718335,
+        "sha256": "8e538775660ce176dda1f4eec051e9c05e464282e34db320646f21d46fca68a2",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/Link15_R.STL",
+        "size_bytes": 411884,
+        "sha256": "09c120f7fb7761aa97d89240cd8cb8e30c40ee60093cbb8b1c2e13a68a8e3845",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/Link15_R.dae",
+        "size_bytes": 727008,
+        "sha256": "3b01c7596b9d40ec16aacb4c4ea3f411ac2cbf41f367f35c5e6a7820caed717f",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/Link16_L.STL",
+        "size_bytes": 329384,
+        "sha256": "7d8508c65db44e2349f37e8ab4c057d204a40093d4733897ae5b51075b00f5e9",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/Link16_L.dae",
+        "size_bytes": 607752,
+        "sha256": "2ea4dc7d6d652c24121b821feef326c02b9cf217cc79959b43ef80b31ea52704",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/Link16_R.STL",
+        "size_bytes": 335484,
+        "sha256": "6942ada1189cdf442124c6b8935f3e3a3ae310092a3a1414fdeb0bd6d23578bb",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/Link16_R.dae",
+        "size_bytes": 620595,
+        "sha256": "cf87d701bad8644a3a625991d6359ca3f75b3753e20591582c3dfdef49d9d775",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/Link17_L.STL",
+        "size_bytes": 407184,
+        "sha256": "ca2a68fed635eca290b234fbdc649779036ba5bac753addcb7ce6a086ad95949",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/Link17_L.dae",
+        "size_bytes": 718460,
+        "sha256": "c4ce49aeb921a3b8ecfd84ca52be3e537d4de34d076ed21e02e02a04c8cf80c7",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/Link17_R.STL",
+        "size_bytes": 411884,
+        "sha256": "36fc62c609800ce6d4521ae6f3c4c9b8a732be28654f32f04893696c17e6930c",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/Link17_R.dae",
+        "size_bytes": 727434,
+        "sha256": "966efdfff156534161960e7aafd7cc902d2be0258df3030310bae99e9aeac3a2",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/Link18_L.STL",
+        "size_bytes": 182684,
+        "sha256": "9425aea7ebbf6d1dfb2eb0714fb44dfaea6b6a81c71d6e96c8d3950f636dfa62",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/Link18_L.dae",
+        "size_bytes": 297192,
+        "sha256": "8ea4eec39dc8edc66edca7f0b61e91c8224c9ebc6682140a99bd27a7e21b6b85",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/Link18_R.STL",
+        "size_bytes": 182984,
+        "sha256": "9711fac7df0c09a372e1529f74b9d506d37abf3ebc3241d976ad45e5ee7e2d69",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/Link18_R.dae",
+        "size_bytes": 294154,
+        "sha256": "639eb062eca64965900d2a87295a7233d84f89f7b1546da61547bb1f1e2b0727",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/Link19_L.STL",
+        "size_bytes": 407184,
+        "sha256": "cbb256a70c17e21c995df66807f0755dc136d0312df245112d6d4bfcd29c43a4",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/Link19_L.dae",
+        "size_bytes": 718632,
+        "sha256": "133fcf44c2fe80bbdc9251564319b8ec4c879071e5f4a7767c9c679d177c3ae8",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/Link19_R.STL",
+        "size_bytes": 411884,
+        "sha256": "46619bd6a887615d7dfe850d39a6f5d8f8c5ecfa9429c567338f3a659a5d4d75",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/Link19_R.dae",
+        "size_bytes": 727486,
+        "sha256": "1d479e3c6afa82ecb69844aee16663d7efffd067ebd008364c7fad9c6b67871e",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/Link20_L.STL",
+        "size_bytes": 329484,
+        "sha256": "e9145af7a515bce4c1c06d16b5be8900ec3f8375fc8e34d371315ce76f600877",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/Link20_L.dae",
+        "size_bytes": 606154,
+        "sha256": "5e6661ad5a866220e9fb6a27d91f9d6b3dd71777f9bb94b9577f6745860027c8",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/Link20_R.STL",
+        "size_bytes": 334784,
+        "sha256": "a517debff6b924c22ae0f87dbb6aac199a1f130c7fef353a7d659e365f30b1f4",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/Link20_R.dae",
+        "size_bytes": 618979,
+        "sha256": "5d3dcfca518d22648287bab8b2b7b2fc4b1322d54bbd6a316df020a1e1542234",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/Link21_L.STL",
+        "size_bytes": 407184,
+        "sha256": "180ab4ac01dab60407d0b33819883eb0ec869e4d4f349f786972135c7114fc0d",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/Link21_L.dae",
+        "size_bytes": 718241,
+        "sha256": "59280fa877b8ddca4e6f44d528b869588aa8cb130c67f20f40200c239d745427",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/Link21_R.STL",
+        "size_bytes": 411884,
+        "sha256": "ed0a29d2376e8874f724bc2c20384eeec93d8268e59bb8c45628335f7ab6742e",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/Link21_R.dae",
+        "size_bytes": 727453,
+        "sha256": "d530c1b6620dc67d916b92cafa93b6dc9ad418badcf4fa50ead6bcef25c0cc88",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/Link22_L.STL",
+        "size_bytes": 413384,
+        "sha256": "5e64ea976ecf08c46e8cb80a5dd56ee3e8c5f36a0573ab3c69160d9337f941e1",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/Link22_L.dae",
+        "size_bytes": 809469,
+        "sha256": "88f5113ee5f76f546aaf8bea202fcb8e5ddb4bbd004c2dbb4be04743303f2840",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/Link22_R.STL",
+        "size_bytes": 416484,
+        "sha256": "1aa3fb46f689251ee38f5262b71364c680f70d1ad1dd9c6f1cae8c098b0e8422",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/Link22_R.dae",
+        "size_bytes": 818608,
+        "sha256": "b1687445cca2a406500f8a333d5b0515d53dde84420c1d90caefdaec16f52a1a",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/R_hand_base_link.STL",
+        "size_bytes": 1472384,
+        "sha256": "b4d84504242a99fa915c4ed5195ce4724c67cb94d9217cd4c254cfb5937ecf5c",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/R_hand_base_link.dae",
+        "size_bytes": 2328822,
+        "sha256": "57ed7af9f4f32d673c525e5ac782dbee4193e4a377a62ba47be0e4ae775c328b",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/left_ankle_link.STL",
+        "size_bytes": 439484,
+        "sha256": "4af30aca229a4465b2249d298ebd67d5859a2eeade8c2015035e9c0deb06a33a",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/left_ankle_link.dae",
+        "size_bytes": 704092,
+        "sha256": "bdb08beab9d61f1a0429b69da1c7e74dacb9412179373dcede331ec225321c6c",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/left_elbow_link.STL",
+        "size_bytes": 1250184,
+        "sha256": "99cfbf0c4db7d96f002886f1cf556d900a73060dbcf02806c0ab414341168035",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/left_elbow_link.dae",
+        "size_bytes": 5377248,
+        "sha256": "355a8d23dd79420a043b0f35f44202ac10b4ad26b42b44e7c26f1fec771ef8a5",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/left_hand_link.STL",
+        "size_bytes": 147684,
+        "sha256": "8bdf9e424ffcad03646a354fe5a4a08515e523c081070afabcadc9f5f03132e1",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/left_hand_link.dae",
+        "size_bytes": 199480,
+        "sha256": "92cbdfc08b727decdc8347075ef648e278b258b7c1ae9d707942967f6a9adee4",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/left_hip_pitch_link.STL",
+        "size_bytes": 452384,
+        "sha256": "aa790c31ffc100cd182f2bf4480e7bfda675edc58ed8f361b6553a4975c9de3b",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/left_hip_pitch_link.dae",
+        "size_bytes": 749254,
+        "sha256": "5c8d8ad83b319b09850e45728fb490d123659c9bb093bcb1c2a54b10f392857b",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/left_hip_roll_link.STL",
+        "size_bytes": 769284,
+        "sha256": "8ed880cf1171e048cfe50489fe2546c32790ac0c24a2b3b4c560495401013552",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/left_hip_roll_link.dae",
+        "size_bytes": 1325852,
+        "sha256": "999009172519dfc05d7d09685991e8f435a2af6adcbc33b5fdd43f65d838dc5c",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/left_hip_yaw_link.STL",
+        "size_bytes": 885884,
+        "sha256": "103a854e684b84e1baba7d073822079069c64d0fa7b1592f29d38bd29f545bfb",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/left_hip_yaw_link.dae",
+        "size_bytes": 1450207,
+        "sha256": "c5e144dc68175d9961919780341b1b6548579f1117ef2003418b84a29b6ed044",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/left_knee_link.STL",
+        "size_bytes": 660384,
+        "sha256": "efda8a6c54406c788102c0d6e59ea95e24114607bc2da9a2bf7f287ef7e48109",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/left_knee_link.dae",
+        "size_bytes": 1028319,
+        "sha256": "7a02155f61f41e8035225536c6daa61d80e71e7c5ce7db54a929fb8e47ea8937",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/left_shoulder_pitch_link.STL",
+        "size_bytes": 787484,
+        "sha256": "42e1db49464ca0f44f933114ee426e7f6d6310d20cf104bfa38b5ed4794cfab7",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/left_shoulder_pitch_link.dae",
+        "size_bytes": 1198488,
+        "sha256": "56a719b18566057814444d6b1033f0119e771f727d6a0eccaae3bc9a48657677",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/left_shoulder_roll_link.STL",
+        "size_bytes": 903384,
+        "sha256": "8d3bcf767d72a9a5d7dae539eae79dc4132f0159b8803a6f6f2f9ad4b7e94d19",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/left_shoulder_roll_link.dae",
+        "size_bytes": 1527461,
+        "sha256": "1118a6b55c49a3709e300f29bb7a916701176cf63d3a09027b82335fd75dee40",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/left_shoulder_yaw_link.STL",
+        "size_bytes": 644184,
+        "sha256": "e22a5b53f8f307e6c5d6c17f9ceae4852c6468547a951cb39dfdec9ee414b515",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/left_shoulder_yaw_link.dae",
+        "size_bytes": 1082813,
+        "sha256": "548088b55ffc970fd740206f2397981e713d29becd828faf7c4a24d631c1c00b",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/logo_link.STL",
+        "size_bytes": 145484,
+        "sha256": "ef9635c847ca7cd61aeaed86ad599935b648fb6f8688867c0448917b1811511b",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/logo_link.dae",
+        "size_bytes": 164544,
+        "sha256": "2d76c1caa26ec6b285f7379a8c6ad509ba192506787582babc5e24261ff50051",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/pelvis.STL",
+        "size_bytes": 672884,
+        "sha256": "dc2cbbeb07d3b63bce9fedeb8cf5252609dca1e89380734d22d5b3c8ded2f15c",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/pelvis.dae",
+        "size_bytes": 1075995,
+        "sha256": "24e36ede8a5aaac28e3acacbb2f81fe75111d6b6a295584808fb482fdddda16e",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/right_ankle_link.STL",
+        "size_bytes": 439484,
+        "sha256": "4af30aca229a4465b2249d298ebd67d5859a2eeade8c2015035e9c0deb06a33a",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/right_ankle_link.dae",
+        "size_bytes": 704160,
+        "sha256": "5100c69c38ec5ebc46c621de8d39355b28a66b753f4b4ee73ae62e7d5e92f946",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/right_elbow_link.STL",
+        "size_bytes": 2454684,
+        "sha256": "eaa6ae2d1b396ba9630382fdd98a9454c5bd338c13047748c8a8484dce77d29b",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/right_elbow_link.dae",
+        "size_bytes": 5345608,
+        "sha256": "0ea5ad32e3c94b5b36f891dd5828f2670d6d8bc8be3f42c051713ed1b916cca6",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/right_hand_link.STL",
+        "size_bytes": 147684,
+        "sha256": "8bdf9e424ffcad03646a354fe5a4a08515e523c081070afabcadc9f5f03132e1",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/right_hand_link.dae",
+        "size_bytes": 199496,
+        "sha256": "836372bb748c1d03535d11003c6734b05bbd3c3ba08b9523f318ff1e336f9617",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/right_hip_pitch_link.STL",
+        "size_bytes": 452384,
+        "sha256": "3c0300dd96432f218857886007e9d4e8be038cd8b85e04e84a59df4de7f90476",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/right_hip_pitch_link.dae",
+        "size_bytes": 747803,
+        "sha256": "660e96a05034950b7cd5626b7f28672d248125af529290819016a868326a0773",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/right_hip_roll_link.STL",
+        "size_bytes": 768484,
+        "sha256": "3e95b01b0a215e1d134545d4073cf7a72ab38ca33e35c606c03f1706d63588c6",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/right_hip_roll_link.dae",
+        "size_bytes": 1322626,
+        "sha256": "d066c2739a101fd6a53a23efa616ed7e2daeddbd930dfcd881d48ae23d3423aa",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/right_hip_yaw_link.STL",
+        "size_bytes": 884484,
+        "sha256": "10badbb0ac78e22fc220f421b1c919cfcf59406b412d78313e4b8b06cbc51e47",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/right_hip_yaw_link.dae",
+        "size_bytes": 1450359,
+        "sha256": "e42d6d6f2f5a56ed000911f80b9247ea06831df369cc6d73da8df3312fdc603b",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/right_knee_link.STL",
+        "size_bytes": 662184,
+        "sha256": "6183abbaef2afc775c220853e403b8479022a99954dbeef829b39d71916ddeda",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/right_knee_link.dae",
+        "size_bytes": 1025959,
+        "sha256": "28ff31d116446c5701997663ba0408adba2fe534cf821f78c404ed0b606edf95",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/right_shoulder_pitch_link.STL",
+        "size_bytes": 788484,
+        "sha256": "850ffa7321993bfadcdb8bab1d422239f6a20abe27daa5ef99622f55d4da3217",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/right_shoulder_pitch_link.dae",
+        "size_bytes": 1210171,
+        "sha256": "eeed4760e9c31508c2f1baf80ae0fff744779d02c50474b9436085f1ef011594",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/right_shoulder_roll_link.STL",
+        "size_bytes": 908284,
+        "sha256": "b9e793e351e09027d27427c06df2c1cb6b37c0205d0f68686b0d73916c6821de",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/right_shoulder_roll_link.dae",
+        "size_bytes": 1542614,
+        "sha256": "55db5e6b5706be812882d57acb3c2715762dc4ec176cffa423a2047938c3fff6",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/right_shoulder_yaw_link.STL",
+        "size_bytes": 646884,
+        "sha256": "0c9e4bec895f24c07fb2c4d132fc5e3cc7146155547267e9c270789af6567781",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/right_shoulder_yaw_link.dae",
+        "size_bytes": 1090850,
+        "sha256": "4ec994f05d7e1d9696225b09d9472b4900423d5257ec166584ea43f535c44470",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/torso_link.STL",
+        "size_bytes": 1673634,
+        "sha256": "f43fc0753a4898f2a0418ee80f4a3806d88cffdc587aa600e2e68a8207b0cd4d",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/meshes/torso_link.dae",
+        "size_bytes": 3000859,
+        "sha256": "6b1e6762d2e6c53dd3331dd4bccacaeda4b402d2d14000d27a77bfe23283dbb2",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/mjcf/h1.xml",
+        "size_bytes": 13332,
+        "sha256": "e9a846f44874ac5a0f4f9f2623e39a421e12102d2b4a47ff39733ebd7ececa2b",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/mjcf/h1_with_hand.xml",
+        "size_bytes": 35855,
+        "sha256": "fc13661e828ac49ab7032f358b38e77de8dd48a72910aeb1f5913da25dd858fd",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/mjcf/scene.xml",
+        "size_bytes": 865,
+        "sha256": "eab3d69e374039679f00efac88386e2d10bb3fd27319305bb011bd30788423a6",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/package.xml",
+        "size_bytes": 470,
+        "sha256": "623794a21ba9fcd4495fe21725ccc9347494c20f82e18ac3018828bc88221c2f",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/urdf/h1.urdf",
+        "size_bytes": 23317,
+        "sha256": "ebd495cba7887406c406b8441a5e2dd712f8da91dcb60e7b099cbfa3adf2efa5",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/unitree_h1/urdf/h1_with_hand.urdf",
+        "size_bytes": 62624,
+        "sha256": "b0d9dd3adfe2e8f490388807fdf1adf5ad9cf3f66d96e8cf7b0934df322ef1ee",
+        "git_tracked": true,
+        "remote_main_tree": true
+      }
+    ],
+    "license": "BSD-3-Clause (per repo LICENSE)",
+    "factory_validation": "PASS"
+  },
+  {
+    "id": "blender.rotors_firefly.v1",
+    "source": "assets/rotors_firefly/",
+    "exists": true,
+    "file_count": 45,
+    "files": [
+      {
+        "path": "assets/rotors_firefly/CHANGELOG.rst",
+        "size_bytes": 8239,
+        "sha256": "00d42a98e161e6ffc1ae7396ea6bb3ce37ff70c2d698f9466d29d0ab2c4629f0",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/rotors_firefly/CMakeLists.txt",
+        "size_bytes": 336,
+        "sha256": "321f2597d5f59d16eead6bfcaad6e93cd24af4734db130baed1f191234d8b5ea",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/rotors_firefly/README.md",
+        "size_bytes": 895,
+        "sha256": "e1fa8bae1f76333256424e219d38cfc0d2985348a2c516d7936070d9e9c415c2",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/rotors_firefly/launch/xacrodisplay_pelican_base.launch",
+        "size_bytes": 437,
+        "sha256": "ee6753ae018068537448cc4508b7b7c55e95cff110edd7a44cfefc4d72637fe6",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/rotors_firefly/launch/xacrodisplay_techpod.launch",
+        "size_bytes": 601,
+        "sha256": "4bea1995342709a36d42d966cb71d1f9379681bfbde0f7df013394011908d4b6",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/rotors_firefly/meshes/firefly.dae",
+        "size_bytes": 6068188,
+        "sha256": "b8a57f2114c35d786a00efc59d85db9b1541e4504ed280cd3b2e8b021efa43e4",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/rotors_firefly/meshes/propeller_ccw.dae",
+        "size_bytes": 22480,
+        "sha256": "3d8d39737cf6df9dfaa1cf7b05be4bac396001f53dcdb1c6af1a72cc925bf52c",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/rotors_firefly/meshes/propeller_cw.dae",
+        "size_bytes": 15494,
+        "sha256": "09994038cb7fe9e8f719e9944bddd084979ddb84cb8dfc7e1dbfef2e88355e0a",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/rotors_firefly/package.xml",
+        "size_bytes": 748,
+        "sha256": "98e93ed13644fa2b72b62ed4c7bfc81a9883fb5f99a87bb254ce7a01a9901826",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/rotors_firefly/rviz/techpod_model_view.rviz",
+        "size_bytes": 5519,
+        "sha256": "40356a7bafd2f391b4b4818158969c56a4b031ba369699258c90a8d5baf564d9",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/rotors_firefly/urdf/ardrone.xacro",
+        "size_bytes": 5669,
+        "sha256": "893cfe03223c20e90d7f10a2b161e53c61feabe36b4ba3b6580dcee862d10977",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/rotors_firefly/urdf/ardrone_base.xacro",
+        "size_bytes": 1245,
+        "sha256": "4937509b7478718997a8d3753ef3b915ed44aefed0f475e84e4d376a053ca6ba",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/rotors_firefly/urdf/asymmetric_quadrotor.xacro",
+        "size_bytes": 9294,
+        "sha256": "5dd5289d7c29d44e0abc21e303c5bf281be559fc8efe5a3dd201a881d129ee8b",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/rotors_firefly/urdf/asymmetric_quadrotor_base.xacro",
+        "size_bytes": 2136,
+        "sha256": "70061dafbd5941920b49e3c1c49f5263fa6183817a734791a6145835e7a8683e",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/rotors_firefly/urdf/asymmetric_quadrotor_two_cameras.gazebo",
+        "size_bytes": 3731,
+        "sha256": "00296cadb9fb1a7ff8f7aeff4ae122d46ce82fabd373fb0617388ac344a51993",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/rotors_firefly/urdf/component_snippets.xacro",
+        "size_bytes": 44420,
+        "sha256": "a56ee445f1dcd2b11682bcb2c2871708538abbb5bcb733e64b5e148432ab3bd0",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/rotors_firefly/urdf/firefly.xacro",
+        "size_bytes": 7946,
+        "sha256": "90951ba87ee70dc094061f6f9bfb45c3d6da7037f4729d76df3bac142c15d8b3",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/rotors_firefly/urdf/firefly_base.xacro",
+        "size_bytes": 2221,
+        "sha256": "3312687505176e66a4407a968a77844dda5ccaf42314fd5b29dc16b45b26e8d2",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/rotors_firefly/urdf/firefly_generic_pose_sensor.gazebo",
+        "size_bytes": 2369,
+        "sha256": "9a7d0db0247cb70d04cb756395b6b72353fde86e01501892fc5c375b37338842",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/rotors_firefly/urdf/firefly_two_generic_pose_sensors.gazebo",
+        "size_bytes": 3766,
+        "sha256": "9851b3f4c9a9f42856c6fcac2faeace52c9aee7f9c8a5acfcb1975c57847d2f7",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/rotors_firefly/urdf/fixed_wing_base.xacro",
+        "size_bytes": 6634,
+        "sha256": "781baebd6019c7cf89afd23e757ca52244abc129e99035188284896c77847261",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/rotors_firefly/urdf/hummingbird.xacro",
+        "size_bytes": 6326,
+        "sha256": "bdab7cb7271f09da79794230d6a93327cea2706f44811382cdc2aa63697fd600",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/rotors_firefly/urdf/hummingbird_base.xacro",
+        "size_bytes": 2110,
+        "sha256": "cc1ac456daee1a0b4db4663e1675d8d82b3ab58810ea23faee3ccefc8470ac96",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/rotors_firefly/urdf/iris.xacro",
+        "size_bytes": 5883,
+        "sha256": "dd7317732a9e14fe9d74f8b2406ec81cfaf06360077cc80f3a17bba1ac77061b",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/rotors_firefly/urdf/iris_base.xacro",
+        "size_bytes": 1236,
+        "sha256": "ef1ed96639584774cf3ff7c3d0057c2eb7436b83986d4623097c115c5054afac",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/rotors_firefly/urdf/mav_generic_odometry_sensor.gazebo",
+        "size_bytes": 2358,
+        "sha256": "ce2db7ac87341f72c20f54990b8bd54a6dabe1f40220c494b66ed170c3a8b103",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/rotors_firefly/urdf/mav_with_vi_sensor.gazebo",
+        "size_bytes": 1439,
+        "sha256": "115aaa876848ac369ecd40dbdc0f49d5eb8c9576af667520332cb1fe0a691c4f",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/rotors_firefly/urdf/mav_with_wind_gust.gazebo",
+        "size_bytes": 1474,
+        "sha256": "484740e12d413a5387995360b774212692520d8214975cd944595bf5a38bf7d5",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/rotors_firefly/urdf/multirotor_base.xacro",
+        "size_bytes": 6328,
+        "sha256": "b61318014263fa4d51752f7e426351e3227c7924b3375fbf79069db6448bfdbc",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/rotors_firefly/urdf/neo11.xacro",
+        "size_bytes": 8831,
+        "sha256": "2ccb41ead8e9ec516b209114dd1d24108a00ad73967a82718024e92205e20c4b",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/rotors_firefly/urdf/neo11_base.xacro",
+        "size_bytes": 1815,
+        "sha256": "66aa5a9b3f0835a41aaada7e873db375587b9d5903ceafb277ffd5de5573c6e3",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/rotors_firefly/urdf/neo11_vi_sensor.gazebo",
+        "size_bytes": 2051,
+        "sha256": "5d79354c643fe076ae6fce97f13f25acd283dca3b87952dec44a88e09edb1792",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/rotors_firefly/urdf/neo9.xacro",
+        "size_bytes": 8809,
+        "sha256": "c3b3d7a86996820603fb394a7cf6e9ac3f53b7d680436f87a9cc733f9b270728",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/rotors_firefly/urdf/neo9_base.xacro",
+        "size_bytes": 1812,
+        "sha256": "9dce3c134f38c1d41189f2490e35bb194c745ab21563b0bca816e32ab80caa00",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/rotors_firefly/urdf/neo9_vi_sensor.gazebo",
+        "size_bytes": 2048,
+        "sha256": "55446e7825951bb5d916ae100d42154dcfc4b907234f78a23595c746e7fdbdfa",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/rotors_firefly/urdf/omav.xacro",
+        "size_bytes": 17736,
+        "sha256": "ec4a3d54859ace88712461c86658bab9524b2bfb896bed83a4c462317e02d8c7",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/rotors_firefly/urdf/omav_base.xacro",
+        "size_bytes": 1903,
+        "sha256": "6f8bfff85ded418e196407c77858a91905380cd46a675aec2c3db51079de2d5e",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/rotors_firefly/urdf/overactuated_base.xacro",
+        "size_bytes": 13785,
+        "sha256": "3e66f1049071e5448dcf397c6c922480bbdc4e55531d7d9ed8a2ac2e83b2c411",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/rotors_firefly/urdf/pelican.xacro",
+        "size_bytes": 6280,
+        "sha256": "7b9fdbf3e3f59dc05d1c1c4bd88a77b35aa20f74e9e79954f9c02bd433cbe683",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/rotors_firefly/urdf/pelican_base.xacro",
+        "size_bytes": 2098,
+        "sha256": "367cbb05bf0a5a53adfda0ff435277b81050e267b0f64dfde5d9ff3873cbe79d",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/rotors_firefly/urdf/pmd_monstar.xacro",
+        "size_bytes": 6073,
+        "sha256": "9c6a63fa24048cc51f2e6672e38987dfc9b24a256fd1ce863cb05daa7be37382",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/rotors_firefly/urdf/rgbd_base.xacro",
+        "size_bytes": 5771,
+        "sha256": "dc670b52b2f054311d61d4015481fd5a43f0392bdcf53bddf3f16aff387c9dca",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/rotors_firefly/urdf/techpod.xacro",
+        "size_bytes": 11594,
+        "sha256": "cfb843994e4aca5307d955b37ceeb4cbbebbb4f2146cf019f7cc8e847378fc4d",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/rotors_firefly/urdf/techpod_base.xacro",
+        "size_bytes": 1900,
+        "sha256": "119febddbf655b4ba0ecfa19a9171b79407d7a69366ad366fb0f3412f2596971",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/rotors_firefly/urdf/vi_sensor_base.xacro",
+        "size_bytes": 1051,
+        "sha256": "af851decb9de2929b4e96a5ea9d428afd26d57fcbab7c690afcce9c4a2e6b7b7",
+        "git_tracked": true,
+        "remote_main_tree": true
+      }
+    ],
+    "license": "Apache-2.0 (per rotors_description/package.xml)",
+    "factory_validation": "PASS"
+  },
+  {
+    "id": "blender.px4_iris.v1",
+    "source": "assets/px4_iris/",
+    "exists": true,
+    "file_count": 6,
+    "files": [
+      {
+        "path": "assets/px4_iris/README.md",
+        "size_bytes": 783,
+        "sha256": "306727bc9379e6ff400ffe3bd4b1ed85826c67f4fa11a903b34474227cc8c502",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/px4_iris/iris.sdf.jinja",
+        "size_bytes": 18811,
+        "sha256": "16d8339663a0da8c956b3c31cc3f3696572054ef46a41331f5ac785d2808c943",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/px4_iris/meshes/iris.stl",
+        "size_bytes": 3999884,
+        "sha256": "11a9a1453723182f812e4ca0def829b18272a0dfc1145d2c3e28f8c6210cea7b",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/px4_iris/meshes/iris_prop_ccw.dae",
+        "size_bytes": 308284,
+        "sha256": "5f8b01668ee24a5b663ca8c4dd56e294fd6480db7eec1e5a7c11e45ba9004e99",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/px4_iris/meshes/iris_prop_cw.dae",
+        "size_bytes": 354209,
+        "sha256": "6cbc686772dccd46253fb65ece000e7ffa6a74b9c097bda349884bd1e78cd879",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/px4_iris/model.config",
+        "size_bytes": 400,
+        "sha256": "fc6a6787ae91b01968720225df947649019023c1f1f1f0a9462f2c3de20c7ebc",
+        "git_tracked": true,
+        "remote_main_tree": true
+      }
+    ],
+    "license": "BSD (per repo package.xml, no LICENSE file present)",
+    "factory_validation": "PASS"
+  },
+  {
+    "id": "blender.crazyflie.v1",
+    "source": "assets/crazyflie/",
+    "exists": true,
+    "file_count": 13,
+    "files": [
+      {
+        "path": "assets/crazyflie/CMakeLists.txt",
+        "size_bytes": 5258,
+        "sha256": "90b7c63ec8f2171b39a97b07796055939a13a6fe25fefc9ee2c27234af19d815",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/crazyflie/LICENSE",
+        "size_bytes": 1075,
+        "sha256": "e66f2997bfc20794c9e0d6d58e902699398a7e6a13f31e932a69b8f87efa33eb",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/crazyflie/README.md",
+        "size_bytes": 756,
+        "sha256": "76c669204d3123ddcac59c3e03c0930c86cf248c8f3158ddb91a060a0daa8300",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/crazyflie/export.png",
+        "size_bytes": 16257,
+        "sha256": "20ef63cf3a4327ea55354ed58941d9694c7aa2af267cf7ac0d1806ea6a8019d2",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/crazyflie/launch/crazyflie.rviz",
+        "size_bytes": 4315,
+        "sha256": "4b533492001b1e2559e9025780177d7fcc7f5142489a1e1afa8fffd8a2386a5f",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/crazyflie/launch/crazyflie2_rviz.launch",
+        "size_bytes": 481,
+        "sha256": "0a1ceb30de3c841644e5ef0621be6a6332c95c2b245446f3d06a6f4387695413",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/crazyflie/launch/crazyflie_rviz.launch",
+        "size_bytes": 480,
+        "sha256": "0a8527076be9d3f879b0e0ecd9e3e86b6a9ff27038d7668a59a9d0f97c91dc8a",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/crazyflie/meshes/crazyflie.dae",
+        "size_bytes": 592315,
+        "sha256": "c9f63a255c832fa61a1461d65d93e4680edb7dae177875af759cff6a51c9fd7b",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/crazyflie/meshes/crazyflie.skp",
+        "size_bytes": 286654,
+        "sha256": "8b38a3111d54dd9f5d8364345dfc628b4baab7baa53a3eb5b0a1fa74fc582c74",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/crazyflie/meshes/crazyflie2.dae",
+        "size_bytes": 529734,
+        "sha256": "8db98d6393bbf672f01a8d3af6ff5ac42b9e85f6ee3e3e2d2c53801e823b3a35",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/crazyflie/package.xml",
+        "size_bytes": 535,
+        "sha256": "9187c0c71c7396ea49a7ddf73317a6ca58fef9bee5b7a917dfdeb31fb9c2ed7d",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/crazyflie/urdf/crazyflie.urdf.xacro",
+        "size_bytes": 587,
+        "sha256": "eacbb5bb5d7cca73ff09ee81f2229fe3de9df3d32fdb9962f47b0828dbaf3d2a",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/crazyflie/urdf/crazyflie2.urdf.xacro",
+        "size_bytes": 850,
+        "sha256": "bb27cc25d42cbc2b54630cb1f6ea3b2960a66b3524c7d8360c162c072aaa3a66",
+        "git_tracked": true,
+        "remote_main_tree": true
+      }
+    ],
+    "license": "per repo LICENSE",
+    "factory_validation": "PASS"
+  },
+  {
+    "id": "blender.ur5e.v1",
+    "source": "assets/ur5e/",
+    "exists": true,
+    "file_count": 21,
+    "files": [
+      {
+        "path": "assets/ur5e/LICENSE",
+        "size_bytes": 1459,
+        "sha256": "143077f9f6a8de5a99f78c2c2472801fb53cf240277ef661642f079b9acdfff8",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/ur5e/README.md",
+        "size_bytes": 812,
+        "sha256": "9b7078adab43131a0d2bb2e5c31a7a7f8db68513bbd96e04ac88f1851c5a03e4",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/ur5e/meshes/ur5e/collision/base.stl",
+        "size_bytes": 21084,
+        "sha256": "9a145e0d46f2130afdf2a2e8825a00a929870c4c3d6d8e4d1adc5f04db3aac1b",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/ur5e/meshes/ur5e/collision/forearm.stl",
+        "size_bytes": 53284,
+        "sha256": "2e7423cab807c34160ec4f770daee5e747d70e777eb01b7beeace2b8c5751816",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/ur5e/meshes/ur5e/collision/shoulder.stl",
+        "size_bytes": 70084,
+        "sha256": "ceb92532177daa77682f5fbd628e01c2137d168f949a7a706ce1dabe9f002387",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/ur5e/meshes/ur5e/collision/upperarm.stl",
+        "size_bytes": 99684,
+        "sha256": "ee893044caf00075cb55b4cf666d1f1311c7979786212a501009f33bee945209",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/ur5e/meshes/ur5e/collision/wrist1.stl",
+        "size_bytes": 59584,
+        "sha256": "f8c9f9337b6fd98c75f052e96de10e14a107ddb6874ba6b904e546f8a4e4f43a",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/ur5e/meshes/ur5e/collision/wrist2.stl",
+        "size_bytes": 67584,
+        "sha256": "2964a63f60ce3e3cf3ad55bcf190d7876d50e373cb64b70a57cea5885eaf3c86",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/ur5e/meshes/ur5e/collision/wrist3.stl",
+        "size_bytes": 7184,
+        "sha256": "83b3666b4ae2badd54af0d2c25a921682ecbc29e849eec646c3ed55fb74c78a3",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/ur5e/meshes/ur5e/visual/base.dae",
+        "size_bytes": 358056,
+        "sha256": "c30e4d7228ef633dca2a02c26df2316741f6642cb6333e8289dba6e6d0b22819",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/ur5e/meshes/ur5e/visual/forearm.dae",
+        "size_bytes": 1140937,
+        "sha256": "04694bf57dac46e9b8bc7c30f2eec75a1bc762e1f1a879ea30c944f24cacbad8",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/ur5e/meshes/ur5e/visual/shoulder.dae",
+        "size_bytes": 1797083,
+        "sha256": "c581bfa55b86061d9b99d315ed53817b6b693e6a500643bbf9bbb783322d585d",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/ur5e/meshes/ur5e/visual/upperarm.dae",
+        "size_bytes": 3082486,
+        "sha256": "c040a05bb224f14cfab6aa6704d70cbb773ada940eca9a3e34e6ce486c4c4c29",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/ur5e/meshes/ur5e/visual/wrist1.dae",
+        "size_bytes": 1334663,
+        "sha256": "a07a3d96d2540f9be12e4a07bcb8577d9f1e36005920c396a407804343a3b588",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/ur5e/meshes/ur5e/visual/wrist2.dae",
+        "size_bytes": 1554839,
+        "sha256": "982fa42933c6f81629882ad7975e9ba5dac5d474a6b56694e233708376cf840e",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/ur5e/meshes/ur5e/visual/wrist3.dae",
+        "size_bytes": 66077,
+        "sha256": "7a7664ac4adcd53b0870fe6a2b8b975693d846dd4d07a5f44194c7d16f4890ba",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/ur5e/urdf/inc/ur_common.xacro",
+        "size_bytes": 20802,
+        "sha256": "6f01bf71dc8073b5cd7458c12ed39d87eb99ffec7d6bb31d534d96f83c534304",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/ur5e/urdf/inc/ur_transmissions.xacro",
+        "size_bytes": 2669,
+        "sha256": "85096b2102ef26cb11313956e9ba737f3fae63a0b702108f8cf3253de1cdadf3",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/ur5e/urdf/ur.ros2_control.xacro",
+        "size_bytes": 19948,
+        "sha256": "1827dbf32ee48c312f7a47667fc1b4470a4b0b7fd778119068339d18813ed294",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/ur5e/urdf/ur.urdf.xacro",
+        "size_bytes": 6844,
+        "sha256": "126f5d1631709d6940ebef8e3942a483054efbd2afeb81970c8d6e8e0333d2e8",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/ur5e/urdf/ur_macro.xacro",
+        "size_bytes": 19880,
+        "sha256": "e5ef4dd07523e5832fd34ca564e882a3980a95845ee4af3f3690e418d6c3ce98",
+        "git_tracked": true,
+        "remote_main_tree": true
+      }
+    ],
+    "license": "BSD-3-Clause (per repo LICENSE)",
+    "factory_validation": "PASS"
+  },
+  {
+    "id": "blender.xarm6_7.v1",
+    "source": "assets/xarm6_7/",
+    "exists": true,
+    "file_count": 120,
+    "files": [
+      {
+        "path": "assets/xarm6_7/LICENSE",
+        "size_bytes": 1538,
+        "sha256": "685e81e0cd30124e24e834ea2bf39bfead4efc9907d021bc9d1ae0f2dcea1431",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/README.md",
+        "size_bytes": 826,
+        "sha256": "d2e6c7b4035cafd919fcc45f16d66577dbefe4083b6f822c44b573a1ff8a17dd",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/meshes/camera/realsense/collision/d435_with_cam_stand.stl",
+        "size_bytes": 9484,
+        "sha256": "16e0aeb101be7e3d3d08f0f31f6c5b390becd9e979452db58d923b47a9d0489c",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/meshes/camera/realsense/visual/d435_with_cam_stand.stl",
+        "size_bytes": 1451184,
+        "sha256": "87724a2ca35d852e2b99a60f6f9567db938c7a4dac3b94bb4d8715ff12ba00d7",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/meshes/gripper/bio/left_finger.dae",
+        "size_bytes": 470528,
+        "sha256": "cadd83b2d35f10ad7452d7ee0f9860be73779eada14daff5bb60d3e054eff5df",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/meshes/gripper/bio/left_finger.stl",
+        "size_bytes": 48984,
+        "sha256": "e936d7f1177cbb72f8641d0e1d26de641ea0dfb441d6c77681002bbcc5c8bbab",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/meshes/gripper/bio/left_finger_g2.dae",
+        "size_bytes": 153216,
+        "sha256": "b84438f4b12c78040998df3084175192b561e833b91d348e3d8a56be6fefa598",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/meshes/gripper/bio/link_base.dae",
+        "size_bytes": 692746,
+        "sha256": "c61d6107abaadf9791f4d856539cb2da4637a12a3969d9d3df684ebc991a5d53",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/meshes/gripper/bio/link_base.stl",
+        "size_bytes": 287784,
+        "sha256": "fd7bf7c88b89f54388752cb7fea2d558cf8d0d7c538a3a4b849fc891c5a8ea7e",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/meshes/gripper/bio/link_base_g2.dae",
+        "size_bytes": 692794,
+        "sha256": "f1e085adfacf15e2b9412879a95334b1bf5c3d70933127eddf2c29e7e85424ee",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/meshes/gripper/bio/right_finger.dae",
+        "size_bytes": 455091,
+        "sha256": "0455816f7079389c69684b132ebdba01e993d5fa6c7b8bc30e75d885546d1520",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/meshes/gripper/bio/right_finger.stl",
+        "size_bytes": 48484,
+        "sha256": "8b2750233d5c87e547a83acadb814e86025630e547572daf1605d3232a4ec385",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/meshes/gripper/bio/right_finger_g2.dae",
+        "size_bytes": 151099,
+        "sha256": "5686f4a10cd2ee52e423100b9c0ef7b6a9bddfcba5ed022bd7042e8f8b9f8304",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/meshes/gripper/lite/collision/gripper_lite.stl",
+        "size_bytes": 63234,
+        "sha256": "486f2b368e7597e371f07d0c7436e2ff578ff4a7f6e4c145454c565044b41759",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/meshes/gripper/lite/visual/finger1.dae",
+        "size_bytes": 67430,
+        "sha256": "4313761c2518a3460e1f72236d5d7120162aa495e829571a02b8a0b8594352e0",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/meshes/gripper/lite/visual/finger1.stl",
+        "size_bytes": 56034,
+        "sha256": "f0db617bcbd406856460403af3393e63dec6d550b389629ef25a0b95379309ee",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/meshes/gripper/lite/visual/finger2.dae",
+        "size_bytes": 67849,
+        "sha256": "578d11acba9e00fb0ecaf805626f72175304eb3f74f18dbc79bedcecf1230181",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/meshes/gripper/lite/visual/finger2.stl",
+        "size_bytes": 55934,
+        "sha256": "5e1ca8f278d624700dca4024ca4ef424ad4997d05e6c72823d1a493817ae363a",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/meshes/gripper/lite/visual/gripper_lite.stl",
+        "size_bytes": 317184,
+        "sha256": "475ae505112218501a086908c2f9a771674a9f845aad0ecb21f953046125cb96",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/meshes/gripper/lite/visual/shell.dae",
+        "size_bytes": 634075,
+        "sha256": "1352462c2ad549f05dcd880f3dfa9074a66a7ebf82d4544da51df27ad5a215c9",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/meshes/gripper/lite/visual/shell.stl",
+        "size_bytes": 440684,
+        "sha256": "dd17ad0dce1736792547a1b0c6b65bcec1e20ab041a806714893cb1b9a238d25",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/meshes/gripper/xarm/base_link.dae",
+        "size_bytes": 5167834,
+        "sha256": "36c2d92acdd47b6924583aa935e31487952cf3c32a4c6b03d720cd52b6f185de",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/meshes/gripper/xarm/base_link.stl",
+        "size_bytes": 1211434,
+        "sha256": "cdaa4cff22f7c9cff05c6a8ed32f94fd2b11a69d37dd97a159ccee2d8dd32f13",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/meshes/gripper/xarm/base_link_g2.dae",
+        "size_bytes": 3866991,
+        "sha256": "d46f7e336755a7fd58ebee4b3eab2c6eca7eec611358fc6bf5f683e63efd7575",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/meshes/gripper/xarm/left_finger.dae",
+        "size_bytes": 941460,
+        "sha256": "ea4c0b059c996b9cb4f60441b89ed8d7212c6de543651f4659c69ef6d240eddf",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/meshes/gripper/xarm/left_finger.stl",
+        "size_bytes": 242684,
+        "sha256": "a44756eb72f9c214cb37e61dc209cd7073fdff3e4271a7423476ef6fd090d2d4",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/meshes/gripper/xarm/left_finger_g2.dae",
+        "size_bytes": 317019,
+        "sha256": "69c888529def394ddf00edfb11db061d300c586e6df681a33c894af5be14a59b",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/meshes/gripper/xarm/left_inner_knuckle.dae",
+        "size_bytes": 1432085,
+        "sha256": "39daf641ee8ec141e504824b6760f4d07c01f4250c428112fc6a8b8984984cc6",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/meshes/gripper/xarm/left_inner_knuckle.stl",
+        "size_bytes": 366284,
+        "sha256": "e8e48692ad26837bb3d6a97582c89784d09948fc09bfe4e5a59017859ff04dac",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/meshes/gripper/xarm/left_inner_knuckle_g2.dae",
+        "size_bytes": 476444,
+        "sha256": "f12e642f44ce4a5b0c9bb2ed5c2cf4f9ea0a22b5e87839c29490e8eee6171b86",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/meshes/gripper/xarm/left_outer_knuckle.dae",
+        "size_bytes": 84395,
+        "sha256": "81a716451a906056520f9bc2eb8c373af149ba690d392b368ff2c9fd8380baa9",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/meshes/gripper/xarm/left_outer_knuckle.stl",
+        "size_bytes": 22284,
+        "sha256": "501665812b08d67e764390db781e839adc6896a9540301d60adf606f57648921",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/meshes/gripper/xarm/left_outer_knuckle_g2.dae",
+        "size_bytes": 36342,
+        "sha256": "b791ec24aae545a5dd70aefd12ddac6bdbecf74388ca2f655b34b140ae7da80b",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/meshes/gripper/xarm/right_finger.dae",
+        "size_bytes": 936180,
+        "sha256": "78854f04d723e5a9e02515a07e9989eb3833c3aa318492c923b8d0aba960ed9f",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/meshes/gripper/xarm/right_finger.stl",
+        "size_bytes": 242684,
+        "sha256": "c5dee87c7f37baf554b8456ebfe0b3e8ed0b22b8938bd1add6505c2ad6d32c7d",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/meshes/gripper/xarm/right_finger_g2.dae",
+        "size_bytes": 313281,
+        "sha256": "c2914ea791f520253e5536b0078f4e7e3b7b16112eb3dab21db2f5029c150b36",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/meshes/gripper/xarm/right_inner_knuckle.dae",
+        "size_bytes": 1457872,
+        "sha256": "fe0187047dd3059d75c61942dae0ceece07fa06308c010a6390f22a6f7638546",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/meshes/gripper/xarm/right_inner_knuckle.stl",
+        "size_bytes": 366284,
+        "sha256": "b41dd2c2c550281bf78d7cc6fa117b14786700e5c453560a0cb5fd6dfa0ffb3e",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/meshes/gripper/xarm/right_inner_knuckle_g2.dae",
+        "size_bytes": 482258,
+        "sha256": "9e73e1fb4e65bc79dbaf2d8fe86fa835c67faa1e5ab08a8a55bec3b9023a1aa3",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/meshes/gripper/xarm/right_outer_knuckle.dae",
+        "size_bytes": 82445,
+        "sha256": "45a93890f1a1fe9aaa61a4a9941594f12aaee3aeb8622c3265e962b043fcb412",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/meshes/gripper/xarm/right_outer_knuckle.stl",
+        "size_bytes": 22284,
+        "sha256": "75ca1107d0a42a0f03802a9a49cab48419b31851ee8935f8f1ca06be1c1c91e8",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/meshes/gripper/xarm/right_outer_knuckle_g2.dae",
+        "size_bytes": 36346,
+        "sha256": "d9ed7ed551136ecd57fe733c5e9c7e7fa70e10345e26441452122b6bba061f55",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/meshes/xarm6/visual/link1.stl",
+        "size_bytes": 188084,
+        "sha256": "103a81f9f00c217247f8b6c8f19b3afcbc9288852082389044d88a4a321cd8cd",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/meshes/xarm6/visual/link2.stl",
+        "size_bytes": 1305984,
+        "sha256": "20ef55e34f8a63bb65108ed3134c4b22d911b55cd496ca5562b3978cba88ac77",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/meshes/xarm6/visual/link3.stl",
+        "size_bytes": 212484,
+        "sha256": "f1503bc0c1fe8d39f4c509dba7288d9130954a35a1bcbaa0fca95d083fed3ffe",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/meshes/xarm6/visual/link4.stl",
+        "size_bytes": 228984,
+        "sha256": "2a9952085fef91045380dac9825d9ad5a75867196933bc2cb1c3a635c23b0b7e",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/meshes/xarm6/visual/link5.stl",
+        "size_bytes": 383034,
+        "sha256": "bfca01aae4255803ba2f5391c93836b91e1761e069275e38a9656ff2d53f45a4",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/meshes/xarm6/visual/link6.stl",
+        "size_bytes": 129884,
+        "sha256": "b90cb1b373e65c035d7965bde92f4e2aedacdbbd57785a9018cd996b6b0b688e",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/meshes/xarm6/visual/link_base.stl",
+        "size_bytes": 123284,
+        "sha256": "d3d61f2888bc39eecb8583babc7dddccb92f2ccd55aa32cd6f1dce6193feb3b6",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/meshes/xarm6/visual/link_base_white.dae",
+        "size_bytes": 539186,
+        "sha256": "e7266d04e2e1711de65f7d2114a682859b51190a50761229eee02a9c00d782ff",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/meshes/xarm7/visual/link1.stl",
+        "size_bytes": 184184,
+        "sha256": "34b541122df84d2ef5fcb91b715eb19659dc15ad8d44a191dde481f780265636",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/meshes/xarm7/visual/link2.stl",
+        "size_bytes": 225584,
+        "sha256": "61e641cd47c169ecef779683332e00e4914db729bf02dfb61bfbe69351827455",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/meshes/xarm7/visual/link3.stl",
+        "size_bytes": 237084,
+        "sha256": "9e2798e7946dd70046c95455d5ba96392d0b54a6069caba91dc4ca66e1379b42",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/meshes/xarm7/visual/link4.stl",
+        "size_bytes": 243684,
+        "sha256": "c757fee95f873191a0633c355c07a360032960771cabbd7593a6cdb0f1ffb089",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/meshes/xarm7/visual/link5.stl",
+        "size_bytes": 229084,
+        "sha256": "715ad5787c5dab57589937fd47289882707b5e1eb997e340d567785b02f4ec90",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/meshes/xarm7/visual/link6.stl",
+        "size_bytes": 399384,
+        "sha256": "85b320aa420497827223d16d492bba8de091173374e361396fc7a5dad7bdb0cb",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/meshes/xarm7/visual/link7.stl",
+        "size_bytes": 231684,
+        "sha256": "97115d848fbf802cb770cd9be639ae2af993103b9d9bbb0c50c943c738a36f18",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/meshes/xarm7/visual/link_base.stl",
+        "size_bytes": 304784,
+        "sha256": "cf52275a913a0977595f5d12373f06583513e26fe18b8cf2827c74da94a4f0be",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/urdf/_private_macro.xacro",
+        "size_bytes": 583,
+        "sha256": "f8a04002af04873930508af06b4288199f37d4b7a6fa627046a75c7f30bd573d",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/urdf/camera/camera.gazebo.xacro",
+        "size_bytes": 2941,
+        "sha256": "1128e681a1e33fd9d6571c68b7cde69df07f10a0e6986e2ea8211bc2d5b0762b",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/urdf/camera/realsense.gazebo.xacro",
+        "size_bytes": 12704,
+        "sha256": "cc3015becbf210617621c29a8be31f05103b9deac13de33dcb1f843bc61a0572",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/urdf/camera/realsense_d435i.urdf.xacro",
+        "size_bytes": 3492,
+        "sha256": "1cacc1d144211dd75685b8e08ecc2b599e2fe1f2f6547083f7161e798770aa49",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/urdf/common/common.gazebo.xacro",
+        "size_bytes": 1901,
+        "sha256": "a59da43657e269866019aa5693fcecc9daee150828719e7194cb464f186eae00",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/urdf/common/common.link.xacro",
+        "size_bytes": 12197,
+        "sha256": "bcdb75c2d56195d93e4637b790f9804782eacf5cb5d37a77ce31bf8bba9bc55d",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/urdf/common/common.material.xacro",
+        "size_bytes": 522,
+        "sha256": "2e0438da253454964e01b2008c8a6e59ddb3a4d19d271a6cb6d211929a6fbbc6",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/urdf/dual_xarm_device.urdf.xacro",
+        "size_bytes": 7225,
+        "sha256": "12168bbb1f884a86850bf3747e508e125e7a4d2b14270dd26d0aaca2714f3c51",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/urdf/gripper/bio_gripper.gazebo.xacro",
+        "size_bytes": 3084,
+        "sha256": "d95707b8ce7952e6a448b2402533e6176e9e1f7843c6521ae01bbe37e6863f79",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/urdf/gripper/bio_gripper.ros2_control.xacro",
+        "size_bytes": 834,
+        "sha256": "4a78d28864fd2b0e347723dda22dc9c7b6cb3c0497eee8aa9e7a76b29c842955",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/urdf/gripper/bio_gripper.transmission.xacro",
+        "size_bytes": 729,
+        "sha256": "05b2b3ed1d0f8ecba35be9edefbd2e3dc88aa627b080ef7412fd88a29d1bdc03",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/urdf/gripper/bio_gripper.urdf.xacro",
+        "size_bytes": 4628,
+        "sha256": "dbb4b150fbf13ec8ed6cfa4f18dd7b0d66a37f2de183f1b6937fac027279df07",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/urdf/gripper/bio_gripper_macro.xacro",
+        "size_bytes": 1788,
+        "sha256": "edb0c0021a1b5b88603c2cc9662c57c691ffeccf9c551555f867334eb1e5432e",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/urdf/gripper/gripper.urdf.xacro",
+        "size_bytes": 455,
+        "sha256": "6bb72e75b3b32094669973dfbeb3b61beb6ce0d7ca9604f03681a8f8df025e57",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/urdf/gripper/gripper_macro.xacro",
+        "size_bytes": 1593,
+        "sha256": "28fbba5fe5691681d571afbcc489ce6cc7c042cd1a83490c1db4770e0ab71678",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/urdf/gripper/uflite_gripper.gazebo.xacro",
+        "size_bytes": 3051,
+        "sha256": "250ce8af44b724b37c4d8de0c34edebe9f934485c3986b6eb602b805e53bae60",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/urdf/gripper/uflite_gripper.ros2_control.xacro",
+        "size_bytes": 835,
+        "sha256": "f8e70a5003c0015b6c2ace27d680227e943b46fe7a14aa7824d8b495d34a578a",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/urdf/gripper/uflite_gripper.transmission.xacro",
+        "size_bytes": 717,
+        "sha256": "5fa8f4f0914f23bbedbb9ed0edf6c1e0753cc249b2e86e7dd15fea025cb8557a",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/urdf/gripper/uflite_gripper.urdf.xacro",
+        "size_bytes": 3711,
+        "sha256": "10f4c1fca8823f2a676eea5c0fbd7daf86227d9f93a7d28d4a35dea552817216",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/urdf/gripper/uflite_gripper_macro.xacro",
+        "size_bytes": 1788,
+        "sha256": "0b920a628fa2310af62bdf2f4cbf861f68198b6b703bc9bf447d537fac9f0af3",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/urdf/gripper/xarm_gripper.gazebo.xacro",
+        "size_bytes": 4174,
+        "sha256": "3a8c2d1d56cf39826c6d642b62e9d2a54a1092ee4181c6bf2733a5882cd611db",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/urdf/gripper/xarm_gripper.ros2_control.xacro",
+        "size_bytes": 829,
+        "sha256": "b10d2c9ba475f0eefa584c3e926b8856e3c979941d3a940450d0d6b3fac46aa2",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/urdf/gripper/xarm_gripper.transmission.xacro",
+        "size_bytes": 710,
+        "sha256": "83a1298210243871e0039cf58b2a09a9c24e0848432e02a4da960ec8efbdf771",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/urdf/gripper/xarm_gripper.urdf.xacro",
+        "size_bytes": 9868,
+        "sha256": "e1987b755501636b7ba32518d98ecb5fc8c6d2c4b1c45a49d332d6672f22c8cb",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/urdf/gripper/xarm_gripper_macro.xacro",
+        "size_bytes": 2970,
+        "sha256": "60b681379a59957c31ef7b0e2b66ffa1c42c244d13f49aeff3690f4282e67a06",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/urdf/lite6/lite6.gazebo.xacro",
+        "size_bytes": 806,
+        "sha256": "e6acf242fa64e49fa8da430e345c4169c25df75321d4aed0feeeb5e82bd99456",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/urdf/lite6/lite6.ros2_control.xacro",
+        "size_bytes": 4843,
+        "sha256": "dbbfe52e4d02b3d5b3cd3c74b16f20216575daedfec409e6d140b6fb90d8fff7",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/urdf/lite6/lite6.transmission.xacro",
+        "size_bytes": 3003,
+        "sha256": "f1157e3d97777f521be047a8219e120b13adf984abf3105c624ac585a4fb3aa0",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/urdf/lite6/lite6.urdf.xacro",
+        "size_bytes": 9575,
+        "sha256": "1a9ee1bab5ddd7a29ba1797adcb58e69a04bb2cd69402781de906cdef7278c5f",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/urdf/lite6/lite6_robot_macro.xacro",
+        "size_bytes": 3419,
+        "sha256": "3b11e8567298d9886efe58c493baf9fb5ae23ce2c1611841a07706120083f7e2",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/urdf/other/other_geometry.urdf.xacro",
+        "size_bytes": 4871,
+        "sha256": "27bda714ca08de56bb35a4b52c826f697b2bc3599153dfe19b96051d2a6f42a9",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/urdf/uf850/uf850.gazebo.xacro",
+        "size_bytes": 806,
+        "sha256": "dd4a00433bd2b9e4cc97fa402b9abc3022543447c54dd74fd2fbacb6b80b3fdb",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/urdf/uf850/uf850.ros2_control.xacro",
+        "size_bytes": 5221,
+        "sha256": "69ac4ee3648c3b9d03749b3b8239c7940723b5eee0a823309d74106aecc7668f",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/urdf/uf850/uf850.transmission.xacro",
+        "size_bytes": 3003,
+        "sha256": "479b6abf0275e610d670667868fe3c2bb991ec773ac8a624120869c98c45bf59",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/urdf/uf850/uf850.urdf.xacro",
+        "size_bytes": 9583,
+        "sha256": "ccd4e0cc4f79773e49f138433eb00f901f1fe3a90c1fc1979911666ca817db5d",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/urdf/uf850/uf850_robot_macro.xacro",
+        "size_bytes": 3511,
+        "sha256": "f4f028ce48c6c960523ddb3f72c023c59be060e3a5e54d869880d90e907fb9fb",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/urdf/vacuum_gripper/lite_vacuum_gripper.urdf.xacro",
+        "size_bytes": 1505,
+        "sha256": "8d416a367022fb3bdeb5a556f6d813c002edb666ebbae538db6d022629fb7000",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/urdf/vacuum_gripper/vacuum_gripper.urdf.xacro",
+        "size_bytes": 483,
+        "sha256": "5a59c494b0be3b3440a78c2aecba61c2783e33f614f65dfa24b6b056b1a46ff0",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/urdf/vacuum_gripper/vacuum_gripper_macro.xacro",
+        "size_bytes": 1360,
+        "sha256": "5f8aab2bf7b4c83833e37adb0ece471092e90de190dda88bbca03c64460f5989",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/urdf/vacuum_gripper/xarm_vacuum_gripper.urdf.xacro",
+        "size_bytes": 1482,
+        "sha256": "cec477ece63e2f2251c86ceb64d946f4f477d214a50e0043425ec8d4d230f79b",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/urdf/xarm5/xarm5.gazebo.xacro",
+        "size_bytes": 716,
+        "sha256": "0f85357ec31402c7bf14993becb55ee1bd50a82614cfdbb9a33f4530afe10041",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/urdf/xarm5/xarm5.ros2_control.xacro",
+        "size_bytes": 4326,
+        "sha256": "558fbcea97d0087c2a6d2307e9e8a541f1b0d5d4adf79da09defbd535a8fd8ee",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/urdf/xarm5/xarm5.transmission.xacro",
+        "size_bytes": 2538,
+        "sha256": "e54b4aaf25639a33b88d64101500c30017f965b6a9c69e3018938f88e67a4dd1",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/urdf/xarm5/xarm5.urdf.xacro",
+        "size_bytes": 9565,
+        "sha256": "5c8ce6905f9500b8c1dbcca9eeadbb8c6ec15cfcac7c86a28220fac66b600cbd",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/urdf/xarm5/xarm5_robot_macro.xacro",
+        "size_bytes": 3367,
+        "sha256": "908fbd725e86dfb4582333cde374a4754286623dee697bed6d716d98cb2906b3",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/urdf/xarm6/xarm6.gazebo.xacro",
+        "size_bytes": 806,
+        "sha256": "45502e8d9dbfdc50a23fd7174e14ec71aa9cdc07e9981240551a1e3c8ac3d137",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/urdf/xarm6/xarm6.ros2_control.xacro",
+        "size_bytes": 5205,
+        "sha256": "8bd4f1708880c7eb384bcc8dd3b979f6550257881b332741b726ddbc4408ef48",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/urdf/xarm6/xarm6.transmission.xacro",
+        "size_bytes": 3003,
+        "sha256": "536f1bcdf87ac6f08c6511dd89235a322803007628caf6beed7ed652dcfd7d6d",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/urdf/xarm6/xarm6.urdf.xacro",
+        "size_bytes": 10663,
+        "sha256": "910b5193100796ad71dad15261f9a24942e3ab7f6b1e19088faca47a529fd7a9",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/urdf/xarm6/xarm6_robot_macro.xacro",
+        "size_bytes": 3517,
+        "sha256": "754c352b96c09c4150508d69a0d0547a3b410efce79eb78c187c5d090e60da9a",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/urdf/xarm7/xarm7.gazebo.xacro",
+        "size_bytes": 899,
+        "sha256": "a6e972fb5fa256a927021c747386d7406b6bfb6fec5c3779e708f3a20a9c2ecc",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/urdf/xarm7/xarm7.ros2_control.xacro",
+        "size_bytes": 5524,
+        "sha256": "b2c0a23f1148147062ed5262bc7a96954d5ec2d0a63904a38be6d0992eb2acfc",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/urdf/xarm7/xarm7.transmission.xacro",
+        "size_bytes": 3468,
+        "sha256": "5ca4cff07212034ca1c1c06a674a17309f81f674ec3bc87ed0b26fa9efea6191",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/urdf/xarm7/xarm7.urdf.xacro",
+        "size_bytes": 11878,
+        "sha256": "68a65a345e9b99a61b7d821285c524b4aeede245794acdb32fa6fa9e0b5c2b3f",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/urdf/xarm7/xarm7_robot_macro.xacro",
+        "size_bytes": 3622,
+        "sha256": "adbfe5183fc984f118d5a62d003b44c883490779d3ad76521ed7103ac7aecea5",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/urdf/xarm7_mirror/xarm7_mirror.gazebo.xacro",
+        "size_bytes": 906,
+        "sha256": "99beab3b613b9e2e6eeb4cb43f3fcb8adcf4fce39c9d7b9287b487131d58f36b",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/urdf/xarm7_mirror/xarm7_mirror.ros2_control.xacro",
+        "size_bytes": 5531,
+        "sha256": "d4191fd1481d25979eb7c7ef92f8e3371358e7714fc87e6b6b5293d89a4468d2",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/urdf/xarm7_mirror/xarm7_mirror.transmission.xacro",
+        "size_bytes": 3475,
+        "sha256": "284f2c19c52e1d6aaa67975d9af73b82c35bddded115027b0cf7c9e44b0eb0bd",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/urdf/xarm7_mirror/xarm7_mirror.urdf.xacro",
+        "size_bytes": 9375,
+        "sha256": "a8cccc184526fb0613be91ed122a74ec661df46dc25ff35076537eb2c90af360",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/urdf/xarm7_mirror/xarm7_mirror_robot_macro.xacro",
+        "size_bytes": 3726,
+        "sha256": "2a3c1e91c63b82697e71e86d68df0e39d414ba943363671998bb6f25cebd7d3f",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/urdf/xarm_device.urdf.xacro",
+        "size_bytes": 3953,
+        "sha256": "effbda7f945fcee8347c8e1f3bec59bbeea38f60a6e9a5b75aea221b3ed4e81a",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/xarm6_7/urdf/xarm_device_macro.xacro",
+        "size_bytes": 16344,
+        "sha256": "571dd90dd5ae4d8aa549686a253050e0576d0ef29755121cd2d7a95b24649eda",
+        "git_tracked": true,
+        "remote_main_tree": true
+      }
+    ],
+    "license": "BSD-3-Clause (per repo LICENSE)",
+    "factory_validation": "PASS"
+  },
+  {
+    "id": "blender.franka_fr3.v1",
+    "source": "assets/franka_fr3/",
+    "exists": true,
+    "file_count": 41,
+    "files": [
+      {
+        "path": "assets/franka_fr3/LICENSE",
+        "size_bytes": 12926,
+        "sha256": "4b25434e6ec2012e28a484f1d7924a0fd1a8bf232c2be2d50d584d299d04d6d6",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/franka_fr3/NOTICE",
+        "size_bytes": 581,
+        "sha256": "13991525876741e3dc94c46e0afce111dc0a5c6156c89bbbefd06547b84738fd",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/franka_fr3/README.md",
+        "size_bytes": 873,
+        "sha256": "9c2613e3992bb8af9fb4e044ef42647163e02595b9a742705853be23a4603010",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/franka_fr3/end_effectors/common/ee_with_one_link.xacro",
+        "size_bytes": 1864,
+        "sha256": "6ce352414f20a6b2e89257158a304898cc3d8a9c281db36e94715b5dec27f607",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/franka_fr3/end_effectors/common/franka_hand.xacro",
+        "size_bytes": 5180,
+        "sha256": "6edc70dc552caa2596f40695f17dec8afd4eb489d67e36e5d0327d3ee4705ed1",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/franka_fr3/end_effectors/common/utils.xacro",
+        "size_bytes": 5699,
+        "sha256": "29043c9cbd7aa7e0359c1da12c220e78a8ba2467432381ba1975c6295e3e98cd",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/franka_fr3/end_effectors/franka_hand/franka_hand.srdf.xacro",
+        "size_bytes": 2582,
+        "sha256": "aaf62f22ddb75037d2be41be957446c339418f7e2323f658b09d0c1b4c268b8c",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/franka_fr3/end_effectors/franka_hand/franka_hand.urdf.xacro",
+        "size_bytes": 1187,
+        "sha256": "6369fbff364bb38ffee0a6b888e782d049a8637ddf2f5c0108ae5f147e8d6689",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/franka_fr3/end_effectors/franka_hand/franka_hand_arguments.xacro",
+        "size_bytes": 1381,
+        "sha256": "496a3b356b31339edeac05f76e08f1a7a34b5794e81419b8c089db74b1942d2c",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/franka_fr3/end_effectors/franka_hand/inertials.yaml",
+        "size_bytes": 432,
+        "sha256": "6f09ae9ac8838e61d33167d0e6358fd3a61082b432028063805ff6625bc69207",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/franka_fr3/meshes/robot_ee/franka_hand_white/collision/hand.stl",
+        "size_bytes": 10084,
+        "sha256": "94493e94f30fe940f2c8ca2f155c3bbe67bbff406d3edf5e261670d2f0f6e2ed",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/franka_fr3/meshes/robot_ee/franka_hand_white/visual/finger.dae",
+        "size_bytes": 52371,
+        "sha256": "12c7bc9b55ffd0d1d0e3442d3e213ecc4fbebbced15259a20195af464f871fcd",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/franka_fr3/meshes/robot_ee/franka_hand_white/visual/hand.dae",
+        "size_bytes": 550371,
+        "sha256": "1b50601d3157f810176aba6db7164d6bdb4ec8b6546a8a725baba2fa2a21c58a",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/franka_fr3/meshes/robots/fr3/collision/link0.stl",
+        "size_bytes": 18784,
+        "sha256": "56990396d712b2ebb89f7d29083973c823babd3bfa605f2d2863bd1069d29788",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/franka_fr3/meshes/robots/fr3/collision/link1.stl",
+        "size_bytes": 11884,
+        "sha256": "e023cf1db282e07f38597d4e7f9edae03cd0dc338974677b31639f677411dc18",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/franka_fr3/meshes/robots/fr3/collision/link2.stl",
+        "size_bytes": 11484,
+        "sha256": "3117fd3aea238c07fc1bf678784d38497bfdd603a7760bf36b7fb31b15f0624e",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/franka_fr3/meshes/robots/fr3/collision/link3.stl",
+        "size_bytes": 13584,
+        "sha256": "1f21215bdb62892271a263969c92dc1be15c409ec8fc96b6bdec3c28d77f0e6e",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/franka_fr3/meshes/robots/fr3/collision/link4.stl",
+        "size_bytes": 13184,
+        "sha256": "b9574ef02cdf234dff9f12359e00f6c11a4b062cf73d1db20894c57f5a9d716a",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/franka_fr3/meshes/robots/fr3/collision/link5.stl",
+        "size_bytes": 13384,
+        "sha256": "c174872b06547dc6acdd027679e476d4cddffe0224cb048763bdbf4f68fe7542",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/franka_fr3/meshes/robots/fr3/collision/link6.stl",
+        "size_bytes": 16234,
+        "sha256": "9ad5c4698aed204cd505e74356adfbb955196913d0b75a616c3865b319d39e6b",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/franka_fr3/meshes/robots/fr3/collision/link7.stl",
+        "size_bytes": 15784,
+        "sha256": "c48646a72ed0264e5f90b221327fd2b72163935ec7bc1cde9612ac1dcf23eabf",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/franka_fr3/meshes/robots/fr3/visual/link0.dae",
+        "size_bytes": 7079719,
+        "sha256": "3c52a112d1610d645934945b80ea8d9bb3d1635f345098480a33a537bd43224e",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/franka_fr3/meshes/robots/fr3/visual/link1.dae",
+        "size_bytes": 906843,
+        "sha256": "5c5846eabc714aefc82ef051a4d09c4fc1c092bca6258b1290227345dd217fcb",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/franka_fr3/meshes/robots/fr3/visual/link2.dae",
+        "size_bytes": 921715,
+        "sha256": "90a1bd38abdc53d0141719cd8e040f788db337b768a845bb6d53c5c52590498f",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/franka_fr3/meshes/robots/fr3/visual/link3.dae",
+        "size_bytes": 2475274,
+        "sha256": "1c7a2a8124e39ad07096c0cce8461b0e650f6752900cfd777bf87c181e81749b",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/franka_fr3/meshes/robots/fr3/visual/link4.dae",
+        "size_bytes": 2533228,
+        "sha256": "dd134cf13cdaced2b67739e4d9fe2ca011cc533936397d9f6303fc740424e2a2",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/franka_fr3/meshes/robots/fr3/visual/link5.dae",
+        "size_bytes": 3259292,
+        "sha256": "cbcabd369e044eba3f1c2cab84b9ed2ebc1b2f424c6104ad9c5d7410e92fabfe",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/franka_fr3/meshes/robots/fr3/visual/link6.dae",
+        "size_bytes": 5252660,
+        "sha256": "907b16fea84931f4881174234065bb647700abf105b432c3ff65360e0ad5cf8b",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/franka_fr3/meshes/robots/fr3/visual/link7.dae",
+        "size_bytes": 4243523,
+        "sha256": "b9d05ac502ff269b1323705de811d07a8eb9920ce711b32ee0497bf16b74989b",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/franka_fr3/robots/common/franka_arm.srdf.xacro",
+        "size_bytes": 3615,
+        "sha256": "47a4625f8df6431f1eff8fc0d412c3d21306bb980c768b21d7b652abe4e29743",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/franka_fr3/robots/common/franka_arm.xacro",
+        "size_bytes": 9002,
+        "sha256": "3c19225fa490120bb0276faa83b5d8dedab56d21fc0b64a677d5c61136fde81e",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/franka_fr3/robots/common/franka_robot.xacro",
+        "size_bytes": 4722,
+        "sha256": "5f9adfd8570b2f6fea16fb95fc1453f9a6ae2cb382dfd6d1deaf67efa62f90c2",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/franka_fr3/robots/common/group_definition.xacro",
+        "size_bytes": 1191,
+        "sha256": "5a8c3957a2a9622df0c6116126450e69f3b769a336392a226049196ab19173ca",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/franka_fr3/robots/common/utils.xacro",
+        "size_bytes": 11741,
+        "sha256": "b6819d3530d760ae8f4a318348d0125f3a2ae67bf03bfc965060d8388fd060f7",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/franka_fr3/robots/fr3/accelerometers.yaml",
+        "size_bytes": 1597,
+        "sha256": "40fb78a7082e4fb7fc565b5ee3f3be15a4db4a07895cdbadda46c251980320ab",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/franka_fr3/robots/fr3/dynamics.yaml",
+        "size_bytes": 1283,
+        "sha256": "e65e145114b431bd17cdebc58b88c43505f0658472cca6ffbc9c32b7a198f79b",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/franka_fr3/robots/fr3/fr3.srdf.xacro",
+        "size_bytes": 1212,
+        "sha256": "4351fe2a301be007ae89291578e68f639e61a8d76c25cefc455e413898b43b20",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/franka_fr3/robots/fr3/fr3.urdf.xacro",
+        "size_bytes": 2863,
+        "sha256": "8f068b2f9093e36fe7dfb7dbb811eb77b86c2aa4215bb2624217784458031a89",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/franka_fr3/robots/fr3/inertials.yaml",
+        "size_bytes": 2212,
+        "sha256": "02a39046b36303f748c9755b48610b7600fb819d54828475514c36915ae54a89",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/franka_fr3/robots/fr3/joint_limits.yaml",
+        "size_bytes": 1374,
+        "sha256": "42e999184f37689568b58f320d062859053f03c62c8b49bf00a00d69f20d7a65",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/franka_fr3/robots/fr3/kinematics.yaml",
+        "size_bytes": 831,
+        "sha256": "44326830a6773dd6611cdf9947045eeb3276ea4e3ca47a05272816c862c8e386",
+        "git_tracked": true,
+        "remote_main_tree": true
+      }
+    ],
+    "license": "Apache-2.0 (per repo LICENSE/NOTICE)",
+    "factory_validation": "PASS"
+  },
+  {
+    "id": "blender.open_manipulator_x.v1",
+    "source": "assets/open_manipulator_x/",
+    "exists": true,
+    "file_count": 13,
+    "files": [
+      {
+        "path": "assets/open_manipulator_x/LICENSE",
+        "size_bytes": 11357,
+        "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/open_manipulator_x/README.md",
+        "size_bytes": 827,
+        "sha256": "b511d4cae57591ea42c9c79e05b5c0e0f48745e55b2f46e3787273935ca82219",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/open_manipulator_x/meshes/open_manipulator_x/gripper_left_palm.stl",
+        "size_bytes": 134184,
+        "sha256": "fb4dfabe68712bbba34deb9f8469f9187009c07579dccd5401b82d08de425267",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/open_manipulator_x/meshes/open_manipulator_x/gripper_right_palm.stl",
+        "size_bytes": 135684,
+        "sha256": "a5bfc10a067c806a19062e2fcb58989623a09edc0e9bbc4fd735a56d83f99752",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/open_manipulator_x/meshes/open_manipulator_x/link1.stl",
+        "size_bytes": 1068884,
+        "sha256": "d2b84e13ccd3f923148bb26c95723bb3c9e7af0a7cc85cd315ee70ce7629dd1f",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/open_manipulator_x/meshes/open_manipulator_x/link2.stl",
+        "size_bytes": 393384,
+        "sha256": "20a6cc8a673b90ab02f97e4c2f0437ff692e71daded8a82a77b54254ae877c66",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/open_manipulator_x/meshes/open_manipulator_x/link3.stl",
+        "size_bytes": 920684,
+        "sha256": "e6904447bca7888acb6a3a170d220b12e92f6dbf53c560987527cfd115f6eb19",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/open_manipulator_x/meshes/open_manipulator_x/link4.stl",
+        "size_bytes": 781984,
+        "sha256": "9da72baf0854e0335bf0fe199da3676c57625e17277a4fa455b995130b29ffab",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/open_manipulator_x/meshes/open_manipulator_x/link5.stl",
+        "size_bytes": 647984,
+        "sha256": "75e7596295dd5f5cbc68d81b2c875058f28721f98d7402d2d431ccf2334b57a6",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/open_manipulator_x/meshes/open_manipulator_x/plate.stl",
+        "size_bytes": 354484,
+        "sha256": "e665dce646cb07f6124846f79be0943d3a42e791b0867fb569007b49db2eb3b8",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/open_manipulator_x/urdf/open_manipulator_x/open_manipulator_x.urdf",
+        "size_bytes": 8656,
+        "sha256": "784078c2a5bb16accd2ca4cbcf0d340403d6d343f047b433b503aeae85ef17d3",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/open_manipulator_x/urdf/open_manipulator_x/open_manipulator_x.urdf.xacro",
+        "size_bytes": 1634,
+        "sha256": "2859d5e3d23f46d8e1011123d9b9601428121d662c30ae443fc6f98dbe5a55b7",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/open_manipulator_x/urdf/open_manipulator_x/open_manipulator_x_arm.urdf.xacro",
+        "size_bytes": 8799,
+        "sha256": "41079f080ce766ee9f4ad68715cd7d27545156b98d801416e8358ccd4825dd78",
+        "git_tracked": true,
+        "remote_main_tree": true
+      }
+    ],
+    "license": "Apache-2.0 (per repo LICENSE)",
+    "factory_validation": "PASS"
+  },
+  {
+    "id": "blender.turtlebot3.v1",
+    "source": "assets/turtlebot3/",
+    "exists": true,
+    "file_count": 20,
+    "files": [
+      {
+        "path": "assets/turtlebot3/CHANGELOG.rst",
+        "size_bytes": 4622,
+        "sha256": "8df990a8676d5acb2bb940180c78b8834ff6f097850ec909a411f337ae4b5b8b",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/turtlebot3/CMakeLists.txt",
+        "size_bytes": 1243,
+        "sha256": "f4bd488279a329cffd6dee99c82ff66b85a2bfb7a0bc836750a8d9f028d9b6cc",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/turtlebot3/LICENSE",
+        "size_bytes": 11361,
+        "sha256": "f9946796a8a5bd5981565142fa42e3b0cc36aef6f80e86beaf5905b3c0fef1b5",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/turtlebot3/README.md",
+        "size_bytes": 762,
+        "sha256": "4f0b192fff92c7680582df350d2ac436e4ffddf070d75c23108f74b8aa15e885",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/turtlebot3/meshes/bases/burger_base.stl",
+        "size_bytes": 4826284,
+        "sha256": "7d7f3329a437b43bbcbbec59f9a2d1df1d88b59c3882c543d979baf73670f025",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/turtlebot3/meshes/bases/waffle_base.stl",
+        "size_bytes": 16291984,
+        "sha256": "fcc85458c31f6c4bf2afdc93469128c49723189c5a4c07b8c91baebc132e9a0d",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/turtlebot3/meshes/bases/waffle_pi_base.stl",
+        "size_bytes": 7878884,
+        "sha256": "706230121a287ff953c4c84d344014a147fc27615b0e95221aaf04cb0dca7e42",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/turtlebot3/meshes/sensors/astra.dae",
+        "size_bytes": 8977174,
+        "sha256": "7573fc3cc9d5f4e42223a3f22496fe1aa817d678d1ee48a36637dd23ae45dcc4",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/turtlebot3/meshes/sensors/astra.jpg",
+        "size_bytes": 65411,
+        "sha256": "36f4c46895a73035f71cf01570c76316663e68c30ee0b789372469af3da48546",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/turtlebot3/meshes/sensors/lds.stl",
+        "size_bytes": 728384,
+        "sha256": "98f0bd7046159f83caab9509293112ef13534368535669124b91b5114c3132f6",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/turtlebot3/meshes/sensors/r200.dae",
+        "size_bytes": 208224,
+        "sha256": "ef8122d367ec4abc4ff5b1aa31c9c90f161648907ad9da7c503db1244692342a",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/turtlebot3/meshes/sensors/r200.jpg",
+        "size_bytes": 2508,
+        "sha256": "499a7bb6e1d7bc1c2c47a9a769c34cda69b4809695149fa017f4161cdb581c45",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/turtlebot3/meshes/wheels/left_tire.stl",
+        "size_bytes": 1083684,
+        "sha256": "578c9452ee51c2f71e5e6723b503d784e58a6ac317fa53ee308e645f204c8d6a",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/turtlebot3/meshes/wheels/right_tire.stl",
+        "size_bytes": 1083684,
+        "sha256": "407aaf271ba7051c6186b220e1dc36b2a6eca688fced66a3347f49747b684596",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/turtlebot3/package.xml",
+        "size_bytes": 957,
+        "sha256": "6c208f957addb35bbf2ee2abc1da354796d638b63da1d7d95ade693403bdcbb6",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/turtlebot3/rviz/model.rviz",
+        "size_bytes": 8565,
+        "sha256": "8d231423734bbd058e418c138455fdc448f5459b793e1734d4cecd313eb2aada",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/turtlebot3/urdf/common_properties.urdf",
+        "size_bytes": 943,
+        "sha256": "12c424e353b6ee75ad5287b78b16991f73d874d565570c58f4e766e07cb4de55",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/turtlebot3/urdf/turtlebot3_burger.urdf",
+        "size_bytes": 5645,
+        "sha256": "bc453d08d6a3f2da1530201a15807edafffa5158c291dc40f5edb19ae35ca603",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/turtlebot3/urdf/turtlebot3_waffle.urdf",
+        "size_bytes": 8926,
+        "sha256": "f9fa59f734cf444f857effaa2334a1b71e0f07bacc63d029accf3f5093c69032",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/turtlebot3/urdf/turtlebot3_waffle_pi.urdf",
+        "size_bytes": 7431,
+        "sha256": "33c201d21492246e9eba8ecd7f1ca9ae4bd7c88a1da5bc360584002ba61ab9ce",
+        "git_tracked": true,
+        "remote_main_tree": true
+      }
+    ],
+    "license": "Apache-2.0 (per repo LICENSE)",
+    "factory_validation": "PASS"
+  },
+  {
+    "id": "blender.robotis_op3.v1",
+    "source": "assets/robotis_op3/",
+    "exists": true,
+    "file_count": 47,
+    "files": [
+      {
+        "path": "assets/robotis_op3/CHANGELOG.rst",
+        "size_bytes": 438,
+        "sha256": "439547e158027db8782e3bff9592c6148babb1f8c9764dc10d43c656845fe496",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/robotis_op3/CMakeLists.txt",
+        "size_bytes": 2048,
+        "sha256": "9dd92b78c76c4706a642eb26195ba42c55d0d4ed7466b3cdbc5990ce1ae76c94",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/robotis_op3/LICENSE",
+        "size_bytes": 11558,
+        "sha256": "e03ba41d7fab20700769fe4118bab50d800cb74f990353a05d2f5fff1c228363",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/robotis_op3/README.md",
+        "size_bytes": 723,
+        "sha256": "d25b287a64077f9a1224e4028ced5c9fb317b9782c8db6d93256c140d5afd8d7",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/robotis_op3/doc/OP3 mass property.docx",
+        "size_bytes": 225680,
+        "sha256": "00d85ccf970e333f8913ab803f2bc203db9ea86f902195c3b0a9820cd4f543f0",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/robotis_op3/doc/op3_sim.docx",
+        "size_bytes": 15068,
+        "sha256": "8ce4ac804e5e2a74151864afe797f648132a5ca0f676da6f1ef9fe9b9a134b83",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/robotis_op3/doc/op3_sim.ods",
+        "size_bytes": 47710,
+        "sha256": "f842f16c14f3f7479b3bf2009a684c31cdb36d948fd780dcdaa45a1f785f2053",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/robotis_op3/launch/op3_display.launch",
+        "size_bytes": 745,
+        "sha256": "5eb8dc6a5e25f0bdd0bbfb64e7b05cf4dd4bc618544cde95b5abb0c345da3ca1",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/robotis_op3/launch/op3_rviz.launch",
+        "size_bytes": 582,
+        "sha256": "135e00263222450a24b5e70a4c3f824e5799c6c8440a3f55efcac02c6cfc5f5c",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/robotis_op3/launch/op3_walking.launch",
+        "size_bytes": 755,
+        "sha256": "f64e3c0427b5f9d1b10bf9c50d3f5250097310b35157015cbff7b8b3839345c1",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/robotis_op3/meshes/base.stl",
+        "size_bytes": 10461784,
+        "sha256": "82120de6da94d77189a03f75a12f19486a22e6a2666efded823bb868fb408574",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/robotis_op3/meshes/body.stl",
+        "size_bytes": 9172284,
+        "sha256": "95e1b28cd076ef2f3a93b99e1a7b4303f33116106286122b880bc9126a8b3361",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/robotis_op3/meshes/h1.stl",
+        "size_bytes": 497884,
+        "sha256": "e8f44a9170dd74e79efec732e38bbe821af7b96c70fbc328b924aa942714284e",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/robotis_op3/meshes/h2.stl",
+        "size_bytes": 1624784,
+        "sha256": "3846e6a393c52e8837c4dd0020025a72c830f93c9e4039f81bf9b216acfe8171",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/robotis_op3/meshes/la1.stl",
+        "size_bytes": 497884,
+        "sha256": "ac59daa1684dd0591c5946b08102f410412671fb89da64cfe58fd69a300b695b",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/robotis_op3/meshes/la2.stl",
+        "size_bytes": 2886684,
+        "sha256": "d4f3d5d92bfc2223beb3638df56ce1a4773439e53df9a01b64c73a1e932a35d6",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/robotis_op3/meshes/la3.stl",
+        "size_bytes": 1046284,
+        "sha256": "9b422518bcac29dd11e0f2d74e92a2259acda95b5e3c2dc760a267d1527f28b8",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/robotis_op3/meshes/ll1.stl",
+        "size_bytes": 425684,
+        "sha256": "52f5232080e386e98fe3650a0ebd8d9d7635a4bbaa2fa74fc36b215371d2b4f5",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/robotis_op3/meshes/ll2.stl",
+        "size_bytes": 4439184,
+        "sha256": "79ca02f62ac2b63f481bde507765451dc383f7ca51809d01d97e91daf4b05c8b",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/robotis_op3/meshes/ll3.stl",
+        "size_bytes": 2119484,
+        "sha256": "d37f15b6606a7254493bb4a85a5dbc96458074147d526d62e55b36810bdf13e3",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/robotis_op3/meshes/ll4.stl",
+        "size_bytes": 1153284,
+        "sha256": "cf3df30567316d9e6163767a1a71623d0c1c26af384a0103c940829e33433578",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/robotis_op3/meshes/ll5.stl",
+        "size_bytes": 4379584,
+        "sha256": "179cc13c0902f74e5a980de2dbe0be63d6686795b971812ba41c9d70c7401173",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/robotis_op3/meshes/ll6.stl",
+        "size_bytes": 604684,
+        "sha256": "24ff667b02bbd83bd933441c92a36c6aef59cc3909a1b04ab7989ef65d69cced",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/robotis_op3/meshes/ra1.stl",
+        "size_bytes": 497884,
+        "sha256": "59ddcf167b91a08efa5f13cc49ffe489eeec45f820848a9b9e09424ded975c69",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/robotis_op3/meshes/ra2.stl",
+        "size_bytes": 2886684,
+        "sha256": "b33806db6aa5f941d091f0b0b57cf2d9e28b544ecfafa3143c12091ea4e06136",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/robotis_op3/meshes/ra3.stl",
+        "size_bytes": 1046284,
+        "sha256": "bdf69fdc9a3ecf01c9b739a3aa9e0c947219e2d3833b957fc8fc3579808c514e",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/robotis_op3/meshes/rl1.stl",
+        "size_bytes": 425684,
+        "sha256": "ccb377a5c140a8b3dd87cfd380b7d3b22dde63061a7bb7e7d74eaf59ba55511e",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/robotis_op3/meshes/rl2.stl",
+        "size_bytes": 4439184,
+        "sha256": "f4383949503d0e0d5f56ef7e05db74fd2c30966b2f6e1f24a29287784afa8ea5",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/robotis_op3/meshes/rl3.stl",
+        "size_bytes": 2119484,
+        "sha256": "afc6c0c34ef795b55aecb70818dec39c231f5d2e94c830dcb367bf2f23a0896c",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/robotis_op3/meshes/rl4.stl",
+        "size_bytes": 1153284,
+        "sha256": "295cee404e81df0fbe6b499e777c6a3fe381c60f54d63dfdadf31dd1b27a58c1",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/robotis_op3/meshes/rl5.stl",
+        "size_bytes": 4439184,
+        "sha256": "a09d25c702d9189f8f8d36b2b52b05d4e20701885f6bc27007be174ab1a94c4c",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/robotis_op3/meshes/rl6.stl",
+        "size_bytes": 604684,
+        "sha256": "965305365afb535d52b7e97ba4a5cab4e09d7675290e996b632a5847299faff8",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/robotis_op3/package.xml",
+        "size_bytes": 868,
+        "sha256": "e2c120bc9a269d089aa693a6ca7423be256ea2e4191aca03d6bb55b2fa237005",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/robotis_op3/rviz/op.rviz",
+        "size_bytes": 9839,
+        "sha256": "54881849dad684cd4198b5c10d4d8df128611be2c1520655ab2e8a2779ef962f",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/robotis_op3/rviz/op3.rviz",
+        "size_bytes": 9752,
+        "sha256": "b089c8f48a0135ffc05bde4af544e80f07cf7b28da7d23d0b97c1eae12ce1ae5",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/robotis_op3/rviz/op3_walking.rviz",
+        "size_bytes": 10729,
+        "sha256": "64c3cb76ef8c7528a62c4186ad57944a43c17d2816a614a2ed588265ef0d6d96",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/robotis_op3/urdf/gazebo_harness.xacro",
+        "size_bytes": 2085,
+        "sha256": "a501bc3568fed846fbe2540a9a65b58954729b6d432fe5e663c6c50f8aaab5d6",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/robotis_op3/urdf/robotis_op3.gazebo.xacro",
+        "size_bytes": 8634,
+        "sha256": "86c7e828074a3c78a2d4b4bb080c2464d6eef067280edf77e1690cfc30d25311",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/robotis_op3/urdf/robotis_op3.inertia.xacro",
+        "size_bytes": 6757,
+        "sha256": "215b1593fd4bb3c9556cb42faf0cf36ed10fa23b0dd15314c0d74d7ecc40b1b8",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/robotis_op3/urdf/robotis_op3.structure.head.xacro",
+        "size_bytes": 2127,
+        "sha256": "2cb2d06e63175942061bc975e773d5bf439275278724c3b17667651a7277dd78",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/robotis_op3/urdf/robotis_op3.structure.larm.xacro",
+        "size_bytes": 2355,
+        "sha256": "172cf26e62c9ab34f0f66534b1c3b54a309104bd13a3056de0a7f79e56678d5e",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/robotis_op3/urdf/robotis_op3.structure.lleg.xacro",
+        "size_bytes": 4469,
+        "sha256": "7e6378ec61a598f8d5c08534cc85cd67737018d795a30d4538816e0f245d391a",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/robotis_op3/urdf/robotis_op3.structure.rarm.xacro",
+        "size_bytes": 2366,
+        "sha256": "af6ee49978bb7b11b98bd6982d7962f2a76846995b5fc85da25a2e9329407bf5",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/robotis_op3/urdf/robotis_op3.structure.rleg.xacro",
+        "size_bytes": 4484,
+        "sha256": "c753160ce3f01c05840dff7274ff3eab5cf018a98087013dc95ca9ddf212fe82",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/robotis_op3/urdf/robotis_op3.transmissions.xacro",
+        "size_bytes": 602,
+        "sha256": "70e88a66ee9b434412eb341079b0aa4c4a66eb4ff911c0ba6b8cfd217642d285",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/robotis_op3/urdf/robotis_op3.urdf.xacro",
+        "size_bytes": 2042,
+        "sha256": "c34bb2156c6f8ecb30caf7e196e8aef49cb37102a4fe30a0e61b554cd13dcb06",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/robotis_op3/urdf/robotis_op3.visuals.xacro",
+        "size_bytes": 7403,
+        "sha256": "bea80eedc28e300d7f5a7303b8ec00909966156ec37f74c12937e09094b50a40",
+        "git_tracked": true,
+        "remote_main_tree": true
+      }
+    ],
+    "license": "Apache-2.0 (per repo LICENSE)",
+    "factory_validation": "PASS"
+  },
+  {
+    "id": "blender.realsense_d435.v1",
+    "source": "assets/realsense_d435/",
+    "exists": true,
+    "file_count": 36,
+    "files": [
+      {
+        "path": "assets/realsense_d435/CHANGELOG.rst",
+        "size_bytes": 11196,
+        "sha256": "568f5a8e6e19b9928be9e25f7a25cf928835145bb1b61c0c09d5199695d6a78c",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/realsense_d435/CMakeLists.txt",
+        "size_bytes": 861,
+        "sha256": "947fca8a461d4f134715948c3a114cfa347ee30d51f91f380ea84f6aeea8e6d3",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/realsense_d435/LICENSE",
+        "size_bytes": 10758,
+        "sha256": "7092398b52290edddcb41c6e2297f4c6343eb315ea6c83edfdbeea2a73adfbdb",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/realsense_d435/NOTICE.md",
+        "size_bytes": 30548,
+        "sha256": "da7bc58b3a30decbf86926d6938cbd15e4252fd2b674a25223f84110b6af344a",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/realsense_d435/README.md",
+        "size_bytes": 876,
+        "sha256": "0c908c74cb17e394b228d296160709d50e548b87b6e4a39bdb8599c7203f80e5",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/realsense_d435/launch/launch_utils.py",
+        "size_bytes": 1231,
+        "sha256": "cfe1b976a3785082b974419951daa2531cbbc319d217e894ac8ea50523a5e9db",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/realsense_d435/launch/view_model.launch.py",
+        "size_bytes": 2315,
+        "sha256": "995ea005d11ad9e286f42f70a6492264594a89dfe321055fafc3d2f365b018f5",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/realsense_d435/meshes/d435.dae",
+        "size_bytes": 15782439,
+        "sha256": "42f3b66f47a1f8f425a2e4dc07c1d9c283183167d8441f520a15623d98f9bf78",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/realsense_d435/meshes/plug.stl",
+        "size_bytes": 292334,
+        "sha256": "91a0bc6ec83fa24b5dcd4de0d1c0ed78032af2e7ed233b4b232bdbf906fea744",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/realsense_d435/meshes/plug_collision.stl",
+        "size_bytes": 11284,
+        "sha256": "fc210c929bba2c9cf3f4ec074d4e6a38549904e9a1eddee9661f34ef7c610f5f",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/realsense_d435/package.xml",
+        "size_bytes": 1071,
+        "sha256": "6e0df83f3d1ae6b27bab238656c95bfccb29cda9bfc6e99098723747f8abdebf",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/realsense_d435/rviz/urdf.rviz",
+        "size_bytes": 5318,
+        "sha256": "c566e7493283bbe56cb62f9fb7e57e5b2be77a3382c99b7c52b86c6c9f9f0845",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/realsense_d435/urdf/_d405.urdf.xacro",
+        "size_bytes": 7282,
+        "sha256": "81118e87388c06e4cf1b3dc8b114096de21c1b235bd283dafad84d2bd97aebb1",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/realsense_d435/urdf/_d415.urdf.xacro",
+        "size_bytes": 6946,
+        "sha256": "8af3463c89eb788161bc596106113875b72647076357bb9c2adfd7d3c9e02cc5",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/realsense_d435/urdf/_d421.urdf.xacro",
+        "size_bytes": 6312,
+        "sha256": "55468a711e95744fcf801df939b5b8e7afa09c56990307b8cccf7cd6ad009bed",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/realsense_d435/urdf/_d435.urdf.xacro",
+        "size_bytes": 7527,
+        "sha256": "ae3f57e8d38b3a6d5cc9de059e4afe545e4b895717d638b75d2ad0642cfb7f1b",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/realsense_d435/urdf/_d435i.urdf.xacro",
+        "size_bytes": 1472,
+        "sha256": "eda8f0dcf1ca6fb88179cfc8415942dc98b71de9ba50bbeb5cb60d9f09b86602",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/realsense_d435/urdf/_d435i_imu_modules.urdf.xacro",
+        "size_bytes": 2118,
+        "sha256": "adde35b74c532d160a9346be2802d832a3d54967a54f81d994a70be1a71a6bda",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/realsense_d435/urdf/_d436.urdf.xacro",
+        "size_bytes": 8770,
+        "sha256": "fb5abf12bd45a2c69bff2dbe6ba6e2263d192dbab857fd269db5279d6b015866",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/realsense_d435/urdf/_d455.urdf.xacro",
+        "size_bytes": 9429,
+        "sha256": "c921a2bed11f59dfb16d81dcc3358257eee5bd0c3a0f3a1081a4109a9f9b76e4",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/realsense_d435/urdf/_d585.urdf.xacro",
+        "size_bytes": 10876,
+        "sha256": "be3440e6617b794761ed969b01174f82bcb230b40405810f89c279faaa65dcd9",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/realsense_d435/urdf/_materials.urdf.xacro",
+        "size_bytes": 1213,
+        "sha256": "cd8a4b4ab488b57855318e68226329a80310ee45e3aa489dd75222f2c607d005",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/realsense_d435/urdf/_r410.urdf.xacro",
+        "size_bytes": 5407,
+        "sha256": "caf35c226ddeea8c9dda470fbe94c332b24a041f9fa334495d209e706111a878",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/realsense_d435/urdf/_r430.urdf.xacro",
+        "size_bytes": 5363,
+        "sha256": "9e25ac474b160578488c700419f9d254d1470f469c2c0d59edbdc645766f3486",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/realsense_d435/urdf/_usb_plug.urdf.xacro",
+        "size_bytes": 1798,
+        "sha256": "22531ecdc0b09aa3ab4408641432617b000618933e98dc2f488ac31b88c8ad79",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/realsense_d435/urdf/test_d405_camera.urdf.xacro",
+        "size_bytes": 437,
+        "sha256": "a0db6ae9ced56cd347be8f5909c598228860f7a1e5c6083af14b636087d28fc2",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/realsense_d435/urdf/test_d415_camera.urdf.xacro",
+        "size_bytes": 585,
+        "sha256": "8b245348a9893cd7b732fade40458029c5506185716eb6a4f289deb81752d93e",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/realsense_d435/urdf/test_d421_camera.urdf.xacro",
+        "size_bytes": 435,
+        "sha256": "fc4f91ebb289b5f55670a9bc18ee33ea02dffdd714a3ab71e01bd09c8e7aada7",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/realsense_d435/urdf/test_d435_camera.urdf.xacro",
+        "size_bytes": 586,
+        "sha256": "0964a39565f72a12645072503673f27545ab537680248e9f2958233c6df7ea8f",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/realsense_d435/urdf/test_d435_multiple_cameras.urdf.xacro",
+        "size_bytes": 633,
+        "sha256": "b0a930b1da6841ebde9112265e99ccc88f843ae5b9b1c949ce5d1aac2a48ce57",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/realsense_d435/urdf/test_d435i_camera.urdf.xacro",
+        "size_bytes": 444,
+        "sha256": "75fba55a572de8e8294566d07753c45237da21a77c0aad5737622e3b02941aab",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/realsense_d435/urdf/test_d436_camera.urdf.xacro",
+        "size_bytes": 586,
+        "sha256": "0ad49e7c3162cbe861963ba7e9d29b1bf9b507770f64d254196bcf9b294ea167",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/realsense_d435/urdf/test_d455_camera.urdf.xacro",
+        "size_bytes": 437,
+        "sha256": "30ea95596301b2bc04ac543fdae5c0b361638a6f9028ef39304612b3ca2b3333",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/realsense_d435/urdf/test_d585_camera.urdf.xacro",
+        "size_bytes": 823,
+        "sha256": "71ec3ba20e870b08ab205a1a5d270e26ed426973fa517f91551d0849e5b27c0d",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/realsense_d435/urdf/test_r410_camera.urdf.xacro",
+        "size_bytes": 437,
+        "sha256": "af36e887cfaee105a1ada097f5e0581a174384cf99ba2c6ed24b69dfbb7548f7",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/realsense_d435/urdf/test_r430_camera.urdf.xacro",
+        "size_bytes": 437,
+        "sha256": "b1ba8cfe0f09bb7f2845e998e143ac561513dcdc5049b097e3935b77cecf4080",
+        "git_tracked": true,
+        "remote_main_tree": true
+      }
+    ],
+    "license": "Apache-2.0 (per repo LICENSE/NOTICE.md)",
+    "factory_validation": "PASS"
+  },
+  {
+    "id": "blender.robotiq_2f85.v1",
+    "source": "assets/robotiq_2f85/",
+    "exists": true,
+    "file_count": 30,
+    "files": [
+      {
+        "path": "assets/robotiq_2f85/LICENSE",
+        "size_bytes": 1524,
+        "sha256": "a47544ef0ad645c587e46348dc10e68b89c3e74732bd124c005cfcd8ede3b3b8",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/robotiq_2f85/README.md",
+        "size_bytes": 811,
+        "sha256": "a0b3b4b91ee2ff2ae1229a3d3256dff0eb011987de52824b274b520aad7a24d2",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/robotiq_2f85/meshes/collision/2f_85/left_finger.stl",
+        "size_bytes": 19684,
+        "sha256": "f39a50be121122fc1c53c588a762ad1da8a0f64d39bc6f299cbe9b0597e7257b",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/robotiq_2f85/meshes/collision/2f_85/left_finger_tip.stl",
+        "size_bytes": 11284,
+        "sha256": "9d90031cd99106a8be63609f8ff78580638d91cc4167bf66c09198329f2e65cf",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/robotiq_2f85/meshes/collision/2f_85/left_inner_knuckle.stl",
+        "size_bytes": 17984,
+        "sha256": "f250a3fea49be4d1bb2383d9980172c59fc44031193ef2293ca540f756f6c1e6",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/robotiq_2f85/meshes/collision/2f_85/left_knuckle.stl",
+        "size_bytes": 4384,
+        "sha256": "b7ec787f57a7db5b2b14e64ffbedaac28739e38f14aac8afa8b575bac941feb7",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/robotiq_2f85/meshes/collision/2f_85/right_finger.stl",
+        "size_bytes": 19684,
+        "sha256": "1d018fa2f0b50aca5941778d78810b211b1abfc8637c7953451d76d4833ba6f8",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/robotiq_2f85/meshes/collision/2f_85/right_finger_tip.stl",
+        "size_bytes": 11284,
+        "sha256": "126f1559f2f7dca62449a6ca926c609fbdaa93ca66df805ff7c069bb206e3d10",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/robotiq_2f85/meshes/collision/2f_85/right_inner_knuckle.stl",
+        "size_bytes": 17784,
+        "sha256": "c936d951ede875b91c180bd41d45b22ae23f8a39d9c3e09e29066453a8e863ef",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/robotiq_2f85/meshes/collision/2f_85/right_knuckle.stl",
+        "size_bytes": 4384,
+        "sha256": "d151fb38f59748f1e6e627312e2ede96f2c98ba267bf722091665b20c78e7a8d",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/robotiq_2f85/meshes/collision/2f_85/robotiq_base.stl",
+        "size_bytes": 20084,
+        "sha256": "ede5cd7d7846c051b88645f33d6bbb5ed9b36bbef404a19a46557639bfab7060",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/robotiq_2f85/meshes/collision/2f_85/ur_to_robotiq_adapter.stl",
+        "size_bytes": 48884,
+        "sha256": "e5b4eaba7f75c4071c9c0213281af4798098c971891808d87e948383cd2b9aa9",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/robotiq_2f85/meshes/visual/2f_85/left_finger.dae",
+        "size_bytes": 191399,
+        "sha256": "5fb9e5659c735e48eb55269da431cf61b3b7a6745922c1932a7adefb1db86dc3",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/robotiq_2f85/meshes/visual/2f_85/left_finger_tip.dae",
+        "size_bytes": 174578,
+        "sha256": "785ec7a83b4fc6357c211a39bb117833b1cfd4e9bccbef2efc7f35aeb2fdb92e",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/robotiq_2f85/meshes/visual/2f_85/left_inner_knuckle.dae",
+        "size_bytes": 110219,
+        "sha256": "2df009ef28868c90a4904370f5f4995c74ec84e0b8ca1371044e0ea669edcd71",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/robotiq_2f85/meshes/visual/2f_85/left_knuckle.dae",
+        "size_bytes": 78865,
+        "sha256": "1b82214363d9548f3562be70e25cd23217a304c72ccd37bc1551cf1a3a64029d",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/robotiq_2f85/meshes/visual/2f_85/right_finger.dae",
+        "size_bytes": 190861,
+        "sha256": "3b2245b5537eb596d7f8a4c64b12e3aedea46e365fc589019184d3b4200e664f",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/robotiq_2f85/meshes/visual/2f_85/right_finger_tip.dae",
+        "size_bytes": 173460,
+        "sha256": "568371d25ddbcee8e432c0610bdcc7afcd1393d48d973eed92168e353eb4edf5",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/robotiq_2f85/meshes/visual/2f_85/right_inner_knuckle.dae",
+        "size_bytes": 111109,
+        "sha256": "4cc6de99e177773ba755805b58b67537c3af24b2fd8f3a1bf4bbced87d6240a5",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/robotiq_2f85/meshes/visual/2f_85/right_knuckle.dae",
+        "size_bytes": 79122,
+        "sha256": "532b6f6f8794883ff34995701036ca392461f26127757f92003db127693bc57c",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/robotiq_2f85/meshes/visual/2f_85/robotiq_base.dae",
+        "size_bytes": 2159533,
+        "sha256": "761a79d586a48d367d60f146ca77ef7d2821ad790f7b1b1c93b061ac59799267",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/robotiq_2f85/meshes/visual/2f_85/ur_to_robotiq_adapter.dae",
+        "size_bytes": 188335,
+        "sha256": "ed326c745df2942d2efb8dd902ecfafa84c692d360a7c03ce9276ad491614ac4",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/robotiq_2f85/urdf/2f_140.ros2_control.xacro",
+        "size_bytes": 4842,
+        "sha256": "75f0b84cf76a491cdde8abbc8fd2eaec2a1bec1d59175da8d38e2f4c3ba55afb",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/robotiq_2f85/urdf/2f_85.ros2_control.xacro",
+        "size_bytes": 5138,
+        "sha256": "88dd8326b0dda49fa8df261f2b6d907fb8f2b32c5f1ff74fc69aaa355b0c0e37",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/robotiq_2f85/urdf/robotiq_2f_140.xacro",
+        "size_bytes": 9739,
+        "sha256": "76ea141c7b545ffaf22df3ef222eb38b097df6d076b59eb93205e887c6a66aa0",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/robotiq_2f85/urdf/robotiq_2f_140_gripper.urdf.xacro",
+        "size_bytes": 644,
+        "sha256": "e51c7794788d924a1bc0deabe1987d37c3df52cdeffc15e09807d589a1e32013",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/robotiq_2f85/urdf/robotiq_2f_140_macro.urdf.xacro",
+        "size_bytes": 3819,
+        "sha256": "1575443a850fe65a3a88106edbaa7484f074ee3ee67093a22bb2f5d8b4939bab",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/robotiq_2f85/urdf/robotiq_2f_85_gripper.urdf.xacro",
+        "size_bytes": 629,
+        "sha256": "0363af5d37858edb06c809b58b2de2f1a62cb8136ea163f1ce69d306ffb615ed",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/robotiq_2f85/urdf/robotiq_2f_85_macro.urdf.xacro",
+        "size_bytes": 13885,
+        "sha256": "0c144283f72a2d75feb3d90cb49b3cea3f76e19e6026dd169651ec94a3c96fb3",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/robotiq_2f85/urdf/ur_to_robotiq_adapter.urdf.xacro",
+        "size_bytes": 1513,
+        "sha256": "3d52ae3dbe23c20cea598c816fcc745acaed55b77c9e41b92ad55f0623d3d1d7",
+        "git_tracked": true,
+        "remote_main_tree": true
+      }
+    ],
+    "license": "per repo LICENSE",
+    "factory_validation": "PASS"
+  },
+  {
+    "id": "blender.livox_mid360.v1",
+    "source": "assets/livox_mid360/",
+    "exists": true,
+    "file_count": 3,
+    "files": [
+      {
+        "path": "assets/livox_mid360/README.md",
+        "size_bytes": 1196,
+        "sha256": "855a88eb1ea9f8a6761a327eb829357dc8ac22eef1fecc6fdba95647cacd8d3f",
+        "git_tracked": false,
+        "remote_main_tree": false
+      },
+      {
+        "path": "assets/livox_mid360/livox_mid360.stp",
+        "size_bytes": 8030891,
+        "sha256": "b93e9b51282ed319b6aa755e76a132c0eb03306da5f3b9676bcabf2e2ae25f02",
+        "git_tracked": false,
+        "remote_main_tree": false
+      },
+      {
+        "path": "assets/livox_mid360/livox_mid360_fov.stp",
+        "size_bytes": 8291365,
+        "sha256": "549598daaa7336d3a804b33aeace6cc4507dffb28fb9772e45fd780c9df05869",
+        "git_tracked": false,
+        "remote_main_tree": false
+      }
+    ],
+    "license": "Proprietary vendor reference CAD (DJI/Livox) -- publicly downloadable for product-integration use, not an OSS license. Use for internal video-geometry reference only; don't republish the raw file standalone.",
+    "factory_validation": "PASS"
+  },
+  {
+    "id": "blender.ouster_os1.v1",
+    "source": "assets/ouster_os1/",
+    "exists": true,
+    "file_count": 3,
+    "files": [
+      {
+        "path": "assets/ouster_os1/README.md",
+        "size_bytes": 971,
+        "sha256": "58ec8386638b482598b7013cc2740d847252ff9ca5db704dc0b8288dd5902877",
+        "git_tracked": false,
+        "remote_main_tree": false
+      },
+      {
+        "path": "assets/ouster_os1/os1_bh.step",
+        "size_bytes": 12913620,
+        "sha256": "d17dfb75fe7d4573ab18bb3c57fdb8b5a7f36618cbbe8d7b0188068a51872cd8",
+        "git_tracked": false,
+        "remote_main_tree": false
+      },
+      {
+        "path": "assets/ouster_os1/os1_xx.step",
+        "size_bytes": 5123308,
+        "sha256": "ea7f7a44aaa1a2a1f293bfa68b68f8db0ed249c8990e45ad414ac51a2ea03d36",
+        "git_tracked": false,
+        "remote_main_tree": false
+      }
+    ],
+    "license": "Proprietary vendor reference CAD (Ouster) -- publicly downloadable, not an OSS license. Internal reference use only.",
+    "factory_validation": "PASS"
+  },
+  {
+    "id": "blender.ouster_os0.v1",
+    "source": "assets/ouster_os0/",
+    "exists": true,
+    "file_count": 3,
+    "files": [
+      {
+        "path": "assets/ouster_os0/README.md",
+        "size_bytes": 944,
+        "sha256": "6f27e430bb1ff492b43b14fcb9ccf2fb061e4df3f5003cc4194698befecd0682",
+        "git_tracked": false,
+        "remote_main_tree": false
+      },
+      {
+        "path": "assets/ouster_os0/os0_bh.step",
+        "size_bytes": 12913641,
+        "sha256": "4aea6d260c3d4fa52564d3cc330986f194733298d28e6341d0d38abed506e8c5",
+        "git_tracked": false,
+        "remote_main_tree": false
+      },
+      {
+        "path": "assets/ouster_os0/os0_xx.step",
+        "size_bytes": 5123330,
+        "sha256": "18d0f3dc3679c53ecd8f35492034cc19c338637474a23153a4ad672c19d54314",
+        "git_tracked": false,
+        "remote_main_tree": false
+      }
+    ],
+    "license": "Proprietary vendor reference CAD (Ouster) -- publicly downloadable, not an OSS license. Internal reference use only.",
+    "factory_validation": "PASS"
+  },
+  {
+    "id": "blender.ouster_osdome.v1",
+    "source": "assets/ouster_osdome/",
+    "exists": true,
+    "file_count": 3,
+    "files": [
+      {
+        "path": "assets/ouster_osdome/README.md",
+        "size_bytes": 969,
+        "sha256": "7fe0149191f78edd265c2a9196819e19fc00d02aed8ceed04a5f836f8a1f9d20",
+        "git_tracked": false,
+        "remote_main_tree": false
+      },
+      {
+        "path": "assets/ouster_osdome/osdome_bx.step",
+        "size_bytes": 14356373,
+        "sha256": "ed150c9709ec4ca12b6afaff8c4ea1ad585fd683aea6a76891d58aa5cea7a8c6",
+        "git_tracked": false,
+        "remote_main_tree": false
+      },
+      {
+        "path": "assets/ouster_osdome/osdome_xx.step",
+        "size_bytes": 8524425,
+        "sha256": "fdaa68524d0da242da404316c3acad0dd26a9769dc39eac0a1177c9c24ce2283",
+        "git_tracked": false,
+        "remote_main_tree": false
+      }
+    ],
+    "license": "Proprietary vendor reference CAD (Ouster) -- publicly downloadable, not an OSS license. Internal reference use only.",
+    "factory_validation": "PASS"
+  },
+  {
+    "id": "blender.zed2i.v1",
+    "source": "assets/zed2i/",
+    "exists": true,
+    "file_count": 2,
+    "files": [
+      {
+        "path": "assets/zed2i/README.md",
+        "size_bytes": 999,
+        "sha256": "dc56f8f5baff935ae4d5f93bc8fd27e6e4bf59331e5b8d30d6c443a675585ce4",
+        "git_tracked": false,
+        "remote_main_tree": false
+      },
+      {
+        "path": "assets/zed2i/zed2i.step",
+        "size_bytes": 3681669,
+        "sha256": "63355c9d0856cf45fc6e49840ac589e80f4587e38ddf6b6b3144ec9fa279e14a",
+        "git_tracked": false,
+        "remote_main_tree": false
+      }
+    ],
+    "license": "Proprietary vendor reference CAD (Stereolabs) -- publicly downloadable, not an OSS license. Internal reference use only.",
+    "factory_validation": "PASS"
+  },
+  {
+    "id": "blender.raspberry_pi5.v1",
+    "source": "assets/raspberry_pi5/",
+    "exists": true,
+    "file_count": 3,
+    "files": [
+      {
+        "path": "assets/raspberry_pi5/LICENSE.txt",
+        "size_bytes": 1881,
+        "sha256": "4ca2d350552b24137e55587e13fb09a249b757c6af49652ff02ea524d154c7fc",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/raspberry_pi5/README.md",
+        "size_bytes": 1583,
+        "sha256": "2e637cef7b41b900f1b55bf503587588d776ed75fe472fe1a4e49f66c7e6b284",
+        "git_tracked": true,
+        "remote_main_tree": true
+      },
+      {
+        "path": "assets/raspberry_pi5/raspberry_pi5.step",
+        "size_bytes": 142473529,
+        "sha256": "625683b44669593fbeba2fecb9b3555b7e5a16c846c7fde0eab505c66478b3e0",
+        "git_tracked": false,
+        "remote_main_tree": false
+      }
+    ],
+    "license": "MIT (c) Raspberry Pi Ltd -- LICENSE.txt included in assets/raspberry_pi5/; genuinely OSS unlike the LiDAR/camera CAD in this folder, which are proprietary vendor reference-only",
+    "factory_validation": "PASS"
+  },
+  {
+    "id": "edu.bearing_6204.v1",
+    "source": "assets/education/generated/bearing_6204.blend",
+    "exists": true,
+    "file_count": 1,
+    "files": [
+      {
+        "path": "assets/education/generated/bearing_6204.blend",
+        "size_bytes": 237173,
+        "sha256": "b352ab136b6a7f9a29f64e412ee34605d53975dc9019bd15b4bd2d0568c8fbb6",
+        "git_tracked": false,
+        "remote_main_tree": false
+      }
+    ],
+    "license": "CC0-1.0",
+    "factory_validation": "PASS"
+  },
+  {
+    "id": "edu.spur_gears_20_40.v1",
+    "source": "assets/education/generated/spur_gears_20_40.blend",
+    "exists": true,
+    "file_count": 1,
+    "files": [
+      {
+        "path": "assets/education/generated/spur_gears_20_40.blend",
+        "size_bytes": 135189,
+        "sha256": "104e336318474d0e30b94abbf84372a17506e5a0f253aafbae1bc0896c0df636",
+        "git_tracked": false,
+        "remote_main_tree": false
+      }
+    ],
+    "license": "CC0-1.0",
+    "factory_validation": "PASS"
+  },
+  {
+    "id": "edu.bldc_motor_concept.v1",
+    "source": "assets/education/generated/bldc_motor_concept.blend",
+    "exists": true,
+    "file_count": 1,
+    "files": [
+      {
+        "path": "assets/education/generated/bldc_motor_concept.blend",
+        "size_bytes": 178415,
+        "sha256": "6478b90527c611c6b45ee50734e6caa679e8eae5ca61c3c8cb7d6826485811c2",
+        "git_tracked": false,
+        "remote_main_tree": false
+      }
+    ],
+    "license": "CC0-1.0",
+    "factory_validation": "PASS"
+  },
+  {
+    "id": "edu.pcb_layered.v1",
+    "source": "assets/education/generated/pcb_layered.blend",
+    "exists": true,
+    "file_count": 1,
+    "files": [
+      {
+        "path": "assets/education/generated/pcb_layered.blend",
+        "size_bytes": 123948,
+        "sha256": "a492df346ac6e20c97037649248292f54474bf37e41af4ceb08ae8dcfbc5bf85",
+        "git_tracked": false,
+        "remote_main_tree": false
+      }
+    ],
+    "license": "CC0-1.0",
+    "factory_validation": "PASS"
+  },
+  {
+    "id": "edu.mechanical_primitives.v1",
+    "source": "assets/education/generated/shaft_coupling_spring_fastener_battery.blend",
+    "exists": true,
+    "file_count": 1,
+    "files": [
+      {
+        "path": "assets/education/generated/shaft_coupling_spring_fastener_battery.blend",
+        "size_bytes": 174080,
+        "sha256": "d37958e2b25b6deb484dc45ecd5d69cf51c26dde2f6283099d749ef2743a0cc1",
+        "git_tracked": false,
+        "remote_main_tree": false
+      }
+    ],
+    "license": "CC0-1.0",
+    "factory_validation": "PASS"
+  },
+  {
+    "id": "edu.energy_structural_thermal.v1",
+    "source": "assets/education/generated/beam_bracket_heatsink_fan.blend",
+    "exists": true,
+    "file_count": 1,
+    "files": [
+      {
+        "path": "assets/education/generated/beam_bracket_heatsink_fan.blend",
+        "size_bytes": 167421,
+        "sha256": "7437e82721c1c6c4b459a09c3da8958ef8b47e481bfa0703bd2471849ba0ed2d",
+        "git_tracked": false,
+        "remote_main_tree": false
+      }
+    ],
+    "license": "CC0-1.0",
+    "factory_validation": "PASS"
+  }
+]

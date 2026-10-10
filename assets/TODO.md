@@ -1,9 +1,10 @@
 # Pending asset imports
 
-Not yet in `assets/`. Raspberry Pi 5 was on this list as of 2026-09-23 but turned out to have a
-real direct-download URL after all (`pip.raspberrypi.com/categories/892-raspberry-pi-5`, MIT
-licensed) — it's imported now, see `raspberry_pi5/`. The four items below are confirmed actually
-gated (form/login/account/addon), not just under-searched.
+Not available in a clean clone. Some STEP files below exist only in the current local worktree
+and are ignored by Git. Their presence does not mean they are included in the public repository
+or that their current rights permit redistribution. See `docs/assets/EXISTING_ASSET_AUDIT.md`.
+Raspberry Pi 5's folder has a local MIT license file, but the STEP file's coverage by that license
+has not been independently confirmed.
 
 ## Confirmed workflow for these four
 No anonymous direct-download URL exists for any of these — each needs a human to log in / fill a
@@ -27,6 +28,7 @@ trying to script around the gate; it isn't going to open.
   addon → search → download), not from this repo.
 - [ ] **BlenderKit: Industrial Assets** (conveyor, trolley, utility box) — same, addon-only.
 
-## Already done, for contrast
-Direct-download-without-login worked for: `livox_mid360/`, `ouster_os1/`, `ouster_os0/`,
-`ouster_osdome/`, `zed2i/`, `raspberry_pi5/` — see the main table in `README.md`.
+## Local-only assets, not clone-reproducible
+The current worktree has files under `livox_mid360/`, `ouster_os1/`, `ouster_os0/`,
+`ouster_osdome/`, `zed2i/`, and `raspberry_pi5/`. All listed CAD model files are ignored by Git.
+Their hashes, sizes, Git state, and local license notes are recorded in the audit report.

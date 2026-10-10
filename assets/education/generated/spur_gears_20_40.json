@@ -1,0 +1,24 @@
+{
+  "scene": "spur_gears_20_40",
+  "schema": "education-asset-metadata/v1",
+  "units": "m",
+  "license": "CC0-1.0",
+  "youtube_commercial_use": "allowed",
+  "redistribution": "allowed with CC0 dedication",
+  "generator": "assets/education/generate_assets.py",
+  "ratio": 2.0,
+  "center_distance_m": 0.06,
+  "module_m": 0.002,
+  "pinion_teeth": 20,
+  "gear_teeth": 40,
+  "profile": "stylized polygonal teeth, non-involute; pitch radii give 0.06 m center distance",
+  "blend_file": "spur_gears_20_40.blend",
+  "source_sha256": "104e336318474d0e30b94abbf84372a17506e5a0f253aafbae1bc0896c0df636",
+  "objects": [
+    "Pinion_20T",
+    "Gear_40T",
+    "Pinion_Hub",
+    "Gear_Hub"
+  ],
+  "animation_ready": true
+}
