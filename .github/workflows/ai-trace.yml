@@ -17,7 +17,7 @@ jobs:
       - name: Install locked V12 execution groups for full CPU regressions
         run: |
           python scripts/export_v12_requirements.py --groups sim-math sim-can sim-motor --output "$RUNNER_TEMP/v12-requirements.txt"
-          python -m pip install --no-deps --require-hashes --requirements "$RUNNER_TEMP/v12-requirements.txt"
+          python -m pip install --no-deps --require-hashes -r "$RUNNER_TEMP/v12-requirements.txt"
       - name: Validate checked-in AI execution trace
         run: python scripts/validate_ai_trace.py pilots/v10_rag_poc/data/ai_trace.json
       - name: Validate checked-in V9-compatible RAG manifest
