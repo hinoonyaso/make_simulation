@@ -58,8 +58,8 @@ uv run python scripts/produce_lesson.py \
 | 주제 | 자료 | 표현 |
 |---|---|---|
 | 베어링 6204 | [PNG](assets/education/generated/bearing_6204.png) · [spec](examples/education/bearing.json) | Blender asset 및 lesson |
-| BLDC 모터 개념 모델 | [PNG](assets/education/generated/bldc_motor_concept.png) · [spec](examples/education/bldc_motor.json) | 교육용 단순 형상 |
-| 적층 PCB | [PNG](assets/education/generated/pcb_layered.png) · [spec](examples/education/pcb_via.json) | 교육용 층 구조 |
+| BLDC 모터 개념 모델 | [PNG](assets/education/generated/bldc_motor_concept.png) | 교육용 3D 자산 미리보기 |
+| 적층 PCB | [PNG](assets/education/generated/pcb_layered.png) | 교육용 3D 자산 미리보기 |
 | RAG | [trace](pilots/v10_rag_poc/data/ai_trace.json) | trace 기반 예시, 제한은 [pilot 문서](pilots/v10_rag_poc/README.md) 참조 |
 
 위 파일이 현재 체크아웃에서 존재하는지 먼저 확인하세요. Preview 영상은 로컬 실행으로 생성하며, 무음 Preview는 나레이션 완성본이 아닙니다.
