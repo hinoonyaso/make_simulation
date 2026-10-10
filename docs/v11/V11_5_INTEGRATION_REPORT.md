@@ -27,7 +27,7 @@ Date: 2026-10-10 (KST). Baseline local/remote HEAD was `01c4a8f489e49ab05d2528a4
 | Sampled pixel review | PASS, scoped | H1 116/117/175/233/234/350: hold → 0.51× → hold and mesh/graph poses; PID boundary/response samples; YOLO phase transitions; RAG splice frames 254/255/509/510. |
 | Whole-video motion playback | NOT_RUN | Numerical updates and sampled pixels only; no claim of continuous perceptual review. |
 | Audio/subtitle QA | NOT_APPLICABLE | Explicitly excluded by the V11.5 request. |
-| Remote CPU GitHub Actions | PENDING_PUSH | Workflow now discovers every test, including previously omitted YOLO/RAG-selection tests. Update after actual push/run. |
+| Remote CPU GitHub Actions | PASS | Implementation commit `c208f0e3f0dd5f237d547800f4d10d2a12840f45`; [run 38020559616](https://github.com/hinoonyaso/make_simulation/actions/runs/38020559616). Job `114120410443` logs: **114 tests in 4.036 s, OK**. All trace/manifest/capability/syntax/projection steps succeeded. |
 | Remote manual render integration | NOT_RUN | No local GH CLI/API token or connector workflow-dispatch method. Existing manual policy retained. Exact dispatch: `gh workflow run ai-video-integration.yml --repo hinoonyaso/make_simulation --ref main`; then `gh run list --workflow ai-video-integration.yml --repo hinoonyaso/make_simulation`. |
 
 Manual render CI now checks PID render-update states and common trace/timeline/media gates, retaining Quantization/Attention/NMS/replay and RAG rendering. Both PID and RAG MP4s are included in upload artifacts. H1 host Blender and optional YOLO inference were exercised locally; provisioning those remote jobs remains separate.
@@ -74,3 +74,5 @@ PID short timeline: hold [0,141), response [141,282), replay [282,422). Long tim
 - P0: no unresolved failure in the implemented/tested motion, phase speed, PID state mapping or execution-cache scenarios.
 - P1 environment: manual remote render CI is NOT_RUN without workflow-dispatch authentication. Windows Blender and local Chromium rendering required the approved host process context; an ordinary restricted WSL subprocess can still be blocked. Runtime failures remain explicit.
 - P2 scope: whole-video perceptual playback was not performed. Motion thresholds are configurable only through the documented metadata/type policy and are not validated against arbitrary real sensors. Native Windows/network filesystem execution locking is not supported by this test evidence. No new world/model/controller/speech capability is implied.
+
+Implementation commit `c208f0e` was pushed normally to `origin/main`. The unchanged-code post-commit YOLO invocation reused both caches (0 adapter calls; 1.3521 s total), confirming commit metadata does not invalidate the verified render. The following documentation-only commit records the completed remote result; its implementation is identical.

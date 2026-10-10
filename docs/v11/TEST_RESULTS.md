@@ -94,3 +94,5 @@ The rows above describe the earlier implementation pass and are superseded for t
 ## V11.5 validation (2026-10-10)
 
 Baseline 87 tests passed at `01c4a8f`; the modified local suite passes **114 tests**. Added evidence covers return motion/noise/spikes/units, playback speed and source endpoints, discrete PID boundary states, actual MuJoCo execution reuse, mocked YOLO inference call count, process-level reservations, corruption/incomplete rejection and render timeline tampering. Real YOLO and H1 repeated CLI invocations also report zero adapter calls on hits. Actual H1/PID/YOLO/RAG/Quantization media and exact performance observations are recorded in [V11.5 integration report](V11_5_INTEGRATION_REPORT.md). CI definitions and actual remote CI results are reported separately there.
+
+V11.5 remote CPU CI also passed: [run 38020559616](https://github.com/hinoonyaso/make_simulation/actions/runs/38020559616), implementation `c208f0e`, **114 tests / 4.036 s / OK**, with all workflow steps successful. Manual render integration remains NOT_RUN as documented in the V11.5 report.
