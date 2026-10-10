@@ -195,12 +195,15 @@ class MotorFOCAdapter:
         return errors
 
     def build_visual_plan(self, trace):
+        from core.mechanism.engineering_playback import interpolation_for_signal
         p = trace["payload"]
         return {"kind": "engineering", "domain": trace["domain"], "topic": trace["topic"],
                 "title": "PMSM FOC: 3상 전류에서 dq 전류와 부하 응답까지",
                 "trace_id": trace["trace_id"], "timestamps": p["timestamps"],
                 "signals": p["signals"], "units": {k: v["unit"] for k, v in p["signals"].items()},
                 "parameters": p["parameters"], "control": p["control"],
+                "signal_interpolation": {name: interpolation_for_signal(name)
+                                         for name in p["signals"]},
                 "visualization": "multichannel_waveforms", "source_time_unit": "s",
                 "display_stride": max(1, len(p["timestamps"])//1200)}
 

@@ -22,4 +22,8 @@ This report records local execution on Ubuntu 24.04.4 LTS / WSL2 / x86_64, Pytho
 - PyBaMM and Renode remain optional and were not installed or runtime-tested.
 - The first PR-triggered remote run (Engineering simulation `38030323845`, AI trace `38030323831`) exposed two CI environment gaps: Manim's `manimpango` build could not find `pangocairo`, and the existing full regression workflow did not install the new V12 execution groups. The focused engineering math, CAN, FOC and trace/timeline jobs passed. Workflow fixes add the Ubuntu Pango/Cairo build packages and install only the hash-locked V12 execution groups in the full regression job. The subsequent full regression and preview-render runs passed; details are recorded in [TEST_RESULTS.md](TEST_RESULTS.md).
 
+## V12.1 accuracy hardening status
+
+The V12.1 local review is recorded in [TEST_RESULTS.md](TEST_RESULTS.md). Physics now builds its terminal source clock before sizing solver arrays; engineering charts use separate rows for different physical units and one shared source-time axis; frame cursors sample the trace through the unified timeline; CAN validation recomputes all protocol-critical evidence and event ticks. Local validation: 136 tests passed, Python compilation and diff checks are reported after execution in the task summary, and all three current preview MP4s passed full decode. Selected frames were visually inspected. Remote CI is **NOT_RUN** for the current local changes because they have not been pushed; earlier V12 CI results above do not validate V12.1.
+
 No base PyTorch/MuJoCo/Manim dependencies were upgraded by the V12 group setup. No existing `topics/` media, narration, robot assets, meshes, checkpoints or maps were intentionally modified.

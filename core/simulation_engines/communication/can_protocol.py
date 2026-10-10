@@ -9,6 +9,11 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 CRC15_POLY = 0x4599
+SUPPORTED_PROTOCOL_EVENTS = {
+    "TX_REQUEST", "ARBITRATION_LOST", "ARBITRATION_WON",
+    "IDENTICAL_ARBITRATION_FIELDS", "BIT_ERROR_EQUAL_ARBITRATION",
+    "IDENTICAL_FRAME_TRANSMITTERS", "ACK", "ACK_MISSING",
+}
 
 
 @dataclass(frozen=True)
@@ -113,9 +118,11 @@ def _arbitration_key(frame: EncodedFrame) -> tuple[int, ...]:
 
 
 def _wire_tick_for_raw_bit(frame: EncodedFrame, raw_bit_index: int) -> int:
-    """Return the zero-based physical wire tick after stuffing the sent prefix."""
-    stuffed, _ = bit_stuff(frame.crc_input_bits[:raw_bit_index + 1])
-    return len(stuffed) - 1
+    """Return the zero-based wire slot of a raw bit (stuffing before, not after it)."""
+    if type(raw_bit_index) is not int or not 0 <= raw_bit_index < len(frame.crc_input_bits):
+        raise ValueError("raw bit index is outside the encoded frame")
+    stuffed_prefix, _ = bit_stuff(frame.crc_input_bits[:raw_bit_index])
+    return len(stuffed_prefix)
 
 
 def arbitrate(raw_frames: list[dict], *, bitrate: int = 1_000_000,
@@ -184,16 +191,17 @@ def arbitrate(raw_frames: list[dict], *, bitrate: int = 1_000_000,
         winner_nodes = [frame.node for frame in winners] if acked else []
         status = "success" if acked else "no_ack_receiver"
         if shared_identical:
-            events.append({"timestamp": len(wire) - 11, "node": ",".join(f.node for f in winners),
+            events.append({"timestamp": len(wire) - 3, "node": ",".join(f.node for f in winners),
                            "event": "IDENTICAL_FRAME_TRANSMITTERS"})
     if acked:
         # ACK slot is before ACK delimiter + EOF + intermission.
-        ack_index = len(wire) - 11
+        ack_index = len(wire) - 12
         wire = (*wire[:ack_index], 0, *wire[ack_index + 1:])
-        events.extend({"timestamp": len(wire) - 11, "node": receiver, "event": "ACK"}
+        events.extend({"timestamp": ack_index, "node": receiver, "event": "ACK"}
                       for receiver in receivers[:1])
-    else:
-        events.append({"timestamp": len(wire) - 11, "node": "BUS", "event": "ACK_MISSING"})
+    elif status != "bit_error_equal_arbitration":
+        # ACK_MISSING is meaningful only after a complete frame reached its ACK slot.
+        events.append({"timestamp": len(wire) - 12, "node": "BUS", "event": "ACK_MISSING"})
     events.sort(key=lambda event: event["timestamp"])
     bits = list(wire)
     return {"status": status, "bitrate_hz": bitrate,

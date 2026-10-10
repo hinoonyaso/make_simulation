@@ -15,6 +15,34 @@ from core.mechanism.protocol import MechanismRequest
 from core.mechanism.trace_contract import make_envelope, validate_envelope
 
 
+def _build_timestamps(duration: float, sample_period: float, *, max_samples: int = 1_000_000) -> np.ndarray:
+    """Build an increasing output clock that always includes the exact stop time."""
+    if (isinstance(duration, bool) or not isinstance(duration, (int, float))
+            or not math.isfinite(duration) or duration <= 0):
+        raise ValueError("duration must be finite and greater than zero")
+    if (isinstance(sample_period, bool) or not isinstance(sample_period, (int, float))
+            or not math.isfinite(sample_period) or sample_period <= 0):
+        raise ValueError("sample_period must be finite and greater than zero")
+    ratio = duration / sample_period
+    if not math.isfinite(ratio) or ratio > max_samples:
+        raise ValueError("duration/sample_period must produce 2..1,000,000 samples")
+    count = int(math.floor(ratio + 1e-12)) + 1
+    if count > max_samples:
+        raise ValueError("duration/sample_period must produce 2..1,000,000 samples")
+    timestamps = np.arange(count, dtype=float) * sample_period
+    tolerance = max(sample_period * 1e-10, math.ulp(float(duration)) * 2)
+    if math.isclose(float(timestamps[-1]), duration, rel_tol=0.0, abs_tol=tolerance):
+        timestamps[-1] = duration
+    else:
+        timestamps = np.append(timestamps, duration)
+    if len(timestamps) < 2 or len(timestamps) > max_samples:
+        raise ValueError("duration/sample_period must produce 2..1,000,000 samples")
+    if (not np.isfinite(timestamps).all() or timestamps[0] != 0.0
+            or timestamps[-1] != duration or np.any(np.diff(timestamps) <= 0)):
+        raise ValueError("duration/sample_period produced an invalid timestamp sequence")
+    return timestamps
+
+
 class PhysicsOscillatorAdapter:
     def __init__(self, capability=None):
         self.capability = capability or {}
@@ -46,12 +74,8 @@ class PhysicsOscillatorAdapter:
         sample = self._number(config, "sample_period_s", 0.01, lower=0, strict=True)
         rtol = self._number(config, "rtol", 1e-9, lower=0, strict=True)
         atol = self._number(config, "atol", 1e-11, lower=0, strict=True)
-        count = int(math.floor(duration / sample + 1e-12)) + 1
-        if count < 2 or count > 1_000_000:
-            raise ValueError("duration/sample_period must produce 2..1,000,000 samples")
-        timestamps = np.arange(count, dtype=float) * sample
-        if not math.isclose(float(timestamps[-1]), duration, rel_tol=0.0, abs_tol=sample*1e-10):
-            timestamps = np.append(timestamps, duration)
+        timestamps = _build_timestamps(duration, sample)
+        count = len(timestamps)
         actual_force = lambda t: force * np.sin(2 * math.pi * force_hz * t)
 
         time = sp.symbols("t", real=True)
@@ -125,7 +149,8 @@ class PhysicsOscillatorAdapter:
                                    "point mass", "force is zero or sinusoidal as configured"],
                    "parameters": {"mass_kg": m, "damping_n_s_m": c, "stiffness_n_m": k,
                                   "initial_displacement_m": x0, "initial_velocity_m_s": v0,
-                                  "force_amplitude_n": force, "force_frequency_hz": force_hz},
+                                  "force_amplitude_n": force, "force_frequency_hz": force_hz,
+                                  "duration_s": duration},
                    "solver": {"name": "scipy.solve_ivp", "method": "DOP853", "rtol": rtol,
                               "atol": atol, "sample_period_s": sample},
                    "math": {"symbolic_equation": str(equation), "sympy_solution": str(sympy_solution) if sympy_solution is not None else None,
@@ -160,6 +185,13 @@ class PhysicsOscillatorAdapter:
             if p["mass_kg"] <= 0 or p["stiffness_n_m"] <= 0 or p["damping_n_s_m"] < 0:
                 errors.append("oscillator physical parameters are outside valid range")
             signals = payload["signals"]
+            times = np.asarray(payload["timestamps"], dtype=float)
+            expected_duration = p.get("duration_s", float(times[-1]) if len(times) else None)
+            if (len(times) < 2 or times[0] != 0.0 or times[-1] != expected_duration
+                    or payload["validation"]["sample_count"] != len(times)):
+                errors.append("oscillator duration/sample count does not match source timestamps")
+            if trace.get("timestamps") != payload.get("timestamps"):
+                errors.append("oscillator envelope and payload timestamps differ")
             x = np.asarray(signals["position"]["values"], dtype=float)
             v = np.asarray(signals["velocity"]["values"], dtype=float)
             e = np.asarray(signals["total_energy"]["values"], dtype=float)

@@ -16,6 +16,9 @@ from manim_kit import apply_theme, txt, P
 from core.mechanism.storyboard import validate_phase_contract
 from core.mechanism.timeline import validate_timeline
 from core.mechanism.pid_playback import PIDPlayback
+from core.mechanism.engineering_playback import (
+    engineering_state_for_frame, interpolation_for_signal, source_time_to_x,
+)
 
 
 def text(value, size=24, color=P.fg, width=None):
@@ -46,6 +49,7 @@ class MechanismTraceScene(Scene):
         errors = validate_timeline(timeline, expected_phase_ids=[beat.get("phase_id") for beat in beats])
         if errors:
             raise ValueError("invalid shared mechanism timeline: " + "; ".join(errors))
+        self.timeline = timeline
         fps = timeline["fps"]
         if fps != 30:
             raise ValueError("common Manim renderer requires a 30 fps shared timeline")
@@ -85,12 +89,47 @@ class MechanismTraceScene(Scene):
             if minimum_frames > duration_frames:
                 raise ValueError(f"phase {beat['phase_id']} needs {minimum_frames} transition frames, "
                                  f"only {duration_frames} presentation frames are available")
-            self.play(*anims, run_time=minimum_frames / fps)
-            self.wait((duration_frames - minimum_frames) / fps)
+            cursor_spec = getattr(self, "_phase_cursors", {}).get(beat["phase_id"])
+            if cursor_spec:
+                cursor, time_label, x0, x1, y_bottom, y_top = cursor_spec
+                driver = ValueTracker(0)
+                observed = getattr(self, "_engineering_frame_observed", None)
+                if observed is None:
+                    observed = self._engineering_frame_observed = {}
+
+                def update_cursor(frame_index):
+                    state = engineering_state_for_frame(self.plan, self.timeline, frame_index)
+                    x = source_time_to_x(state["source_time_sec"], self.timeline["source_range_sec"], x0, x1)
+                    cursor.put_start_and_end_on([x, y_bottom, 0], [x, y_top, 0])
+                    time_label.become(text(f"source t = {state['source_time_sec']:.4f} s", 14, P.active)
+                                      .move_to([x0 + 1.45, y_bottom - .3, 0]))
+                    observed[frame_index] = state
+
+                def cursor_animation(first_frame, span):
+                    def update(_, alpha):
+                        frame_index = first_frame + min(span - 1, int(round(alpha * span)))
+                        update_cursor(frame_index)
+                    return UpdateFromAlphaFunc(driver, update, rate_func=linear)
+
+                start_frame = phase["presentation_start_frame"]
+                self.play(*anims, cursor_animation(start_frame, minimum_frames),
+                          run_time=minimum_frames / fps)
+                remaining_frames = duration_frames - minimum_frames
+                if remaining_frames:
+                    self.play(cursor_animation(start_frame + minimum_frames, remaining_frames),
+                              run_time=remaining_frames / fps)
+            else:
+                self.play(*anims, run_time=minimum_frames / fps)
+                self.wait((duration_frames - minimum_frames) / fps)
             if isolate_phases:
                 self.clear()
             else:
                 self.remove(header, caption)
+        debug_path = os.environ.get("V121_ENGINEERING_FRAME_DEBUG")
+        if debug_path and getattr(self, "_engineering_frame_observed", None) is not None:
+            Path(debug_path).write_text(json.dumps(
+                [self._engineering_frame_observed[i] for i in sorted(self._engineering_frame_observed)],
+                ensure_ascii=False), encoding="utf-8")
 
     def _build_graphic(self):
         kind = self.plan["kind"]
@@ -119,14 +158,19 @@ class MechanismTraceScene(Scene):
         def label(value, y=1.9, color=muted, size=24):
             return text(value, size, color, 11.5).move_to([0, y, 0])
 
-        def curve_group(signal_names, title_text, *, duration=2.0, x0=-5.5, x1=5.5, y0=-.35, yscale=1.45):
+        self._phase_cursors = {}
+
+        def curve_group(signal_names, title_text, *, phase_id=None, x0=-5.5, x1=5.5,
+                        plot_bottom=-1.65, plot_top=1.05, title_y=2.0):
             signals = p["signals"]
             available = [(name, signals[name]) for name in signal_names if name in signals]
             if not available:
                 return VGroup(label(title_text), label("Trace 표본 없음", 0, P.error)), []
-            all_values = [float(value) for _, signal in available for value in signal["values"]]
-            low, high = min(all_values), max(all_values)
-            if abs(high-low) < 1e-12: low, high = low-1, high+1
+            source_range = self.timeline.get("source_range_sec")
+            if not source_range or len(source_range) != 2 or source_range[1] <= source_range[0]:
+                raise ValueError("engineering waveform requires a positive shared source-time range")
+            units = {signal["unit"] for _, signal in available}
+            stacked = len(units) > 1
             palette = [active, result, sensor, P.error]
             short_names = {"position":"x", "velocity":"v", "kinetic_energy":"K", "potential_energy":"U",
                            "total_energy":"E", "external_force":"F", "analytic_position":"x analytic",
@@ -137,26 +181,68 @@ class MechanismTraceScene(Scene):
                            "current_d_reference":"i_d ref", "current_q_reference":"i_q ref",
                            "current_d_feedback":"i_d fb", "current_q_feedback":"i_q fb",
                            "speed_rad_s":"ω", "speed_reference":"ω ref", "speed_rpm":"rpm", "load_torque":"τ load"}
-            graph = VGroup(label(title_text, 2.0, muted, 22),
-                           Line([x0,y0,0],[x1,y0,0],color=P.faint),
-                           Line([x0,-1.85,0],[x0,1.45,0],color=P.faint))
-            anims = [FadeIn(graph[0]), Create(graph[1]), Create(graph[2])]
+            graph = VGroup(label(title_text, title_y, muted, 22),
+                           Line([x0,plot_bottom,0],[x1,plot_bottom,0],color=P.faint),
+                           Line([x0,plot_bottom,0],[x0,plot_top,0],color=P.faint),
+                           text(f"{source_range[0]:.4g} s",13,muted).move_to([x0+.35,plot_bottom-.2,0]),
+                           text(f"{source_range[1]:.4g} s",13,muted).move_to([x1-.35,plot_bottom-.2,0]))
+            anims = [FadeIn(graph[0]), Create(graph[1]), Create(graph[2]),
+                     FadeIn(graph[3]), FadeIn(graph[4])]
+            lane_height = (plot_top - plot_bottom) / max(1, len(available)) if stacked else plot_top-plot_bottom
             for idx, (name, signal) in enumerate(available):
                 times = np.asarray(signal.get("timestamps", p.get("timestamps", [])), dtype=float)
                 values = np.asarray(signal["values"], dtype=float)
                 stride = max(1, len(values)//700)
-                times, values = times[::stride], values[::stride]
+                indices = list(range(0, len(values), stride))
+                if indices[-1] != len(values)-1:
+                    indices.append(len(values)-1)
+                times, values = times[indices], values[indices]
                 if len(times) < 2: continue
-                tlo, thi = float(times[0]), float(times[-1])
-                if thi <= tlo: continue
-                xs = x0 + (times-tlo)/(thi-tlo)*(x1-x0)
-                ys = -1.75 + (values-low)/(high-low)*3.0
-                line = polyline([[float(x),float(y),0] for x,y in zip(xs,ys)], palette[idx % len(palette)], 3)
-                tag = text(f"{short_names.get(name, name)} · {signal['unit']}", 16,
-                           palette[idx % len(palette)], 2.9)
-                tag.move_to([x0+1.4, 1.45-idx*.34, 0])
+                xs = [source_time_to_x(float(t), source_range, x0, x1) for t in times]
+                low, high = float(np.min(values)), float(np.max(values))
+                if abs(high-low) < 1e-12:
+                    low, high = low-1, high+1
+                if stacked:
+                    lane_bottom = plot_bottom + idx*lane_height + .08
+                    lane_top = plot_bottom + (idx+1)*lane_height - .08
+                else:
+                    lane_bottom, lane_top = plot_bottom+.08, plot_top-.08
+                ys = lane_bottom + (values-low)/(high-low)*(lane_top-lane_bottom)
+                policy = interpolation_for_signal(name)
+                points = []
+                if policy == "zero_order_hold":
+                    for sample_index, (x_value, y_value) in enumerate(zip(xs, ys)):
+                        if sample_index:
+                            points.append([float(x_value), float(ys[sample_index-1]), 0])
+                        points.append([float(x_value), float(y_value), 0])
+                    points.append([x1, float(ys[-1]), 0])
+                else:
+                    points = [[float(x_value),float(y_value),0] for x_value,y_value in zip(xs,ys)]
+                    if times[-1] < source_range[1]:
+                        points.append([x1, float(ys[-1]), 0])
+                line = polyline(points, palette[idx % len(palette)], 3)
+                if stacked:
+                    tag_x = x0 + min(2.2, (x1 - x0) * .2)
+                    tag_y = lane_top-.13
+                    tag_width = 4.3
+                else:
+                    # Same-unit curves share one quantitative axis. Present
+                    # their value ranges as a compact horizontal legend so
+                    # labels do not overlap while descending over the plot.
+                    tag_x = x0 + (idx + .5) * (x1 - x0) / len(available)
+                    tag_y = 1.48
+                    tag_width = min(3.2, (x1 - x0) / len(available) - .15)
+                tag = text(f"{short_names.get(name, name)} · {signal['unit']}  [{low:.3g}, {high:.3g}]", 14 if stacked else 16,
+                           palette[idx % len(palette)], tag_width)
+                tag.move_to([tag_x, tag_y, 0])
                 graph.add(line, tag)
                 anims.extend([Create(line), FadeIn(tag)])
+            cursor = Line([x0,plot_bottom,0],[x0,plot_top,0],color=P.active,stroke_width=2.5)
+            time_label = text(f"source t = {source_range[0]:.4f} s",14,P.active).move_to([x0+1.45,plot_bottom-.3,0])
+            graph.add(cursor, time_label)
+            anims.extend([FadeIn(cursor), FadeIn(time_label)])
+            if phase_id:
+                self._phase_cursors[phase_id] = (cursor,time_label,x0,x1,plot_bottom,plot_top)
             return graph, anims
 
         if topic == "physics_oscillator":
@@ -176,14 +262,16 @@ class MechanismTraceScene(Scene):
             eq = VGroup(label(p["equation"],.75,active,30),
                         label(f"m={q['mass_kg']:g} kg   c={q['damping_n_s_m']:g} N·s/m   k={q['stiffness_n_m']:g} N/m",-.15,muted,20),
                         label(f"초기 조건: x(0)={q['initial_displacement_m']:g} m,  ẋ(0)={q['initial_velocity_m_s']:g} m/s",-.85,sensor,18))
-            response, resp_anim = curve_group(["position","velocity"],"SciPy 수치 적분 · 원본 시간축")
-            energy, energy_anim = curve_group(["kinetic_energy","potential_energy","total_energy"],"같은 해에서 계산한 에너지 · J")
+            response, resp_anim = curve_group(["position","velocity"],"SciPy 수치 적분 · 공통 원본 시간축",
+                                               phase_id="response")
+            energy, energy_anim = curve_group(["kinetic_energy","potential_energy","total_energy"],
+                                               "같은 해에서 계산한 에너지 · J",phase_id="validation")
             validation = p["validation"]
             validation_group = VGroup(label(f"SciPy DOP853 · SymPy 비교 오차 {validation['max_abs_analytic_error_m']:.2g} m" if validation.get("max_abs_analytic_error_m") is not None else "강제 응답: SciPy 적분 결과",.65,result,22),
                                       label(f"에너지 수지 잔차 {validation['energy_balance_residual_j']:.2g} J",-.05,active,21),
                                       label("각 곡선은 trace의 실제 계산 표본을 사용",-.8,muted,18))
             damping, damping_anim = curve_group(["position_undamped","position","position_critical","position_overdamped"],
-                "감쇠별 위치 응답 · m")
+                "감쇠별 위치 응답 · m",phase_id="damping")
             return VGroup(board,setup,eq,response,energy,validation_group,damping), {
                 "setup":[FadeIn(setup)], "equation":[FadeOut(setup),FadeIn(eq)],
             "solution":[FadeOut(eq),FadeIn(validation_group)],
@@ -210,6 +298,7 @@ class MechanismTraceScene(Scene):
                     points.extend(([x,yy,0],[x+width,yy,0]))
                     if i+1<end and bits[i+1]!=b: points.append([x+width,low if b else top,0])
                 wave=polyline(points,active,3); g.add(wave)
+                marker_mobs=[]
                 if end <= 24:
                     for i,b in enumerate(bits[:end]):
                         g.add(text(str(int(b)),12,active if b==0 else muted).move_to([start_x+(i+.5)*width,-1.32,0]))
@@ -217,8 +306,12 @@ class MechanismTraceScene(Scene):
                     for item in p["events"]:
                         if item["event"] in {"ARBITRATION_LOST","ARBITRATION_WON"}:
                             xx=start_x+min(item["timestamp"],end)*width
-                            g.add(DashedLine([xx,-1.65,0],[xx,1.15,0],color=P.error if item["event"]=="ARBITRATION_LOST" else result))
-                return g, [FadeIn(g[0]),Create(g[1]),Create(wave)]
+                            marker=DashedLine([xx,-1.65,0],[xx,1.15,0],
+                                              color=P.error if item["event"]=="ARBITRATION_LOST" else result)
+                            marker_mobs.append(marker)
+                            g.add(marker)
+                return g, [FadeIn(g[0]),Create(g[1]),Create(wave),
+                           *[Create(marker) for marker in marker_mobs]]
             request=VGroup(label("동시에 송신 요청",.55,active,25),*[
                 text(f"{row['node']} → ID 비트 전송",19,sensor).move_to([0,.05-i*.42,0])
                 for i,row in enumerate(requests)])
@@ -237,13 +330,19 @@ class MechanismTraceScene(Scene):
         pmsm_setup=VGroup(label("PMSM + Field-Oriented Control",.9,active,25),
                           label("motulator 0.9 · sensored model state",.1,muted,20),
                           label("평균화 인버터 · 고주파 스위칭 파형 미포함",-.7,P.error,18))
-        three,three_anim=curve_group(["phase_current_a","phase_current_b","phase_current_c"],"3상 고정자 전류 · A_peak")
-        dq,dq_anim=curve_group(["current_d","current_q"],"회전자 기준 d/q축 전류 · A_peak")
+        three,three_anim=curve_group(["phase_current_a","phase_current_b","phase_current_c"],
+                                     "3상 고정자 전류 · A_peak",phase_id="three_phase_current")
+        dq,dq_anim=curve_group(["current_d","current_q"],"회전자 기준 d/q축 전류 · A_peak",
+                               phase_id="dq_transform")
         dq_formula=text("theta_e = p * theta_m   |   i_abc -> i_alpha_beta -> i_dq",16,active,8.0).move_to([0,-2.08,0])
         dq.add(dq_formula); dq_anim.append(FadeIn(dq_formula))
-        torque,torque_anim=curve_group(["current_q_reference","current_q_feedback"],"q축 전류 지령(제어 샘플)과 실제 피드백 · A_peak")
-        speed,speed_anim=curve_group(["speed_reference","speed_rad_s"],"속도 지령(제어 샘플)과 회전자 응답 · rad/s")
-        load,load_anim=curve_group(["load_torque","current_q_feedback","speed_rad_s"],"부하 외란 · 부하 토크, i_q 피드백, 속도")
+        torque,torque_anim=curve_group(["current_q_reference","current_q_feedback"],
+            "q축 전류 지령과 피드백 · 제어 샘플 · A_peak",phase_id="current_control")
+        speed,speed_anim=curve_group(["speed_reference","speed_rad_s"],
+            "속도 지령과 회전자 응답 · 공통 원본 시간축 · rad/s",phase_id="speed_response")
+        load,load_anim=curve_group(["load_torque","current_q_feedback","speed_rad_s"],
+            "부하 외란 · 신호별 단위/세로축, 공통 시간축",phase_id="load_disturbance",
+            x0=-5.2,x1=5.2,plot_bottom=-1.55,plot_top=1.0,title_y=1.9)
         return VGroup(board,pmsm_setup,three,dq,torque,speed,load), {
             "machine_setup":[FadeIn(pmsm_setup)],
             "three_phase_current":[FadeOut(pmsm_setup),*three_anim],

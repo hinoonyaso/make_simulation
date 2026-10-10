@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import importlib.metadata
+import math
 from pathlib import Path
 
 import can
@@ -44,7 +45,10 @@ class CANArbitrationAdapter:
                    "python_can_virtual_bus": virtual_bus,
                    "protocol_model": "Classical CAN 2.0A standard data/remote frame bit model"}
         return make_envelope(domain="communication_protocol", topic="can_arbitration",
-            execution_type="numerical_simulation", inputs=[{"id": "frames", "value": result["requests"]}],
+            execution_type="numerical_simulation", inputs=[
+                {"id": "frames", "value": result["requests"]},
+                {"id": "bitrate_hz", "value": result["bitrate_hz"]},
+                {"id": "receivers", "value": result["receivers"]}],
             operations=[{"id": "bit_level_encode_arbitrate", "engine": "deterministic Python CAN model"},
                         {"id": "dbc_encode_decode", "engine": "cantools"},
                         {"id": "virtual_bus_smoke", "engine": "python-can VirtualBus"}],
@@ -91,13 +95,47 @@ class CANArbitrationAdapter:
             errors.append("CAN trace domain/topic mismatch")
         errors.extend(validate_discrete_events(p))
         try:
+            from core.simulation_engines.communication.can_protocol import SUPPORTED_PROTOCOL_EVENTS
+            unknown = sorted({event.get("event") for event in p.get("events", [])
+                              if isinstance(event, dict) and event.get("event") not in SUPPORTED_PROTOCOL_EVENTS})
+            if unknown:
+                errors.append(f"unsupported CAN protocol event(s): {unknown}")
             canonical_requests = [{"node": row["node"], "id": row["id"],
                 "data": row["data_hex"], "remote": row["remote"], "dlc": row["dlc"]}
                 for row in p["requests"]]
             recomputed = arbitrate(canonical_requests, bitrate=p["bitrate_hz"], receivers=p["receivers"])
-            for key in ("status", "winners", "losers", "acknowledged", "physical_bits", "crc15", "field_bits"):
+            for key in ("status", "requests", "receivers", "winners", "losers", "acknowledged",
+                        "physical_bits", "bit_count", "stuffed_bit_positions_before_ack", "stuffed_crc",
+                        "crc15", "crc_polynomial", "field_bits", "events", "bitrate_hz", "bit_time_ns"):
                 if recomputed[key] != p[key]:
                     errors.append(f"CAN protocol result mismatch in {key}")
+            if (not isinstance(p.get("bit_time_seconds"), (int, float))
+                    or not math.isfinite(p["bit_time_seconds"])
+                    or not math.isclose(p["bit_time_seconds"], recomputed["bit_time_seconds"],
+                                        rel_tol=0.0, abs_tol=1e-18)):
+                errors.append("CAN protocol result mismatch in bit_time_seconds")
+            if p.get("bit_count") != len(p.get("physical_bits", [])):
+                errors.append("CAN bit_count does not match physical_bits length")
+            # New V12 traces bind bus settings to envelope inputs. Older valid
+            # traces without these optional input records remain replayable.
+            input_values = {row.get("id"): row.get("value") for row in trace.get("inputs", [])
+                            if isinstance(row, dict)}
+            for input_id, payload_key in (("frames", "requests"), ("bitrate_hz", "bitrate_hz"),
+                                          ("receivers", "receivers")):
+                if input_id in input_values and input_values[input_id] != p[payload_key]:
+                    errors.append(f"CAN payload {payload_key} differs from envelope input")
+            expected_times = [index / recomputed["bitrate_hz"] for index in range(recomputed["bit_count"])]
+            actual_times = trace.get("timestamps", [])
+            if (len(actual_times) != len(expected_times)
+                    or any(not math.isclose(float(a), b, rel_tol=0.0, abs_tol=1e-18)
+                           for a, b in zip(actual_times, expected_times))):
+                errors.append("CAN envelope timestamps do not match bitrate and physical bit count")
+            output_values = {row.get("id"): row.get("value") for row in trace.get("outputs", [])
+                             if isinstance(row, dict)}
+            for output_id, expected in (("winners", recomputed["winners"]),
+                                        ("physical_bits", recomputed["physical_bits"])):
+                if output_values.get(output_id) != expected:
+                    errors.append(f"CAN envelope output mismatch in {output_id}")
             if p["dbc_round_trip"].get("status") != "PASS" or p["python_can_virtual_bus"].get("status") != "PASS":
                 errors.append("CAN integration smoke status is not PASS")
         except (KeyError, TypeError, ValueError) as exc:

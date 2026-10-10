@@ -1,5 +1,19 @@
 # V12 test and render evidence
 
+## V12.1 accuracy hardening — local evidence (2026-10-10)
+
+Base commit: `2af957f442d8919946cabd32e30152113bc47a20` (`origin/main` at task start). The pre-change full suite passed **129 tests**. Current local full suite passes **136 tests** (7 added tests), including non-divisible Physics duration, final timestamp/sample/analytic/energy checks, invalid timestamp input boundaries, CAN bit-slot and ACK checks, rehashed trace/cache evidence mutations, a CRC-15/CAN catalogue check value, and timeline/frame interpolation and FPS invariants.
+
+Three real silent preview MP4s were rendered at 960×540, 30 fps and fully decoded. The Physics render uses the new non-divisible configuration and carries 12 source samples ending at exactly 1.05 s. Physics and FOC also recorded per-frame renderer state; `validate_mechanism_render.py --engineering-frames` verified the observed frame samples against the shared timeline and trace. Extracted actual frames were inspected for Physics energy-legend legibility, CAN winner/ACK result, and FOC unit-separated load response. This is sampled-frame review, not a full normal-speed playback review.
+
+| Topic | Run directory (under `pilots/v12_engineering/output/v12_1_renders/runs/`) | Duration | Frames | Trace SHA-256 | Timeline SHA-256 |
+|---|---|---:|---:|---|---|
+| Physics oscillator | `physics_oscillator-a086ab551dc69fe01680-rerun-20261010T065227-081678968` | 26.466341 s | 794 | `e79c726079b76eeaa5a5dda31cce884bf5466f96e60fda36d1ad1e60f857b43f` | `18665ef5202d335459423fddc24e2e70444229884d899887768f695863f628b5` |
+| CAN arbitration | `can_arbitration-16222e56fa1caefbc129-rerun-20261010T065518-584951824` | 22.066667 s | 662 | `69801c5ef090214ebb225942c61429b11569ecd946c790eb63d12c8f6232f935` | `fbc172a706ccae0d2e9264e37d04de829493b1c076e52d3b17811c0a19a0602d` |
+| PMSM FOC | `motor_foc-cf03e2cfe35bb86fe73f-rerun-20261010T065251-660550066` | 23.400000 s | 702 | `f1e35d4f41f9706077705d41545101a43b3d079c9b9235bc36fd19cd9f50fd5e` | `9525d695709fa8e580da482c83f483a1b249dd93fa0aea9dd1e67176ac487be3` |
+
+The Physics and FOC frame-sample mapping checks and all three full-decode checks passed. Sampled arbitration-phase frames show the red loss marker at the recomputed loss bit and green winner marker at the arbitration boundary. The Physics and FOC traces reused validated execution-cache entries; their visual renders were cache misses after the renderer update. GitHub Actions for this unpushed change set is **NOT_RUN**. The prior V12 CI links below apply to the previous pushed code, not this V12.1 change.
+
 Observed on 2026-10-10 (Asia/Seoul), repository starting HEAD `7b8a926`.
 
 ## Local validation
