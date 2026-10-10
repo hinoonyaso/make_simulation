@@ -251,11 +251,11 @@ V13 전용 workflow는 교육 테스트만 실행하며, Python/Manim 패키지�
 
 | 검증 | 상태 | 범위 |
 |---|---|---|
-| AI trace 전체 unittest | PASS, 155/155 | GitHub Actions run #29 |
+| AI trace 전체 unittest | PASS, 155/155 | GitHub Actions run #29 및 push 후 run #30 |
 | V13 education unittest | PASS, 16/16 | `sim-render` locked environment |
 | Asset registry / education asset validation | PASS | Registry 39 entries, 6 generated models |
 | Education plan | PASS | `education_smoke.json`, concept-only |
-| Manim smoke preview | PASS | 960×540, 30 fps, silent, VTT/report present, full decode |
+| Manim smoke preview | PASS | [GitHub Actions V13 run #1](https://github.com/hinoonyaso/make_simulation/actions/runs/38063673678), 960×540, 30 fps, silent, VTT/report present, full decode |
 | Blender render | PASS (기록된 R6 로컬 검증) | Windows Blender 5.2.1 from WSL; Ubuntu CI에서는 실행하지 않음 |
 | Narration/TTS | NOT TESTED | Smoke는 무음이며 외부 TTS를 호출하지 않음 |
 | 최종 1080p 영상 검증 | NOT TESTED | CI preview는 960×540 무음 smoke |

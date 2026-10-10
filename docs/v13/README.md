@@ -34,15 +34,15 @@ The Vendor CAD failure from run #28 was fixed in commit `9a43b205`: local Livox/
 
 [AI trace run #29](https://github.com/hinoonyaso/make_simulation/actions/runs/38062554626) succeeded and its log records all 155 repository unit tests passing. This is the full CPU regression job; it is distinct from the V13-only education workflow.
 
-The V13 workflow runs the two education test modules, validates the asset registry and catalog, validates a concept-only plan, compiles V13 Python modules, and renders a short Manim-only smoke. It uses the locked `sim-render` dependency group, so it does not install V12 solver or robotics test dependencies. It checks exact 960×540, 30 fps H.264 output, VTT and production report presence, then runs a full decode. The preview, reports, validation output and logs are uploaded as one artifact. Scoped `pull_request` and `push` filters cover education files and common V13 dependencies; `workflow_dispatch` remains available. The updated workflow has passed local checks in the locked render-only environment. Its GitHub Actions result is pending until this workflow change is pushed and the run completes.
+The V13 workflow runs the two education test modules, validates the asset registry and catalog, validates a concept-only plan, compiles V13 Python modules, and renders a short Manim-only smoke. It uses the locked `sim-render` dependency group, so it does not install V12 solver or robotics test dependencies. It checks exact 960×540, 30 fps H.264 output, VTT and production report presence, then runs a full decode. The preview, reports, validation output and logs are uploaded as one artifact. Scoped `pull_request` and `push` filters cover education files and common V13 dependencies; `workflow_dispatch` remains available. The updated workflow passed on GitHub in [V13 run #1](https://github.com/hinoonyaso/make_simulation/actions/runs/38063673678), and the full regression workflow passed in [AI trace run #30](https://github.com/hinoonyaso/make_simulation/actions/runs/38063673583).
 
 | Gate | Result | Evidence / boundary |
 |---|---|---|
-| Full unittest suite | PASS, 155/155 | GitHub Actions AI trace run #29 |
+| Full unittest suite | PASS, 155/155 | GitHub Actions AI trace runs #29 and #30 |
 | V13 education tests | PASS, 16/16 | `uv sync --locked --only-group sim-render --no-install-project` environment |
 | Asset registry and catalog validation | PASS | 39 registry entries; six generated model hashes |
 | Education plan | PASS | Concept-only smoke spec |
-| Manim smoke preview | PASS | 960×540, 30 fps, silent; VTT and production report; full decode |
+| Manim smoke preview | PASS | GitHub Actions V13 run #1; 960×540, 30 fps, silent; VTT and production report; full decode |
 | Blender render | PASS (recorded R6 local run) | Windows Blender 5.2.1 launched from WSL; not executed by Ubuntu CI |
 | Narration/TTS | NOT TESTED | Smoke does not call Edge TTS or Whisper |
 | Narrated 1080p final validation | NOT TESTED | Smoke is a low-resolution silent preview |
