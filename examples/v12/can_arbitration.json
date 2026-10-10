@@ -1,0 +1,8 @@
+{
+  "bitrate": 1000000,
+  "frames": [
+    {"node": "ECU_A", "id": 256, "data": "10203040"},
+    {"node": "ECU_B", "id": 512, "data": "A0B0C0D0"}
+  ],
+  "receivers": ["ECU_C"]
+}

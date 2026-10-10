@@ -13,7 +13,7 @@ VISUAL_GOALS = ("auto", "numerical_explanation", "algorithm_flow", "image_space"
                 "motion_3d", "spatial_relationship", "comparative_analysis")
 
 CAPABILITIES = {
-    "manim": {"supported_topics": ["quantization", "nms", "mcu_pid", "self_attention", "robot_kinematics", "rag"],
+    "manim": {"supported_topics": ["quantization", "nms", "mcu_pid", "self_attention", "robot_kinematics", "rag", "physics_oscillator", "can_arbitration", "motor_foc"],
               "supported_trace_schemas": ["mechanism-envelope/v1", "robotics-visual-trace/v1", "ai-mechanism-trace/v1"],
               "visual_goals": ["numerical_explanation", "algorithm_flow", "spatial_relationship", "comparative_analysis"],
               "required_visual_evidence": ["trace-backed values", "mapped storyboard phase"],
@@ -41,6 +41,8 @@ CAPABILITIES = {
 
 
 def infer_visual_goal(topic: str, trace: dict[str, Any] | None = None) -> str:
+    if topic in {"physics_oscillator", "can_arbitration", "motor_foc"}:
+        return "numerical_explanation"
     if topic == "quantization" or topic == "mcu_pid" or topic == "self_attention":
         return "numerical_explanation"
     if topic == "nms":

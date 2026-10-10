@@ -13,7 +13,10 @@
     "computer_vision": ["image_preprocessing", "convolution", "object_detection", "yolo", "classification", "segmentation", "pose_estimation", "depth_estimation", "object_tracking", "optical_flow", "stereo_vision", "camera_calibration", "feature_extraction", "feature_matching", "ocr", "vlm_perception", "vision_manipulation", "nms"],
     "edge_ai": ["onnx", "onnx_runtime", "tensorrt", "tensorrt_llm", "cuda", "gpu_npu", "jetson", "raspberry_pi_ai", "rk3588", "model_quantization", "int8", "int4", "fp16", "bf16", "fp8", "ptq_qat", "pruning", "distillation", "memory_optimization", "model_conversion", "edge_inference", "latency_throughput", "power_memory_constraints"],
     "mcu_embedded": ["stm32", "esp32", "arduino", "arm_cortex_m", "interrupts", "timers", "pwm", "adc_dac", "dma", "uart_spi_i2c_can", "encoder", "motor_control", "mcu_pid", "pid", "state_machines", "freertos", "rtos_scheduling", "memory_layout", "communication_protocols", "micro_ros", "robotics_firmware", "realtime_control"],
-    "systems_infrastructure": ["linux", "networking", "ipc", "distributed_systems", "docker", "gpu_scheduling", "inference_serving", "mlops", "llmops", "ai_workflow", "rag_infrastructure", "vector_databases", "benchmarking", "performance_profiling"]
+    "systems_infrastructure": ["linux", "networking", "ipc", "distributed_systems", "docker", "gpu_scheduling", "inference_serving", "mlops", "llmops", "ai_workflow", "rag_infrastructure", "vector_databases", "benchmarking", "performance_profiling"],
+    "classical_physics": ["physics_oscillator"],
+    "communication_protocol": ["can_arbitration"],
+    "electric_motor_drive": ["motor_foc"]
   },
   "aliases": {
     "rag": ["retrieval augmented generation", "naive rag", "advanced rag", "검색 증강 생성"],
@@ -26,7 +29,10 @@
     "self_attention": ["자기주의", "셀프 어텐션", "self attention", "attention"],
     "cross_attention": ["attention"],
     "multi_head_attention": ["attention"],
-    "robot_kinematics": ["mujoco h1 arm", "unitree h1 arm"]
+    "robot_kinematics": ["mujoco h1 arm", "unitree h1 arm"],
+    "physics_oscillator": ["감쇠 진동", "질량 스프링 댐퍼", "스프링 진동"],
+    "can_arbitration": ["CAN 중재", "CAN 버스 중재", "캔 중재"],
+    "motor_foc": ["PMSM FOC", "PMSM 벡터 제어", "영구자석 동기전동기 FOC"]
   },
   "overrides": {
     "rag": {
@@ -75,6 +81,32 @@
       "trace_schema": "mechanism-envelope/v1", "renderers": ["manim"],
       "supported_features": ["sampled PID", "PWM saturation", "first-order motor response", "encoder feedback"],
       "known_limitations": ["Numerical toy plant only; no firmware, peripheral simulator, or physical board measurement."]
+    },
+    "physics_oscillator": {
+      "domain": "classical_physics", "support_level": "L3", "implementation_status": "ready",
+      "adapter": "core.mechanism.adapters.physics_oscillator:PhysicsOscillatorAdapter",
+      "execution_backend": "SymPy + SciPy solve_ivp DOP853 + python-control state space",
+      "trace_schema": "mechanism-envelope/v1", "renderers": ["manim"],
+      "software_requirements": ["Python 3.12", "sim-math dependency group"],
+      "supported_features": ["mass-spring-damper", "free and sinusoidally forced response", "symbolic homogeneous solution", "energy accounting"],
+      "known_limitations": ["Linear single-degree-of-freedom educational model; no friction hysteresis or spatial modes."]
+    },
+    "can_arbitration": {
+      "domain": "communication_protocol", "support_level": "L3", "implementation_status": "ready",
+      "adapter": "core.mechanism.adapters.can_arbitration:CANArbitrationAdapter",
+      "execution_backend": "deterministic Classical CAN 2.0A protocol model + python-can VirtualBus + cantools DBC",
+      "trace_schema": "mechanism-envelope/v1", "renderers": ["manim"],
+      "software_requirements": ["Python 3.12", "sim-can dependency group"],
+      "supported_features": ["standard 11-bit data/remote frames", "dominant/recessive arbitration", "CRC-15/CAN", "bit stuffing", "ACK receiver condition", "DBC encode/decode", "VirtualBus transport smoke test"],
+      "known_limitations": ["No CAN FD, electrical CAN_H/CAN_L model, propagation delay, error recovery/retransmission, or arbitration in VirtualBus.", "SocketCAN vcan is optional and host permission dependent."]
+    },
+    "motor_foc": {
+      "domain": "electric_motor_drive", "support_level": "L3", "implementation_status": "ready",
+      "adapter": "core.mechanism.adapters.motor_foc:MotorFOCAdapter", "execution_backend": "motulator 0.9 PMSM + vector control",
+      "trace_schema": "mechanism-envelope/v1", "renderers": ["manim"],
+      "software_requirements": ["Python 3.12", "sim-motor dependency group"],
+      "supported_features": ["PMSM electrical and mechanical state", "FOC current-vector controller", "3-phase/dq current", "speed/torque/load step", "independent solver and controller clocks"],
+      "known_limitations": ["Demonstration motor parameters, not a real user motor.", "Averaged converter model without switching waveform.", "BLDC six-step control is separate and unsupported."]
     },
     "robot_kinematics": {
       "domain": "robotics", "support_level": "L3", "implementation_status": "ready",

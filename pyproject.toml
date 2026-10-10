@@ -21,3 +21,20 @@ explicit = true
 
 [tool.uv.sources]
 torch = { index = "pytorch-cpu" }
+
+[dependency-groups]
+sim-math = [
+    "control>=0.10.2",
+    "scipy>=1.11",
+    "sympy>=1.12",
+]
+sim-can = [
+    "cantools>=39",
+    "python-can>=4.4",
+]
+sim-motor = [
+    "motulator==0.9.0",
+]
+sim-render = [
+    "manim>=0.21.0,<0.22",
+]

@@ -71,6 +71,26 @@ def execution_request(topic: str, options: dict) -> tuple[dict, dict]:
         runtime.update({k: _version(k) for k in ('ultralytics','torch','torchvision','Pillow','opencv-python')})
         files = ['core/mechanism/adapters/object_detection.py','scripts/run_yolo_inference.py']
         fixed = {'seed': 0,'device': 'cpu','half': False,'rect': False,'max_det': 300,'agnostic_nms': False}
+    elif topic in {'physics_oscillator', 'can_arbitration', 'motor_foc'}:
+        config = dict(sorted(config.items()))
+        package_names = {
+            'physics_oscillator': ('sympy', 'scipy', 'control'),
+            'can_arbitration': ('python-can', 'cantools'),
+            'motor_foc': ('motulator', 'scipy'),
+        }[topic]
+        runtime.update({name.replace('-', '_'): _version(name) for name in package_names})
+        source = {'kind': 'normalized_parameters', 'sha256': canonical_hash(config)}
+        files = [f'core/mechanism/adapters/{topic}.py',
+                 'core/mechanism/engineering_trace.py',
+                 'core/mechanism/trace_contract.py']
+        if topic == 'can_arbitration':
+            files += ['core/simulation_engines/communication/can_protocol.py',
+                      'assets/v12/engineering_demo.dbc']
+        if topic == 'motor_foc':
+            fixed = {'inverter': 'averaged; pwm switching waveform not simulated',
+                     'controller_feedback': 'motulator sensored model state'}
+        else:
+            fixed = {'randomness': 'none'}
     else:
         raise ValueError('execution cache currently supports H1 and YOLO only')
     files += ['core/mechanism/execution_cache.py','core/mechanism/protocol.py']
@@ -100,7 +120,7 @@ def _bound_trace(trace, topic, config):
     if topic == 'object_detection':
         value['input_image']['path'] = config['image']
         value['model']['checkpoint'] = config['model']
-    else:
+    elif topic == 'robot_kinematics':
         value['model']['source_file'] = config['model']
     return value
 
@@ -110,7 +130,7 @@ def _validate(trace, topic, config, identity, adapter):
     if topic == 'object_detection':
         if trace['input_image']['sha256'] != source['image_sha256'] or trace['model']['sha256'] != source['model_sha256']:
             raise ValueError('cached trace source/model provenance mismatch')
-    elif trace['model']['source_sha256'] != source['model_sha256']:
+    elif topic == 'robot_kinematics' and trace['model']['source_sha256'] != source['model_sha256']:
         raise ValueError('cached trace model provenance mismatch')
     bound = _bound_trace(trace, topic, config)
     errors = adapter.validate(bound)
