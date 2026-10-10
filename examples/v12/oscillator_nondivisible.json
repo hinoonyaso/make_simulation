@@ -1,0 +1,9 @@
+{
+  "mass_kg": 1.0,
+  "damping_n_s_m": 0.6,
+  "stiffness_n_m": 4.0,
+  "initial_displacement_m": 0.25,
+  "initial_velocity_m_s": 0.0,
+  "duration_s": 1.05,
+  "sample_period_s": 0.1
+}

@@ -11,9 +11,10 @@ from core.mechanism.run_management import canonical_hash, file_hash, media_metad
 from core.mechanism.timeline import validate_timeline, source_time_for_frame, phase_playback
 from core.mechanism.registry import MechanismRegistry
 from core.mechanism.pid_playback import PIDPlayback
+from core.mechanism.engineering_playback import engineering_state_for_frame
 
 
-def validate(report_path, pid_frames=None):
+def validate(report_path, pid_frames=None, engineering_frames=None):
     report=json.loads(Path(report_path).read_text())
     timeline=json.loads(Path(report['timeline']).read_text())
     trace=json.loads(Path(report['trace']).read_text())
@@ -52,11 +53,30 @@ def validate(report_path, pid_frames=None):
         for i,frame in enumerate(frames):
             if frame!=player.state(i): raise ValueError(f'PID displayed state mismatch at frame {i}')
         checks['PID_render_update_sample_mapping']='PASS'
+    if engineering_frames:
+        observed=json.loads(Path(engineering_frames).read_text())
+        cursor_phases = {
+            "physics_oscillator": {"response", "validation", "damping"},
+            "motor_foc": {"three_phase_current", "dq_transform", "current_control",
+                           "speed_response", "load_disturbance"},
+        }.get(report["topic"], set())
+        expected_frames = {frame for phase in timeline["phases"] if phase["phase_id"] in cursor_phases
+                           for frame in range(phase["presentation_start_frame"],
+                                              phase["presentation_end_frame"])}
+        observed_by_frame = {item.get("frame_index"): item for item in observed}
+        if len(observed_by_frame) != len(observed) or set(observed_by_frame) != expected_frames:
+            raise ValueError("engineering renderer cursor frame coverage does not match timeline phases")
+        for frame in sorted(expected_frames):
+            expected = engineering_state_for_frame(trace, timeline, frame)
+            if observed_by_frame[frame] != expected:
+                raise ValueError(f"engineering renderer trace state mismatch at frame {frame}")
+        checks['engineering_render_frame_sample_mapping']='PASS'
     return checks
 
 
 if __name__=='__main__':
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('report',type=Path);p.add_argument('--pid-frames',type=Path)
+    p.add_argument('--engineering-frames',type=Path)
     args=p.parse_args()
-    print(json.dumps(validate(args.report,args.pid_frames),ensure_ascii=False,indent=2))
+    print(json.dumps(validate(args.report,args.pid_frames,args.engineering_frames),ensure_ascii=False,indent=2))
