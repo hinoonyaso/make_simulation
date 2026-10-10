@@ -140,8 +140,14 @@ jobs:
           report = json.loads((run_dir / "production_report.json").read_text(encoding="utf-8"))
           if report.get("status") != "SILENT_PREVIEW":
               raise SystemExit(f"unexpected production status: {report.get('status')}")
-          if report.get("audio_status") != "not generated":
-              raise SystemExit("smoke preview unexpectedly reports audio")
+          if report.get("audio_status") not in {
+              "not generated",
+              "BLOCKED — USER AUTHORIZATION REQUIRED",
+          }:
+              raise SystemExit(f"unexpected audio status for silent preview: {report.get('audio_status')}")
+          audio_qa = json.loads((run_dir / "audio_qa.json").read_text(encoding="utf-8"))
+          if audio_qa.get("audio_streams") != 0:
+              raise SystemExit("silent smoke preview unexpectedly contains an audio stream")
           if not json.loads((run_dir / "visual_manifest.json").read_text(encoding="utf-8")).get("beats"):
               raise SystemExit("visual manifest has no beats")
           probe = subprocess.run([
