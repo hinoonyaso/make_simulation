@@ -245,7 +245,7 @@ git diff --check
 
 Manim smoke preview는 Quick Start 명령으로 실제 미디어를 생성하고 FFmpeg로 검사합니다. Blender 검증은 Blender 설치 및 실행 가능한 환경에서 수행합니다. CI 정의는 [workflow](.github/workflows/v13-education.yml)를 참고하세요.
 
-**CI 상태:** 2026-10-10 확인 기준, 원격 `v13-education-first` 최신 run은 [run #26](https://github.com/hinoonyaso/make_simulation/actions/runs/38051355645)에서 실패했습니다. 이 README 작성 당시 로컬 작업 트리의 수정은 원격에 올라가지 않았으므로, 위 workflow 파일의 존재를 성공 증거로 보지 마세요. 최신 결과는 GitHub Actions에서 다시 확인해야 합니다.
+**CI 상태:** 2026-10-11 확인 기준, 확인 가능한 최신 통합 run은 [run #28](https://github.com/hinoonyaso/make_simulation/actions/runs/38061841065)이며, clean clone에 없는 로컬 전용 Livox/Ouster/ZED 2i CAD 파일을 필수로 검사해 실패했습니다. 수정된 테스트는 CAD가 없어도 catalog·license·재배포 정책과 Git 미추적 상태를 검증하고, 실제 파일 검사는 로컬 파일이 있을 때만 합니다. 전체 155개 unittest, V12 19개, V13 16개, compileall, 두 asset registry 검증 및 Manim smoke preview는 이 변경 작업 트리에서 통과했습니다. 이 수정 이후의 원격 Actions 실행은 아직 확인되지 않았습니다. `AI video integration` workflow는 수동 실행형이므로 로컬 PASS를 원격 CI PASS로 간주하지 마세요.
 
 ## Current Capabilities & Limitations
 

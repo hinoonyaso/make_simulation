@@ -22,14 +22,53 @@ class EducationAssetLibraryTests(unittest.TestCase):
         self.assertGreaterEqual(result["catalog_models"], 6)
         self.assertEqual(len({x["id"] for x in registry["assets"]}), len(registry["assets"]))
 
-    def test_vendor_assets_present_but_not_clone_tracked(self):
-        rows = acquire.audit(*acquire.load())
+    def test_vendor_assets_are_optional_local_assets(self):
+        import subprocess
+
+        catalog, registry = acquire.load()
+        rows = acquire.audit(catalog, registry)
         indexed = {x["id"]: x for x in rows}
-        for asset_id in ("blender.livox_mid360.v1", "blender.ouster_os0.v1",
-                         "blender.ouster_os1.v1", "blender.ouster_osdome.v1", "blender.zed2i.v1"):
-            self.assertTrue(indexed[asset_id]["exists"], asset_id)
-            self.assertGreater(indexed[asset_id]["file_count"], 0, asset_id)
-            self.assertFalse(any(f["git_tracked"] for f in indexed[asset_id]["files"]), asset_id)
+        entries = {entry["id"]: entry for entry in registry["assets"]}
+        restricted = {entry["id"]: entry for entry in catalog["restricted_existing"]}
+        asset_ids = ("blender.livox_mid360.v1", "blender.ouster_os0.v1",
+                     "blender.ouster_os1.v1", "blender.ouster_osdome.v1", "blender.zed2i.v1")
+        for asset_id in asset_ids:
+            with self.subTest(asset_id=asset_id):
+                row = indexed[asset_id]
+                entry = entries[asset_id]
+                metadata = restricted[asset_id]
+                source = entry["source"].split("::", 1)[0]
+                local_path = ROOT / source
+                license_text = entry["license"].lower()
+
+                # These vendor assets may be available in a developer's ignored local
+                # checkout, but must remain absent from public clone contents.
+                self.assertEqual(metadata["path"], source)
+                self.assertEqual(metadata["status"], "LOCAL_USE_ONLY")
+                self.assertFalse(metadata["reproducible_clone"])
+                self.assertEqual(metadata["redistribution"], "not established")
+                self.assertEqual(row["source"], source)
+                self.assertIn("proprietary", license_text)
+                self.assertIn("internal", license_text)
+                self.assertTrue(
+                    any(term in license_text for term in (
+                        "don't republish", "not redistribute", "internal reference use only",
+                    )),
+                    f"{asset_id}: expected explicit redistribution restriction",
+                )
+
+                tracked = subprocess.run(
+                    ["git", "ls-files", "--", source], cwd=ROOT,
+                    check=True, capture_output=True, text=True,
+                ).stdout.splitlines()
+                self.assertEqual(tracked, [], f"vendor CAD must not be Git tracked: {source}")
+
+                # File-level validation is meaningful only where the optional local
+                # vendor source has actually been provided.
+                self.assertEqual(row["exists"], local_path.exists(), asset_id)
+                if row["exists"]:
+                    self.assertGreater(row["file_count"], 0, asset_id)
+                    self.assertFalse(any(f["git_tracked"] for f in row["files"]), asset_id)
 
     def test_acquisition_modes_default_safe(self):
         catalog, _ = acquire.load()

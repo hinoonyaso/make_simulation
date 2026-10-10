@@ -2,10 +2,11 @@
 
 ## Starting point and Git boundary
 
-- V13 work branch: `v13-education-first`.
-- Start commit: local V12.1 final fix `c9bc690`, whose parent is the open PR #2 head `5a6ba27`.
-- Remote PR #2 is still open and unmerged; its base was `main` at `2af957f`. V13 work is local and has not been pushed or merged.
-- The working tree already contained untracked earlier pilot/media folders. They were left untouched.
+- Fetch snapshot checked 2026-10-11: `origin/main` is `2af957f`; PR #2 (`v12.1-accuracy`) is open/draft with head `5a6ba27` and base `main`.
+- `origin/v13-education-first` descends from `5a6ba27`; that commit is its merge base with the PR branch. The PR's two commits are already ancestors of V13. V13 then contains `c9bc690` (the V12.1 plot/CAN follow-up, currently one commit ahead on the local `v12.1-accuracy` branch) and four V13 commits. Do not cherry-pick these commits again.
+- Compared with `origin/main`, PR #2 changes 15 paths. V13 changes those same 15 shared V12 paths plus 68 V13-only paths. Since the PR head is an ancestor, merge PR #2 first using a merge commit, then merge the updated `origin/main` into V13 with a regular merge (no history rewrite). The V13 merge will include `c9bc690`; if that follow-up must be part of PR #2 itself, first fast-forward the PR branch to that existing commit rather than cherry-picking it. Review the final tree and rerun the suites before integrating V13.
+- The remote V13 branch is pushed but not merged. The main integration workflow is manual; local validation is not evidence of a post-fix Actions run.
+- The earlier working tree contained untracked pilot/media folders. They were not part of the V13 branch changes.
 
 ## Existing production architecture
 
@@ -47,7 +48,7 @@ All future adapters should implement environment check, input validation, execut
 ## Current V13 evidence and limits
 
 - `examples/education/bearing.json` validates as concept-only and produces a V12 30-fps timeline without a solver or trace.
-- The repo's Blender discovery helper resolves Windows Blender 5.2 in this WSL workspace; the actual bearing render is a separate required runtime check.
+- The recorded R6 bearing preview confirms Blender 5.2.1 and Manim 0.21.0 ran in this WSL workspace; that evidence does not generalize to other WSL setups or Ubuntu CI.
 - No learner study has been run. Educational effectiveness remains unverified until beginner viewers are tested.
 - TTS, full narration alignment and final audio mux are opt-in and require an explicit `--with-tts` invocation for this new lesson.
 - CI uses a short Manim-only smoke lesson; Blender runtime rendering is checked locally and is not claimed by Ubuntu CI.
