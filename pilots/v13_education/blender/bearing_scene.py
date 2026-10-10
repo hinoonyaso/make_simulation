@@ -14,6 +14,11 @@ if str(REPO_ROOT) not in sys.path:
 import bpy
 from mathutils import Vector
 
+BLENDER_KIT = REPO_ROOT / "core/blender-robotics-simulation-skill/templates"
+if str(BLENDER_KIT) not in sys.path:
+    sys.path.insert(0, str(BLENDER_KIT))
+from studio_utils import set_interpolation
+
 
 def args_after_separator():
     parser = argparse.ArgumentParser()
@@ -59,10 +64,55 @@ def overlay_panel(camera, mat):
     panel = bpy.context.object
     panel.name = "part_label_panel"
     panel.parent = camera
-    panel.location = (3.1, 1.40, -2.05)
-    panel.scale = (2.35, .94, 1)
+    panel.location = (2.95, 1.40, -2.05)
+    panel.scale = (.85, .94, 1)
     panel.data.materials.append(mat)
     return panel
+
+
+def camera_rotation_indicator(camera, accent, white, phase, frame_end):
+    """Camera-space counter-clockwise cue for the positive local-Z shaft rotation."""
+    cx, cy, radius, z = -3.05, 1.34, .31, -2.15
+    curve_data = bpy.data.curves.new("inner_race_rotation_arc", "CURVE")
+    curve_data.dimensions = "3D"
+    curve_data.resolution_u = 2
+    curve_data.bevel_depth = .022
+    curve_data.bevel_resolution = 3
+    spline = curve_data.splines.new("POLY")
+    points = 36
+    spline.points.add(points - 1)
+    start, stop = math.radians(-135), math.radians(105)
+    for i, point in enumerate(spline.points):
+        angle = start + (stop - start) * i / (points - 1)
+        point.co = (cx + radius * math.cos(angle), cy + radius * math.sin(angle), z, 1)
+    arc = bpy.data.objects.new("inner_race_rotation_direction_ccw", curve_data)
+    bpy.context.scene.collection.objects.link(arc)
+    arc.parent = camera
+    arc.data.materials.append(accent)
+
+    angle = stop
+    tip = Vector((cx + radius * math.cos(angle), cy + radius * math.sin(angle), z))
+    tangent = Vector((-math.sin(angle), math.cos(angle), 0)).normalized()
+    normal = Vector((-tangent.y, tangent.x, 0))
+    vertices = [tip, tip - tangent * .19 + normal * .11, tip - tangent * .19 - normal * .11]
+    mesh = bpy.data.meshes.new("rotation_arrowhead_mesh")
+    mesh.from_pydata(vertices, [], [(0, 1, 2)])
+    head = bpy.data.objects.new("rotation_arrowhead_ccw", mesh)
+    bpy.context.scene.collection.objects.link(head)
+    head.parent = camera
+    head.data.materials.append(accent)
+
+    label = text_overlay(camera, "내륜 회전 방향", "inner_race_rotation_label",
+                         (-2.62, 1.27, z), white, .13)
+    for obj in (arc, head, label):
+        for frame, hidden in ((1, True), (max(1, phase["presentation_start_frame"] - 1), True),
+                              (phase["presentation_start_frame"], False),
+                              (phase["presentation_end_frame"] - 1, False),
+                              (min(frame_end, phase["presentation_end_frame"]), True),
+                              (frame_end, True)):
+            obj.hide_render = hidden
+            obj.keyframe_insert(data_path="hide_render", frame=frame)
+        set_interpolation(obj, "CONSTANT", paths=["hide_render"])
 
 
 def key_visibility(obj, frames, visible):
@@ -153,6 +203,13 @@ def make_scene(manifest, timeline, output, width, height, fps, samples=16, still
     shaft_pointer.location = (0, -.66, 0)
     shaft_pointer.rotation_euler[0] = math.pi/2
     shaft_pointer.data.materials.append(accent)
+    bpy.ops.mesh.primitive_uv_sphere_add(segments=24, ring_count=12, radius=.105,
+                                         location=(0, 0, 0))
+    shaft_face_marker = bpy.context.object
+    shaft_face_marker.name = "rotating_shaft_face_marker"
+    shaft_face_marker.parent = shaft
+    shaft_face_marker.location = (.38, 0, 1.035)
+    shaft_face_marker.data.materials.append(accent)
     bpy.ops.mesh.primitive_torus_add(major_segments=96, minor_segments=16, major_radius=2.08,
                                     minor_radius=.12, location=(0, 0, 0))
     housing = bpy.context.object
@@ -208,6 +265,9 @@ def make_scene(manifest, timeline, output, width, height, fps, samples=16, still
     # The exploded assembly state is controlled by the same manifest phase intervals.
     phases = {phase["phase_id"]: phase for phase in timeline["phases"]}
     beats = {beat["phase_id"]: beat for beat in manifest["beats"]}
+    rotation_phase = phases.get("rotation")
+    if rotation_phase:
+        camera_rotation_indicator(camera, accent, white, rotation_phase, scene.frame_end)
     exploded_phase = phases.get("exploded")
     reassemble_phase = phases.get("parts_reassemble")
     if exploded_phase and reassemble_phase:
@@ -272,11 +332,11 @@ def make_scene(manifest, timeline, output, width, height, fps, samples=16, still
     if korean_font.is_file():
         font = bpy.data.fonts.load(str(korean_font))
     labels = [
-        ("단열 깊은 홈 볼 베어링", (.83, 1.86, -1.95)),
-        ("내륜 / 축과 함께 회전", (.83, 1.53, -1.95)),
-        ("볼 / 궤도 사이에서 구름", (.83, 1.20, -1.95)),
-        ("케이지 / 볼 간격 유지", (.83, .87, -1.95)),
-        ("개념 동작 - 접촉 해석 아님", (.83, .54, -1.95)),
+        ("단열 깊은 홈 볼 베어링", (2.20, 1.86, -1.95)),
+        ("내륜 / 축과 함께 회전", (2.20, 1.53, -1.95)),
+        ("볼 / 궤도 사이에서 구름", (2.20, 1.20, -1.95)),
+        ("케이지 / 볼 간격 유지", (2.20, .87, -1.95)),
+        ("개념 동작 - 접촉 해석 아님", (2.20, .54, -1.95)),
     ]
     for body, location in labels:
         label = text_overlay(camera, body, "label_"+body[:8].replace(" ", "_"), location, white, .16)
