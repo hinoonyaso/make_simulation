@@ -2,10 +2,10 @@
 
 ## Starting point and Git boundary
 
-- Fetch snapshot checked 2026-10-11: `origin/main` is `2af957f`; PR #2 (`v12.1-accuracy`) is open/draft with head `5a6ba27` and base `main`.
+- Fetch snapshot checked 2026-10-11: `origin/main` is `2af957f`; PR #2 (`v12.1-accuracy`) is open/draft with head `5a6ba27` and base `main`. The V13 starting commit for this CI update is `9a43b205`.
 - `origin/v13-education-first` descends from `5a6ba27`; that commit is its merge base with the PR branch. The PR's two commits are already ancestors of V13. V13 then contains `c9bc690` (the V12.1 plot/CAN follow-up, currently one commit ahead on the local `v12.1-accuracy` branch) and four V13 commits. Do not cherry-pick these commits again.
 - Compared with `origin/main`, PR #2 changes 15 paths. V13 changes those same 15 shared V12 paths plus 68 V13-only paths. Since the PR head is an ancestor, merge PR #2 first using a merge commit, then merge the updated `origin/main` into V13 with a regular merge (no history rewrite). The V13 merge will include `c9bc690`; if that follow-up must be part of PR #2 itself, first fast-forward the PR branch to that existing commit rather than cherry-picking it. Review the final tree and rerun the suites before integrating V13.
-- The remote V13 branch is pushed but not merged. The main integration workflow is manual; local validation is not evidence of a post-fix Actions run.
+- The remote V13 branch is pushed but not merged. The main integration workflow remains manual; the V13-only workflow is separately configured for education-scoped PRs, pushes to `main`/`v13-education-first`, and manual dispatch. Run #29 (`38062554626`) passed the full 155-test AI trace suite; the V13 workflow change has local locked-environment evidence, while its GitHub result must be read from the run created by the update push.
 - The earlier working tree contained untracked pilot/media folders. They were not part of the V13 branch changes.
 
 ## Existing production architecture
@@ -52,3 +52,10 @@ All future adapters should implement environment check, input validation, execut
 - No learner study has been run. Educational effectiveness remains unverified until beginner viewers are tested.
 - TTS, full narration alignment and final audio mux are opt-in and require an explicit `--with-tts` invocation for this new lesson.
 - CI uses a short Manim-only smoke lesson; Blender runtime rendering is checked locally and is not claimed by Ubuntu CI.
+
+### CI scope and latest checked results (2026-10-11)
+
+- AI trace run #29 passed all 155 repository unit tests. The V13 job is intentionally narrower and runs the two education test modules, registry/catalog validation, concept-only plan validation, compileall, and a Manim-only media smoke using the locked `sim-render` group.
+- The Manim smoke checks H.264 960×540 at 30 fps, VTT and production report presence, and full decode. Its preview and diagnostic logs are uploaded as one artifact. Local reproduction passed in a clean `sim-render` environment; the missing SoX startup warning does not affect this silent render path.
+- Recorded R6 Blender rendering is a separate local result; Blender is not part of the Ubuntu CI job. TTS/narration and final 1080p delivery are `NOT TESTED` by the CI smoke.
+- The V13 workflow’s remote status is commit-specific. Check the Actions run created by the workflow update push before treating this revision as CI-verified.

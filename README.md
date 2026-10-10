@@ -245,7 +245,20 @@ git diff --check
 
 Manim smoke preview는 Quick Start 명령으로 실제 미디어를 생성하고 FFmpeg로 검사합니다. Blender 검증은 Blender 설치 및 실행 가능한 환경에서 수행합니다. CI 정의는 [workflow](.github/workflows/v13-education.yml)를 참고하세요.
 
-**CI 상태:** 2026-10-11 확인 기준, 확인 가능한 최신 통합 run은 [run #28](https://github.com/hinoonyaso/make_simulation/actions/runs/38061841065)이며, clean clone에 없는 로컬 전용 Livox/Ouster/ZED 2i CAD 파일을 필수로 검사해 실패했습니다. 수정된 테스트는 CAD가 없어도 catalog·license·재배포 정책과 Git 미추적 상태를 검증하고, 실제 파일 검사는 로컬 파일이 있을 때만 합니다. 전체 155개 unittest, V12 19개, V13 16개, compileall, 두 asset registry 검증 및 Manim smoke preview는 이 변경 작업 트리에서 통과했습니다. 이 수정 이후의 원격 Actions 실행은 아직 확인되지 않았습니다. `AI video integration` workflow는 수동 실행형이므로 로컬 PASS를 원격 CI PASS로 간주하지 마세요.
+**CI 상태 (2026-10-11):** [AI trace run #29](https://github.com/hinoonyaso/make_simulation/actions/runs/38062554626)은 성공했고, 원격 로그에서 전체 155개 unittest PASS를 확인했습니다. run #28의 Vendor CAD 오류는 9a43b20에서 수정되어, CAD가 없는 clone에서도 catalog·license·재배포 정책·Git 미추적 검사는 유지되고 로컬 파일 검사는 파일이 있을 때만 실행됩니다.
+
+V13 전용 workflow는 교육 테스트만 실행하며, Python/Manim 패키지는 `uv.lock`의 `sim-render` group으로 설치합니다. education asset 검증, 계획 검증, Manim-only smoke, 960×540·30 fps·H.264 metadata, VTT와 production report, FFmpeg 전체 디코드를 검사하고 로그·미디어·리포트를 Artifact로 보관합니다. 교육 관련 경로를 바꾼 PR, `main`/`v13-education-first`의 관련 파일 push, 수동 dispatch에서 실행됩니다. 전체 회귀는 `ai-trace.yml`이 계속 담당합니다. 이 workflow 개정의 로컬 clean-environment 검증은 통과했으며, 원격 실행 결과는 해당 변경을 push한 뒤 확인해야 합니다.
+
+| 검증 | 상태 | 범위 |
+|---|---|---|
+| AI trace 전체 unittest | PASS, 155/155 | GitHub Actions run #29 |
+| V13 education unittest | PASS, 16/16 | `sim-render` locked environment |
+| Asset registry / education asset validation | PASS | Registry 39 entries, 6 generated models |
+| Education plan | PASS | `education_smoke.json`, concept-only |
+| Manim smoke preview | PASS | 960×540, 30 fps, silent, VTT/report present, full decode |
+| Blender render | PASS (기록된 R6 로컬 검증) | Windows Blender 5.2.1 from WSL; Ubuntu CI에서는 실행하지 않음 |
+| Narration/TTS | NOT TESTED | Smoke는 무음이며 외부 TTS를 호출하지 않음 |
+| 최종 1080p 영상 검증 | NOT TESTED | CI preview는 960×540 무음 smoke |
 
 ## Current Capabilities & Limitations
 
