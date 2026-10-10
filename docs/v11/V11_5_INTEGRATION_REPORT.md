@@ -28,7 +28,7 @@ Date: 2026-10-10 (KST). Baseline local/remote HEAD was `01c4a8f489e49ab05d2528a4
 | Whole-video motion playback | NOT_RUN | Numerical updates and sampled pixels only; no claim of continuous perceptual review. |
 | Audio/subtitle QA | NOT_APPLICABLE | Explicitly excluded by the V11.5 request. |
 | Remote CPU GitHub Actions | PASS | Implementation commit `c208f0e3f0dd5f237d547800f4d10d2a12840f45`; [run 38020559616](https://github.com/hinoonyaso/make_simulation/actions/runs/38020559616). Job `114120410443` logs: **114 tests in 4.036 s, OK**. All trace/manifest/capability/syntax/projection steps succeeded. |
-| Remote manual render integration | NOT_RUN | No local GH CLI/API token or connector workflow-dispatch method. Existing manual policy retained. Exact dispatch: `gh workflow run ai-video-integration.yml --repo hinoonyaso/make_simulation --ref main`; then `gh run list --workflow ai-video-integration.yml --repo hinoonyaso/make_simulation`. |
+| Remote manual render integration | PASS after final hardening | User dispatched [run 38023581895](https://github.com/hinoonyaso/make_simulation/actions/runs/38023581895), tested code `c0c8a94`. Both jobs and artifact uploads passed; downloaded ZIPs and six MP4s independently checked below. |
 
 Manual render CI now checks PID render-update states and common trace/timeline/media gates, retaining Quantization/Attention/NMS/replay and RAG rendering. Both PID and RAG MP4s are included in upload artifacts. H1 host Blender and optional YOLO inference were exercised locally; provisioning those remote jobs remains separate.
 
@@ -72,7 +72,7 @@ PID short timeline: hold [0,141), response [141,282), replay [282,422). Long tim
 ## Remaining conditions
 
 - P0: no unresolved failure in the implemented/tested motion, phase speed, PID state mapping or execution-cache scenarios.
-- P1 environment: manual remote render CI is NOT_RUN without workflow-dispatch authentication. Windows Blender and local Chromium rendering required the approved host process context; an ordinary restricted WSL subprocess can still be blocked. Runtime failures remain explicit.
+- P1 environment: manual remote render CI was subsequently completed through user dispatch; see final hardening evidence below. Windows Blender and local Chromium rendering required the approved host process context; an ordinary restricted WSL subprocess can still be blocked. Runtime failures remain explicit.
 - P2 scope: whole-video perceptual playback was not performed. Motion thresholds are configurable only through the documented metadata/type policy and are not validated against arbitrary real sensors. Native Windows/network filesystem execution locking is not supported by this test evidence. No new world/model/controller/speech capability is implied.
 
 Implementation commit `c208f0e` was pushed normally to `origin/main`. The unchanged-code post-commit YOLO invocation reused both caches (0 adapter calls; 1.3521 s total), confirming commit metadata does not invalidate the verified render. The following documentation-only commit records the completed remote result; its implementation is identical.
@@ -86,12 +86,52 @@ Baseline `029f74f`: 114 tests passed before edits. Six added test methods reprod
 - Added tests cover unequal ranges, reverse replay, hold, malformed/nonfinite bounds, nonfinite phase times, PID exact and ±1e-10 endpoints, out-of-tolerance/nonfinite mapping and empty samples. Existing tests retain PWM/encoder transitions and real PID/H1 timelines.
 - After fixes: focused accuracy/routing suite **28 PASS**; full suite **120 PASS** (3.473 s); compileall and `git diff --check` PASS.
 - Manual workflow audit: Python 3.12, Manim 0.21.0, MuJoCo 3.7.0, FFmpeg, Cairo/Pango, Nanum, V11_MANIM_BIN, Node 22/Playwright and manual trigger retained. Common previews remain 960×540/30. Added replay/NMS technical gates, JSON validation evidence to artifacts and missing-artifact failure policy. No heavy CI added.
-- Remote manual render: **NOT_RUN pending authenticated dispatch**. This session has no `gh` CLI, no configured GH_TOKEN/GITHUB_TOKEN, and no connector workflow-dispatch method. No credentials were searched for. SSH push authorization does not provide Actions API dispatch authentication. Once the fix is pushed, use the workflow page's **Run workflow → main**, or `gh workflow run ai-video-integration.yml --repo hinoonyaso/make_simulation --ref main`. Record the resulting SHA, run/jobs/artifacts before marking remote acceptance criteria 6–8 complete.
+- Initial remote manual render status: **NOT_RUN pending authenticated dispatch** (subsequently resolved below). This session has no `gh` CLI, no configured GH_TOKEN/GITHUB_TOKEN, and no connector workflow-dispatch method. No credentials were searched for. SSH push authorization does not provide Actions API dispatch authentication. Once the fix is pushed, use the workflow page's **Run workflow → main**, or `gh workflow run ai-video-integration.yml --repo hinoonyaso/make_simulation --ref main`. Record the resulting SHA, run/jobs/artifacts before marking remote acceptance criteria 6–8 complete.
 
-Remaining P0 acceptance: independent runner MP4 creation/decode/artifact verification is pending the manual run result. No unresolved failure in the tested local boundary fixes. Whole-video visual/audio review remains outside this technical hardening scope.
+At the initial hardening checkpoint, independent runner MP4 creation/decode/artifact verification was pending; it is now completed as recorded below. No unresolved failure in the tested local boundary fixes. Whole-video visual/audio review remains outside this technical hardening scope.
 
 Local post-fix PID runtime: `/tmp/v115-hardening-renders/mcu_pid-f062df224e9f4b273e27/preview.mp4`, H.264 960×540/30, 422 frames, 14.066667 s. Full decode and all 422 render-update/sample states PASS (`/tmp/v115-hardening-pid-frames.json`). Final local rerun: 120 tests / 4.332 s / OK. Added stored-range NaN/Inf subcases. Workflow gate output is redirected before printing, so a failed validator cannot be masked by a successful `tee` under the runner's default `bash -e`.
 
 First remote manual attempt: [38023126232](https://github.com/hinoonyaso/make_simulation/actions/runs/38023126232), SHA `a653dddcc7b02cf9d1fb16eee65903907a40a89a`. Three.js job `114128208003` PASS (12 points; actual 384D top3 C08,C11,C07). Manim job `114128208108` FAIL during evidence collection; 120 tests (4.115 s), six MP4 renders/decodes and PID frame mapping had passed, but artifact upload was skipped. This run is not a successful render-integration acceptance.
 
 Confirmed failure: FFmpeg inherited stdin from the shell's report-list `while read` loop and consumed leading path characters; `/tmp/...` became `mp/...`. Reproduced locally with two valid PID reports (second became `tmp/...`). Disconnecting validator stdin using `</dev/null` made both reports validate successfully. The workflow also redirects output before printing rather than piping to `tee`, preserving failure propagation with default `bash -e`. A fresh run on the corrected commit is required; rerunning the old SHA would retain the defect.
+
+
+### Successful independent runner verification
+
+- Workflow: `.github/workflows/ai-video-integration.yml`, manual user dispatch.
+- Tested implementation SHA: `c0c8a944f5274497e0310a4b33fc4032f85e2cd0`.
+- Run: [38023581895](https://github.com/hinoonyaso/make_simulation/actions/runs/38023581895).
+- `manim-preview`, job `114129583512`: **PASS**; 120 tests in 3.397 s; all six renders, full decodes, five mechanism trace/timeline/media gates and 422 PID render-update/sample comparisons passed.
+- `threejs-browser`, job `114129583365`: **PASS**. Browser smoke test executes separately from the RAG Manim preview; this CI does not claim a newly rendered Three.js splice.
+- Normal CPU workflow: [38023548431](https://github.com/hinoonyaso/make_simulation/actions/runs/38023548431), same implementation, **PASS**.
+
+Both uploaded artifacts were downloaded, ZIP integrity checked, extracted and independently inspected. Their downloaded byte hashes exactly match the GitHub artifact digest:
+
+| Artifact | ID | Bytes | SHA-256 |
+|---|---:|---:|---|
+| v11-mechanism-previews | 11659786029 | 1116307 | `80c56a7f4c03de1696b6d11fa4fbb7a6ba98c60909211d5eee316afbe54b7d42` |
+| v115-rag-preview | 11659651214 | 669660 | `79b8ff2b94e7010c357dadd0aeb9f7b862e71ce5c8892ae0486a76fd0913a251` |
+
+Downloaded evidence root: `output/v115_final_hardening/remote_38023581895/`. ZIPs and extracted source evidence are preserved. Validation relocates report paths only in a temporary copy; original remote reports, traces and timelines are unchanged. Results are in `artifact_verification.json` within that root.
+
+All six MP4s are H.264, 960×540, nominal **30/1 fps**, silent, with local full decode PASS after download:
+
+| File (relative to evidence root) | Frames | Measured duration (s) | Decode / timeline frame count |
+|---|---:|---:|---|
+| `11659786029/quantization.mp4` | 432 | 14.400000 | PASS |
+| `11659786029/self_attention.mp4` | 816 | 27.198698 | PASS |
+| `11659786029/pid.mp4` | 422 | 14.066667 | PASS |
+| `11659786029/quantization_replay.mp4` | 432 | 14.400000 | PASS |
+| `11659786029/nms_all_confidence_rejected.mp4` | 377 | 12.566667 | PASS |
+| `11659651214/rag_video_preview.mp4` | 1020 | 33.996745 | PASS |
+
+Attention/RAG muxed duration is 1.302/3.255 ms below the nominal frame-count duration; reported average frame rates are 30.001436/30.002873. Nominal stream rate is exactly 30/1, frame counts are exact, and existing FPS/duration gates pass. No frames or timing metadata were rewritten to force success.
+
+For all five common mechanism MP4s: saved media hash, trace domain equations, canonical trace hash, timeline hash/phase IDs, exact frame count and renderer identity were rechecked from downloaded evidence. Quantization replay preserves the same trace hash and timeline as its execution. All 422 downloaded PID update states match the mapper. RAG downloaded timeline hash/frame count and full decode also pass.
+
+Sampled actual pixels: NMS final frame visibly reads `최종 유지: 0개`, matching `candidate_ids: []`; PID frames 0/140/141/281/282/421 show hold → source progression → explicit replay, with correct first/last sample counters. This is sampled technical inspection, not whole-video perceptual playback.
+
+Warnings: action dependencies emit Node `punycode`/`url.parse()` deprecation notices; the hosted runner warns that the retained checkout/setup/upload actions target Node 20 and are forced to run on Node 24. Manim reports that a newer release is available. These are non-failing dependency/version notices, not missing-font, render, decode or frame-validation failures. No dependency upgrade was added to this narrow hardening task.
+
+Final acceptance: **P0 boundary fixes and remote render/decode/artifact criteria PASS**. The first remote failure remains documented with its reproduced cause and fix. No unresolved P0/P1 failure in this requested scope. P2 maintenance: action runtime deprecation warnings; migrate supported action versions in a separate dependency-maintenance change. Full perceptual playback, narration and subtitle QA were not performed and are not claimed. The final follow-up commit records evidence only; the remotely tested code remains `c0c8a94`.

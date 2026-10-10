@@ -95,4 +95,13 @@ The rows above describe the earlier implementation pass and are superseded for t
 
 Baseline 87 tests passed at `01c4a8f`; the modified local suite passes **114 tests**. Added evidence covers return motion/noise/spikes/units, playback speed and source endpoints, discrete PID boundary states, actual MuJoCo execution reuse, mocked YOLO inference call count, process-level reservations, corruption/incomplete rejection and render timeline tampering. Real YOLO and H1 repeated CLI invocations also report zero adapter calls on hits. Actual H1/PID/YOLO/RAG/Quantization media and exact performance observations are recorded in [V11.5 integration report](V11_5_INTEGRATION_REPORT.md). CI definitions and actual remote CI results are reported separately there.
 
-V11.5 remote CPU CI also passed: [run 38020559616](https://github.com/hinoonyaso/make_simulation/actions/runs/38020559616), implementation `c208f0e`, **114 tests / 4.036 s / OK**, with all workflow steps successful. Manual render integration remains NOT_RUN as documented in the V11.5 report.
+V11.5 remote CPU CI also passed: [run 38020559616](https://github.com/hinoonyaso/make_simulation/actions/runs/38020559616), implementation `c208f0e`, **114 tests / 4.036 s / OK**, with all workflow steps successful. Manual render integration was subsequently completed during final hardening, as recorded below.
+
+
+## V11.5 final hardening (2026-10-10)
+
+- Baseline 114 tests; six new boundary test methods. Before fixes: two reproduced assertion failures plus two malformed-range IndexError subcases. After fixes: **120 PASS** locally and in the independent render runner (3.397 s).
+- Timeline stored/external bounds are independently enforced; PID tolerated endpoint drift is clamped without negative-index wraparound. ZOH and existing trace/timeline contracts remain.
+- Manual render [run 38023581895](https://github.com/hinoonyaso/make_simulation/actions/runs/38023581895), code `c0c8a944f5274497e0310a4b33fc4032f85e2cd0`: **both jobs PASS**; six MP4s plus both artifacts generated. Downloaded ZIP digests, MP4 full decode, frame counts and saved trace/timeline evidence rechecked locally; all 422 PID frame states match.
+- First manual run failed when FFmpeg consumed report-loop stdin. Local reproduction confirmed the cause; `</dev/null` fixed it. Successful run uses the corrected workflow.
+- Full files, hashes, dimensions, frame counts, durations, warnings and scoped sampled-pixel evidence: [V11.5 integration report](V11_5_INTEGRATION_REPORT.md#successful-independent-runner-verification).
