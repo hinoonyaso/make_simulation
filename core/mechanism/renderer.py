@@ -95,6 +95,7 @@ def render_h1_blender(trace_path: Path, output: Path, model_path: Path, mode: st
         "physics_integrated_by_blender": False,
         "state_source": "validated MuJoCo trace; interpolated qpos and FK at presentation frame source times",
         "timeline": payload.get("timeline"),
+        "phase_playback": payload.get("phase_playback"),
     }, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     return output
 

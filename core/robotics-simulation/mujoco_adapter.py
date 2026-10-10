@@ -5,6 +5,7 @@ import hashlib
 import json
 import math
 import tempfile
+import time
 import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import Any
@@ -62,7 +63,7 @@ def _target(t: float, duration: float) -> tuple[float, float]:
 
 def run_arm_experiment(model_path: str | Path, output_dir: str | Path,
                        duration: float = 2.0, timestep: float = 0.002,
-                       sample_period: float = 0.02) -> dict[str, Any]:
+                       sample_period: float = 0.02, timings: dict | None = None) -> dict[str, Any]:
     model_path = Path(model_path).resolve()
     out = Path(output_dir)
     out.mkdir(parents=True, exist_ok=True)
@@ -77,7 +78,10 @@ def run_arm_experiment(model_path: str | Path, output_dir: str | Path,
     if not math.isclose(sample_ratio, round(sample_ratio), abs_tol=1e-9):
         raise ValueError("sample_period must be divisible by timestep")
 
+    load_started = time.perf_counter()
     model = _compile_fixed_base(model_path, timestep)
+    if timings is not None:
+        timings["model_loading_sec"] = time.perf_counter()-load_started
     data = mujoco.MjData(model)
     mujoco.mj_forward(model, data)
     joint_names = [mujoco.mj_id2name(model, mujoco.mjtObj.mjOBJ_JOINT, i)

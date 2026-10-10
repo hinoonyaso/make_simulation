@@ -92,8 +92,8 @@ def build_timeline(beats: list[dict[str, Any]], *, fps: int = 30,
             source_end = _finite_number(source_end, f"{phase_id} source end")
             if source_end < source_start and mode not in {"replay"}:
                 raise ValueError(f"phase {phase_id} source time moves backward without replay mode")
-            if source_range is not None and (source_start < source_range[0] - 1e-9 or
-                                             source_end > source_range[1] + 1e-9):
+            if source_range is not None and any(v < source_range[0] - 1e-9 or v > source_range[1] + 1e-9
+                                                   for v in (source_start, source_end)):
                 raise ValueError(f"phase {phase_id} source interval exceeds trace range")
         phases.append({
             "phase_id": phase_id,
@@ -138,27 +138,48 @@ def validate_timeline(timeline: dict[str, Any], *, expected_phase_ids: list[str]
     ids = [p.get("phase_id") for p in phases if isinstance(p, dict)]
     if len(ids) != len(phases) or any(not isinstance(i, str) or not i for i in ids):
         errors.append("each phase requires a phase_id")
-    if len(set(ids)) != len(ids):
+    if len(set(str(i) for i in ids)) != len(ids):
         errors.append("phase IDs must be unique")
     if expected_phase_ids is not None and ids != expected_phase_ids:
         errors.append("timeline phase IDs/order do not match storyboard")
     cursor = 0
-    source_low, source_high = source_range if source_range is not None else (None, None)
+    stored_range = timeline.get("source_range_sec")
+    source_low = source_high = None
+    for bounds in (stored_range, source_range):
+        if bounds is None:
+            continue
+        try:
+            if len(bounds) != 2:
+                raise ValueError("source range requires two endpoints")
+            low, high = (_finite_number(v, "source range") for v in bounds)
+            if low > high:
+                raise ValueError("source range end precedes start")
+            if source_range is not None and bounds is stored_range and (low < source_range[0] or high > source_range[1]):
+                errors.append("stored source range exceeds trace range")
+            source_low, source_high = low, high
+        except (ValueError, TypeError) as exc:
+            errors.append(str(exc))
     for phase in phases:
         if not isinstance(phase, dict):
             continue
         start, end = phase.get("presentation_start_frame"), phase.get("presentation_end_frame")
-        if not isinstance(start, int) or not isinstance(end, int) or start != cursor or end <= start:
+        if type(start) is not int or type(end) is not int or start != cursor or end <= start:
             errors.append(f"phase {phase.get('phase_id')} has gap, overlap, or empty frame range")
             if isinstance(end, int) and end > cursor:
                 cursor = end
             continue
-        if total and end > total:
+        if isinstance(total, int) and end > total:
             errors.append(f"phase {phase.get('phase_id')} exceeds total frame count")
         if phase.get("playback_mode") not in PLAYBACK_MODES:
             errors.append(f"phase {phase.get('phase_id')} has invalid playback_mode")
         if phase.get("visual_goal") not in VISUAL_GOALS:
             errors.append(f"phase {phase.get('phase_id')} has invalid visual_goal")
+        try:
+            for key, expected in (("presentation_start_sec", start / fps), ("presentation_end_sec", end / fps)):
+                if not math.isclose(_finite_number(phase.get(key), key), expected, abs_tol=1e-9):
+                    errors.append(f"phase seconds mismatch: {key}")
+        except ValueError as exc:
+            errors.append(str(exc))
         start_source, end_source = phase.get("source_start_sec"), phase.get("source_end_sec")
         if (start_source is None) != (end_source is None):
             errors.append(f"phase {phase.get('phase_id')} has incomplete source interval")
@@ -166,10 +187,14 @@ def validate_timeline(timeline: dict[str, Any], *, expected_phase_ids: list[str]
             try:
                 a = _finite_number(start_source, "source_start_sec")
                 b = _finite_number(end_source, "source_end_sec")
-                if b < a and phase["playback_mode"] != "replay":
+                if b < a and phase.get("playback_mode") != "replay":
                     errors.append(f"phase {phase.get('phase_id')} moves source time backward")
-                if source_low is not None and (a < source_low - 1e-9 or b > source_high + 1e-9):
+                if source_low is not None and any(v < source_low - 1e-9 or v > source_high + 1e-9 for v in (a, b)):
                     errors.append(f"phase {phase.get('phase_id')} exceeds source range")
+                if phase.get("playback_mode") in {"hold", "hold_and_analysis"} and a != b:
+                    errors.append("hold source endpoints must match")
+                if end - start == 1 and a != b:
+                    errors.append("a moving source interval requires at least two video frames")
             except ValueError as exc:
                 errors.append(str(exc))
         cursor = end
@@ -182,8 +207,11 @@ def validate_timeline(timeline: dict[str, Any], *, expected_phase_ids: list[str]
     except ValueError as exc:
         errors.append(str(exc))
     stored_hash = timeline.get("timeline_sha256")
-    if stored_hash is not None and stored_hash != timeline_hash(timeline):
-        errors.append("timeline_sha256 does not match timeline contents")
+    try:
+        if stored_hash is not None and stored_hash != timeline_hash(timeline):
+            errors.append("timeline_sha256 does not match timeline contents")
+    except (TypeError, ValueError):
+        errors.append("timeline contains non-finite or non-serializable data")
     return errors
 
 
@@ -195,7 +223,7 @@ def timeline_hash(timeline: dict[str, Any]) -> str:
 
 def source_time_for_frame(timeline: dict[str, Any], frame: int) -> tuple[str, float | None]:
     """Map one zero-based video frame to the recorded source time for its phase."""
-    if not isinstance(frame, int) or frame < 0 or frame >= timeline.get("total_frames", 0):
+    if type(frame) is not int or frame < 0 or frame >= timeline.get("total_frames", 0):
         raise ValueError("frame is outside timeline")
     for phase in timeline["phases"]:
         start = phase["presentation_start_frame"]
@@ -211,3 +239,24 @@ def source_time_for_frame(timeline: dict[str, Any], frame: int) -> tuple[str, fl
             ratio = (frame - start) / max(1, end - start - 1)
             return phase["phase_id"], float(a + (b - a) * ratio)
     raise ValueError("frame has no phase mapping")
+
+
+def phase_playback(timeline: dict[str, Any], phase: dict[str, Any]) -> dict[str, Any]:
+    """Nominal source seconds / phase presentation seconds, never whole-video speed.
+
+    Endpoints are represented by the first and last frame of the phase. The last
+    sample is held for its final 1/fps interval; speed is the phase-average rate.
+    """
+    seconds = (phase["presentation_end_frame"] - phase["presentation_start_frame"]) / timeline["fps"]
+    a, b = phase.get("source_start_sec"), phase.get("source_end_sec")
+    speed = None if a is None or b is None else (b-a) / seconds
+    if speed is None:
+        state = "untimed"
+    elif speed == 0 or phase["playback_mode"] in {"hold", "hold_and_analysis"}:
+        state, speed = "hold", 0.0
+    elif phase["playback_mode"] == "replay":
+        state = "replay"
+    else:
+        state = "normal_speed" if math.isclose(abs(speed), 1., abs_tol=1e-9) else ("slow_motion" if abs(speed) < 1 else "fast_motion")
+    return {"phase_id": phase["phase_id"], "source_duration_sec": None if a is None else abs(b-a),
+            "presentation_duration_sec": seconds, "playback_speed": speed, "playback_state": state}

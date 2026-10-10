@@ -10,13 +10,13 @@ import re
 import shutil
 import subprocess
 import sys
-import tempfile
 import time
 import hashlib
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from core.mechanism.protocol import MechanismRequest
+from core.mechanism.execution_cache import execute_cached
 from core.mechanism.registry import MechanismRegistry
 from core.mechanism.run_management import (asset_tree_hash, file_hash, make_run_identity, media_metadata,
                                            prepare_run_dir, validate_replay_trace)
@@ -126,13 +126,16 @@ def _build_run_timeline(topic: str, trace: dict, manifest: dict,
             source_range = (times[0], times[-1])
             for beat in manifest["beats"]:
                 phase_source[beat["phase_id"]] = {"source_start_sec": times[0], "source_end_sec": times[-1],
-                                                  "playback_mode": "normal_speed",
+                                                  "playback_mode": "replay" if beat["phase_id"] == "pid_terms" else "slow_motion",
                                                   "visual_goal": "numerical_explanation"}
+                if beat["phase_id"] == "setpoint":
+                    phase_source[beat["phase_id"]].update(source_end_sec=times[0], playback_mode="hold")
     return build_timeline(manifest["beats"], fps=fps, source_range=source_range,
                           phase_source=phase_source, default_visual_goal=visual_goal)
 
 
 def main() -> int:
+    pipeline_started = time.perf_counter()
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--topic", required=True, help="registered mechanism ID or unique alias")
     parser.add_argument("--mode", choices=("executable", "replay", "illustration"), default="executable")
@@ -154,12 +157,17 @@ def main() -> int:
                         help="refuse an existing run directory instead of reusing it")
     parser.add_argument("--force", action="store_true",
                         help="bypass reuse and create a timestamped sibling; preserves the original run")
+    parser.add_argument("--execution-cache-dir", type=Path, default=ROOT / "output/executions")
+    parser.add_argument("--no-execution-cache", action="store_true", help="execute into an independent reservation")
+    parser.add_argument("--force-execution", action="store_true", help="rerun inference/physics; preserve completed caches")
     parser.add_argument("--asset", help="asset ID required by a robotics adapter")
     parser.add_argument("--robot", help="robot model ID for robotics adapters")
     parser.add_argument("--model", type=Path, help="local model checkpoint for real object_detection inference")
     parser.add_argument("--narration-duration", type=float,
                         help="measured total TTS duration in seconds for beat timing allocation")
     args = parser.parse_args()
+    if args.force_execution and args.mode != "executable":
+        parser.error("--force-execution requires executable mode")
     if args.force and args.run_id:
         parser.error("--force cannot be combined with --run-id; choose a new explicit run ID instead")
     if bool(args.document) != bool(args.question):
@@ -208,33 +216,30 @@ def main() -> int:
             config.update({"document": args.document.read_text(encoding="utf-8"), "question": args.question})
         elif args.mode == "replay":
             config["trace_path"] = str(args.trace.resolve())
-    simulation_tmp = None
     if topic == "robot_kinematics":
         if args.robot and args.robot != "unitree_h1":
             parser.error("robot_kinematics currently supports only unitree_h1")
         if args.asset and args.asset != "blender.unitree_h1.v1":
             parser.error("robot_kinematics requires asset blender.unitree_h1.v1")
 
+    execution_info = {"cache_status": "BYPASS_REPLAY" if args.mode == "replay" else "NOT_SUPPORTED",
+                      "adapter_execute_calls": 0}
     if args.mode == "replay":
         trace = _load_json(args.trace.resolve(), "trace")
         errors = (adapter.validate(trace) if topic == "object_detection" else
                   validate_replay_trace(topic, capability["trace_schema"], trace, adapter))
         if errors:
             parser.error("trace validation failed: " + "; ".join(errors))
+    elif topic in {"robot_kinematics", "object_detection"}:
+        trace, execution_info = execute_cached(topic, config, adapter, args.execution_cache_dir,
+                                               enabled=not args.no_execution_cache, force=args.force_execution)
     else:
-        if topic == "robot_kinematics":
-            simulation_tmp = tempfile.TemporaryDirectory(prefix="v11_h1_trace_")
-            config["output_dir"] = simulation_tmp.name
         prepared = adapter.prepare(MechanismRequest(topic=topic, options=config))
         trace = adapter.execute(prepared)
+        execution_info["adapter_execute_calls"] = 1
         errors = adapter.validate(trace)
         if errors:
-            if simulation_tmp:
-                simulation_tmp.cleanup()
             parser.error("adapter trace validation failed: " + "; ".join(errors))
-        if simulation_tmp:
-            simulation_tmp.cleanup()
-            simulation_tmp = None
 
     plan = adapter.build_visual_plan(trace)
     plan.setdefault("title", {
@@ -254,6 +259,7 @@ def main() -> int:
                                     measured_narration_seconds=args.narration_duration)
     model_path = Path(config.get("model", ROOT / "assets/unitree_h1/mjcf/h1_with_hand.xml")) \
         if topic == "robot_kinematics" else None
+    preflight_started = time.perf_counter()
     try:
         decision = decide_renderer(topic=topic, requested_renderer=args.render,
                                    visual_goal=args.visual_goal, trace=trace, model_path=model_path)
@@ -261,6 +267,7 @@ def main() -> int:
         parser.error(str(exc))
     if decision["status"] != "PASS" or not decision.get("selected_renderer"):
         parser.error("renderer preflight blocked: " + json.dumps(decision, ensure_ascii=False))
+    preflight_sec = time.perf_counter() - preflight_started
     effective_renderer = decision["selected_renderer"]
     resolved_goal = decision["visual_goal"]
     timeline = _build_run_timeline(topic, trace, manifest, resolved_goal)
@@ -304,16 +311,27 @@ def main() -> int:
         parser.error("run ID must contain 1-128 letters, numbers, dots, underscores or hyphens")
     if args.force:
         run_id = f"{run_id}-rerun-{time.strftime('%Y%m%dT%H%M%S', time.gmtime())}-{time.time_ns() % 1_000_000_000:09d}"
+    render_lookup_started = time.perf_counter()
     try:
         run_dir, cache_hit = prepare_run_dir(args.output_dir, run_id, reuse=args.reuse,
                                             force=args.force, expected_identity=identity)
     except FileExistsError as exc:
         parser.error(str(exc))
+    render_lookup_sec = time.perf_counter() - render_lookup_started
+    def record_invocation(media, render_cache_status, render_sec=0.):
+        entry = {"topic": topic, "media": str(media), "execution": execution_info,
+                 "render_cache_status": render_cache_status, "renderer_preflight_sec": preflight_sec,
+                 "render_cache_lookup_sec": render_lookup_sec, "render_sec": render_sec,
+                 "total_pipeline_sec": time.perf_counter()-pipeline_started}
+        folder = args.output_dir / "invocations"
+        folder.mkdir(parents=True, exist_ok=True)
+        _write_json(folder / f"{time.time_ns()}.json", entry)
+        print("PIPELINE_METRICS " + json.dumps(entry,ensure_ascii=False))
+        return entry
     if cache_hit:
         cached_report = _load_json(run_dir / "production_report.json", "cached report")
+        record_invocation(cached_report["media"], "HIT")
         print(f"REUSED: {cached_report['media']}")
-        if simulation_tmp:
-            simulation_tmp.cleanup()
         return 0
 
     _write_json(run_dir / "request.json", {"topic": topic, "mode": args.mode,
@@ -327,6 +345,7 @@ def main() -> int:
     timeline_path = run_dir / "timeline.json"
     _write_json(timeline_path, timeline)
     trace_digest = hashlib.sha256(trace_path.read_bytes()).hexdigest()
+    render_started = time.perf_counter()
     if topic == "rag":
         preview = _run_rag(trace_path, run_dir, preview=args.preview,
                            render="auto" if effective_renderer == "manim+threejs" else "manim",
@@ -365,6 +384,7 @@ def main() -> int:
                 reuse=args.reuse, force=False, expected_identity=fallback_identity)
             if fallback_cache:
                 cached = _load_json(fallback_dir / "production_report.json", "fallback cached report")
+                record_invocation(cached["media"], "HIT_FALLBACK", time.perf_counter()-render_started)
                 print(f"REUSED fallback: {cached['media']}")
                 return 0
             old_dir = run_dir
@@ -469,6 +489,8 @@ def main() -> int:
                               "media_full_decode_30fps": "PASS", "audio_track": "NOT_PRESENT"},
                "visual": "NOT_RUN", "educational": "NOT_RUN"},
         "limitations": trace.get("limitations", trace.get("model", {}).get("assumptions", []))}
+    report["execution"] = execution_info
+    report["pipeline_metrics"] = record_invocation(media, "MISS", time.perf_counter()-render_started)
     _write_json(run_dir / "production_report.json", report)
     _write_json(run_dir / "review_report.json", {
         "status": "NOT_RUN", "technical_review": "covered by production_report.qa.technical",

@@ -90,3 +90,7 @@ The rows above describe the earlier implementation pass and are superseded for t
 | YOLO Manim scene-style check | PASS | `uv run python scripts/check_scene_style.py pilots/v11_2_yolo/render_scene.py` — no warnings. |
 | Sampled YOLO final-frame review | PASS, scoped | Actual frames at 1, 3, 6, 9 and 11s inspected. Final review in `docs/v11/RENDER_REVIEW.md`; initial draft's off-image labels were corrected before final render. |
 | Narrated full episode / TTS / sentence captions | NOT_RUN | The two new renders are short silent technical excerpts, not a complete education-video delivery. |
+
+## V11.5 validation (2026-10-10)
+
+Baseline 87 tests passed at `01c4a8f`; the modified local suite passes **114 tests**. Added evidence covers return motion/noise/spikes/units, playback speed and source endpoints, discrete PID boundary states, actual MuJoCo execution reuse, mocked YOLO inference call count, process-level reservations, corruption/incomplete rejection and render timeline tampering. Real YOLO and H1 repeated CLI invocations also report zero adapter calls on hits. Actual H1/PID/YOLO/RAG/Quantization media and exact performance observations are recorded in [V11.5 integration report](V11_5_INTEGRATION_REPORT.md). CI definitions and actual remote CI results are reported separately there.

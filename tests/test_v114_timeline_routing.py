@@ -47,7 +47,7 @@ class RendererRoutingTests(unittest.TestCase):
     PASS = {"status": "PASS", "version": "test-runtime"}
 
     def test_visual_goals_select_evidence_appropriate_renderers(self):
-        h1 = {"samples": [{"qpos": [0]}, {"qpos": [1]}]}
+        h1 = {"samples": [{"t": 0, "qpos": [0]}, {"t": 1, "qpos": [1]}]}
         motion = decide_renderer(topic="robot_kinematics", requested_renderer="auto",
             visual_goal="motion_3d", trace=h1, preflight_result=self.PASS)
         inferred_motion = decide_renderer(topic="robot_kinematics", requested_renderer="auto",
@@ -73,7 +73,7 @@ class RendererRoutingTests(unittest.TestCase):
         self.assertTrue(decision["feature_loss"])
 
     def test_explicit_blender_failure_never_falls_back(self):
-        trace = {"samples": [{"qpos": [0]}, {"qpos": [1]}]}
+        trace = {"samples": [{"t": 0, "qpos": [0]}, {"t": 1, "qpos": [1]}]}
         blocked = {"status": "BLOCKED", "reason": "Blender process failed"}
         decision = decide_renderer(topic="robot_kinematics", requested_renderer="blender",
             visual_goal="motion_3d", trace=trace, preflight_result=blocked)

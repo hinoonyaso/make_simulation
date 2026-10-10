@@ -145,6 +145,7 @@ def code_fingerprint() -> str:
              ROOT / "pilots/v10_threejs_rag/src/style.css", ROOT / "pilots/v10_threejs_rag/scripts/build_projection.py",
              ROOT / "pilots/v10_threejs_rag/scripts/capture_video.js",
              ROOT / "pilots/v10_threejs_rag/package-lock.json",
+             ROOT / "core/mechanism/joint_motion.py", ROOT / "core/mechanism/pid_playback.py",
              ROOT / "core/mechanism/timeline.py", ROOT / "core/mechanism/renderer_routing.py",
              *sorted((ROOT / "core/mechanism/adapters").glob("*.py"))]
     return canonical_hash({str(path.relative_to(ROOT)): file_hash(path)
@@ -207,7 +208,16 @@ def prepare_run_dir(root: Path, run_id: str, *, reuse: bool = True,
                 trace_path = trace_path.resolve()
                 trace_value = json.loads(trace_path.read_text(encoding="utf-8")) if trace_path.is_file() else None
                 stored_trace_hash = canonical_hash(trace_value) if trace_value is not None else None
-                if (media == expected_media and media.is_file() and media.stat().st_size > 0
+                timeline_valid = True
+                if data.get("identity", {}).get("timeline_hash"):
+                    from core.mechanism.timeline import validate_timeline
+                    timeline_path = candidate / "timeline.json"
+                    timeline = json.loads(timeline_path.read_text(encoding="utf-8"))
+                    timeline_valid = (not validate_timeline(timeline)
+                                      and timeline.get("timeline_sha256") == data["identity"]["timeline_hash"]
+                                      and timeline.get("total_frames") == data["media_metadata"]["frame_count"])
+
+                if (timeline_valid and media == expected_media and media.is_file() and media.stat().st_size > 0
                         and data.get("technical_decode") == "PASS"
                         and data.get("topic") == data.get("identity", {}).get("topic")
                         and data.get("render_mode") == spec.get("mode")
@@ -223,7 +233,7 @@ def prepare_run_dir(root: Path, run_id: str, *, reuse: bool = True,
                              _cache_identity_matches(data.get("identity", {}), expected_identity))
                         and _validate_cached_media(media, spec, data["media_metadata"])):
                     return candidate, True
-            except (OSError, KeyError, TypeError, json.JSONDecodeError):
+            except (OSError, KeyError, TypeError, ValueError):
                 pass
         raise FileExistsError(
             f"run directory already exists and is not reusable: {candidate}; "

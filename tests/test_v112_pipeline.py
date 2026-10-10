@@ -49,6 +49,24 @@ class RunManagementTests(unittest.TestCase):
                                   mode="executable", renderer="manim:preview")
         self.assertNotEqual(base["run_id"], other["run_id"])
 
+    def test_tampered_timeline_rejects_completed_render_cache(self):
+        from core.mechanism.timeline import build_timeline
+        with tempfile.TemporaryDirectory() as temp:
+            timeline = build_timeline([{"phase_id": "a", "sec": 1}])
+            identity = self._identity()
+            identity["timeline_hash"] = timeline["timeline_sha256"]
+            run, _ = prepare_run_dir(Path(temp), identity["run_id"], expected_identity=identity)
+            media = run / "preview.mp4"
+            media.write_bytes(b"complete-test-media")
+            self._write_cached_report(run, media, identity)
+            (run / "timeline.json").write_text(json.dumps(timeline))
+            with patch("core.mechanism.run_management._validate_cached_media", return_value=True):
+                self.assertTrue(prepare_run_dir(Path(temp), identity["run_id"], expected_identity=identity)[1])
+                timeline["phases"][0]["presentation_end_frame"] = 25
+                (run / "timeline.json").write_text(json.dumps(timeline))
+                with self.assertRaises(FileExistsError):
+                    prepare_run_dir(Path(temp), identity["run_id"], expected_identity=identity)
+
     def test_same_run_reuses_only_valid_completed_media(self):
         with tempfile.TemporaryDirectory() as temp:
             identity = self._identity()

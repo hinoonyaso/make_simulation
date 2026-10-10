@@ -15,6 +15,7 @@ sys.path.insert(0, str(ROOT / "core/manim-robotics-education-skill/templates"))
 from manim_kit import apply_theme, txt, P
 from core.mechanism.storyboard import validate_phase_contract
 from core.mechanism.timeline import validate_timeline
+from core.mechanism.pid_playback import PIDPlayback
 
 
 def text(value, size=24, color=P.fg, width=None):
@@ -50,6 +51,9 @@ class MechanismTraceScene(Scene):
             raise ValueError("common Manim renderer requires a 30 fps shared timeline")
         phases = {phase["phase_id"]: phase for phase in timeline["phases"]}
         self.add(text(self.plan["title"], 34, P.fg, 13.2).to_edge(UP, buff=.35))
+        if self.plan["kind"] == "mcu_pid":
+            self._render_pid(timeline)
+            return
         graphic, transitions = self._build_graphic()
         errors = validate_phase_contract(beats, transitions)
         if errors:
@@ -82,9 +86,6 @@ class MechanismTraceScene(Scene):
                 keys.append("activation_quantization")
             return graphic, dict(zip(keys, rows))
         if kind == "nms": return self._nms()
-        if kind == "mcu_pid":
-            graphic, rows = self._pid()
-            return graphic, dict(zip(["setpoint", "motor_response", "pid_terms"], rows))
         if kind == "mujoco_arm":
             graphic, rows = self._mujoco_arm()
             return graphic, dict(zip(["robot_setup", "joint_state", "end_effector_motion"], rows))
@@ -223,70 +224,69 @@ class MechanismTraceScene(Scene):
             transitions["iou_comparison"] = [comparison_sequence]
         return graphic, transitions
 
-    def _pid(self):
-        p = self.plan
-        rows = p["samples"]
-        x0, y0, width, height = -5.1, -1.5, 8.2, 3.4
-        axes = VGroup(Line([x0, y0, 0], [x0+width, y0, 0], color=P.faint),
-                      Line([x0, y0, 0], [x0, y0+height, 0], color=P.faint))
-        max_t = max(float(row["time_s"]) for row in rows) or 1.0
-        max_speed = max(abs(float(p["target_rad_s"])), 1.0)
-        step = max(1, len(rows)//100)
-        sampled = rows[::step]
-        measured = [[x0+width*row["time_s"]/max_t, y0+height*.5+height*.42*row["motor_speed_rad_s"]/max_speed, 0]
-                    for row in sampled]
-        encoder = [[x0+width*row["time_s"]/max_t, y0+height*.5+height*.42*row["encoder_speed_rad_s"]/max_speed, 0]
-                   for row in sampled]
-        reference_y = y0+height*.5+height*.42*p["target_rad_s"]/max_speed
-        target = Line([x0, reference_y, 0], [x0+width, reference_y, 0], color=P.active, stroke_width=2)
-        speed = polyline(measured, P.result, 4)
-        encoder_line = polyline(encoder, P.sensor, 2)
-        legend = VGroup(text("목표 속도", 17, P.active), text("모터 상태", 17, P.result),
-                        text("엔코더 측정", 17, P.sensor)).arrange(RIGHT, buff=.5).move_to([1.0, 2.45, 0])
-        pwm = [float(row["pwm_duty"]) for row in sampled]
-        pwm_points = [[x0+width*i/max(1,len(pwm)-1), -2.5+float(value)*.42, 0]
-                      for i, value in enumerate(pwm)]
-        pwm_line = polyline(pwm_points, P.active, 3)
-        time_cursor = ValueTracker(0.0)
-        def cursor_sample():
-            index = min(len(rows)-1, int(time_cursor.get_value()/max_t*(len(rows)-1)))
-            return rows[index], index
-        cursor = always_redraw(lambda: Line(
-            [x0+width*time_cursor.get_value()/max_t, y0-.12, 0],
-            [x0+width*time_cursor.get_value()/max_t, y0+height+.12, 0],
-            color=P.active, stroke_width=2))
-        label = text(f"이산 PID · 주기 {p['duration_s'] / max(1,len(rows)-1):.3f}s · PWM [-1, 1]",
-                     16, P.muted).move_to([0, 1.95, 0])
-        gains = p.get("pid", {"kp": 0, "ki": 0, "kd": 0})
-        initial = rows[0]
-        p_term = gains["kp"] * initial["error_rad_s"]
-        i_term = gains["ki"] * initial["integral_state"]
-        d_term = gains["kd"] * initial["derivative_rad_s2"]
-        term_panel = VGroup(text("첫 표본 t=0의 PID 항", 16, P.active),
-            text(f"P = Kp × e = {gains['kp']:g} × {initial['error_rad_s']:.2f} = {p_term:.2f}", 14, P.fg, 3.8),
-            text(f"I = Ki × Σe·dt = {gains['ki']:g} × {initial['integral_state']:.2f} = {i_term:.2f}", 13, P.fg, 3.8),
-            text(f"D = Kd × de/dt = {gains['kd']:g} × {initial['derivative_rad_s2']:.2f} = {d_term:.2f}", 13, P.fg, 3.8))
-        term_panel.arrange(DOWN, buff=.24, aligned_edge=LEFT).move_to([4.9, .25, 0])
-        cursor_note = text("점과 수직선은 같은 시각 표본", 14, P.muted, 3.5).move_to([4.9, -2.3, 0])
-        def measured_dot():
-            row, _ = cursor_sample()
-            x = x0 + width * row["time_s"] / max_t
-            y = y0 + height*.5 + height*.42*row["encoder_speed_rad_s"]/max_speed
-            return Dot([x, y, 0], radius=.09, color=P.sensor)
-        def pwm_dot():
-            row, _ = cursor_sample()
-            x = x0 + width * row["time_s"] / max_t
-            y = -2.5 + float(row["pwm_duty"])*.42
-            return Dot([x, y, 0], radius=.09, color=P.active)
-        measured_marker, pwm_marker = always_redraw(measured_dot), always_redraw(pwm_dot)
-        graphic = VGroup(axes, target, speed, encoder_line, legend, pwm_line, label, cursor,
-                         term_panel, cursor_note, measured_marker, pwm_marker)
-        return graphic, [[Create(axes), Create(target), FadeIn(legend)],
-                         [Create(speed).set_run_time(2.6), Create(encoder_line).set_run_time(2.6),
-                          Create(pwm_line).set_run_time(2.6), FadeIn(cursor),
-                          FadeIn(measured_marker), FadeIn(pwm_marker), FadeIn(cursor_note),
-                          time_cursor.animate.set_value(max_t).set_run_time(2.6)],
-                         [FadeIn(label), FadeIn(term_panel)]]
+    def _render_pid(self, timeline):
+        playback = PIDPlayback(self.plan, timeline)
+        rows, p = self.plan['samples'], self.plan
+        x0, x1, y0 = -5.8, 1.8, -1.3
+        max_t = max(row['time_s'] for row in rows) or 1.
+        scale = max(1., max(abs(row[k]) for row in rows
+                           for k in ('target_rad_s', 'motor_speed_rad_s', 'encoder_speed_rad_s')))
+        def x(t): return x0 + (x1-x0)*t/max_t
+        def y(v): return y0 + 2.8*v/scale
+        self.add(Line([x0,y0,0],[x1,y0,0],color=P.faint),
+                 text("목표 / 모터 / 엔코더 · rad/s",18,P.muted).move_to([-2,2.6,0]),
+                 text("PWM [-1, 1] · 기록된 표본 유지",17,P.muted).move_to([-2,-2.5,0]))
+        def curve(key, color, discrete=False, pwm=False):
+            points=[]
+            previous=None
+            for row in rows:
+                value = row[key]
+                yy = (-2+value*.35) if pwm else y(value)
+                if discrete and previous is not None:
+                    points.append([x(row['time_s']), previous, 0])
+                points.append([x(row['time_s']), yy, 0]); previous=yy
+            return polyline(points,color,2)
+        self.add(curve('target_rad_s',P.active,True),curve('motor_speed_rad_s',P.result),
+                 curve('encoder_speed_rad_s',P.sensor,True),curve('pwm_duty',P.active,True,True))
+        cursor=Line([x0,y0-.1,0],[x0,2.1,0],color=P.active)
+        encoder_dot=Dot(radius=.065,color=P.sensor)
+        motor_dot=Dot(radius=.065,color=P.result)
+        pwm_dot=Dot(radius=.065,color=P.active)
+        panel=VGroup(); footer=VGroup()
+        self.add(cursor,encoder_dot,motor_dot,pwm_dot,panel,footer)
+        observed={}
+        debug_path=os.environ.get('V115_FRAME_DEBUG')
+        last_key=None
+        def display(frame):
+            nonlocal last_key
+            state=playback.state(frame)
+            source=state['source_time_sec']; sample=state['sample_time_sec']
+            cursor.set_x(x(source))
+            encoder_dot.move_to([x(sample),y(state['encoder_speed_rad_s']),0])
+            motor_dot.move_to([x(sample),y(state['motor_speed_rad_s']),0])
+            pwm_dot.move_to([x(sample),-2+state['pwm_duty']*.35,0])
+            key=(state['phase_id'],state['sample_index'])
+            if key != last_key:
+                lines=[f"표본 {state['sample_index']} · t={sample:.2f}s",
+                       f"목표 {state['target_rad_s']:.2f} · 오차 {state['error_rad_s']:.2f}",
+                       f"P {state['p_term']:.3f}   I {state['i_term']:.3f}   D {state['d_term']:.3f}",
+                       f"PWM {state['pwm_duty']:.3f}",
+                       f"모터 {state['motor_speed_rad_s']:.2f} rad/s",
+                       f"엔코더 {state['encoder_speed_rad_s']:.2f} rad/s",
+                       f"누적 계수 {state['encoder_count']}"]
+                panel.become(VGroup(*[text(v,18,P.fg,4.5) for v in lines]).arrange(DOWN,buff=.23,aligned_edge=LEFT).move_to([4.3,.2,0]))
+                last_key=key
+            footer.become(text(f"영상 프레임 {frame} · 원본 t={source:.3f}s · {state['playback_state']}",16,P.muted).move_to([0,-3.25,0]))
+            if debug_path: observed[frame]=state
+        for phase in timeline['phases']:
+            start,end=phase['presentation_start_frame'],phase['presentation_end_frame']
+            display(start)
+            # Manim renders alpha=i/N, with finish(alpha=1) after the last frame.
+            def update(_,alpha,start=start,end=end):
+                display(min(end-1,start+int(round(alpha*(end-start)))))
+            self.play(UpdateFromAlphaFunc(cursor,update,rate_func=linear),run_time=(end-start)/timeline['fps'])
+        if debug_path:
+            Path(debug_path).write_text(json.dumps([observed[i] for i in sorted(observed)],ensure_ascii=False),encoding='utf-8')
 
     def _mujoco_arm(self):
         p = self.plan

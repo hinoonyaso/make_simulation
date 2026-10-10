@@ -7,6 +7,7 @@ from pathlib import Path
 import subprocess
 import sys
 import tempfile
+import time
 from typing import Any
 
 import numpy as np
@@ -166,7 +167,7 @@ def select_visualization_ids(steps: list[dict[str, Any]], candidates: list[dict[
 def run_yolo_inference(image_path: str | Path, model_path: str | Path, output_path: str | Path,
                        confidence_threshold: float = .25, iou_threshold: float = .45,
                        trace_display_floor: float = .05, imgsz: int = 640,
-                       display_limit: int = 12) -> dict[str, Any]:
+                       display_limit: int = 12, timings: dict | None = None) -> dict[str, Any]:
     """Run the official YOLO runtime on a local image and save validated inference evidence."""
     try:
         import torch
@@ -193,7 +194,12 @@ def run_yolo_inference(image_path: str | Path, model_path: str | Path, output_pa
     with Image.open(image_path) as im:
         image_width, image_height = im.size
 
+    torch.manual_seed(0)
+    np.random.seed(0)
+    load_started = time.perf_counter()
     model = YOLO(str(model_path), task="detect")
+    if timings is not None:
+        timings["model_loading_sec"] = time.perf_counter()-load_started
     captured: list[np.ndarray] = []
     captured_input_shape: list[tuple[int, int]] = []
     original_nms = ops.non_max_suppression
@@ -336,8 +342,12 @@ class ObjectDetectionAdapter:
                        "--image", config["image"], "--model", config["model"], "--out", str(trace_path),
                        "--confidence", str(config.get("confidence_threshold", .25)),
                        "--iou", str(config.get("iou_threshold", .45)),
-                       "--display-limit", str(config.get("display_limit", 12))]
+                       "--display-limit", str(config.get("display_limit", 12)),
+                       "--imgsz", str(config.get("imgsz",640)),
+                       "--trace-display-floor", str(config.get("trace_display_floor",.05)),
+                       "--metrics", str(Path(temp)/"metrics.json")]
             subprocess.run(command, cwd=self.root, check=True)
+            self.last_execution_metrics = json.loads((Path(temp)/"metrics.json").read_text())
             return json.loads(trace_path.read_text(encoding="utf-8"))
 
     def validate(self, trace: dict[str, Any]) -> list[str]:

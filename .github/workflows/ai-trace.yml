@@ -18,16 +18,8 @@ jobs:
         run: python scripts/validate_ai_trace.py pilots/v10_rag_poc/data/ai_trace.json
       - name: Validate checked-in V9-compatible RAG manifest
         run: python core/robotics-ai-visual-director-skill/templates/validate_visual_manifest.py pilots/v10_rag_poc/visual_manifest.json
-      - name: Test AI validator, generic RAG, and V9 trace routing
-        run: python -m unittest discover -s tests -p 'test_ai_*.py' -v
-      - name: Test V11 registry, domain traces, archive safety and environment preflight
-        run: python -m unittest tests.test_v11_mechanism -v
-      - name: Test run isolation, trace replay planning and dynamic storyboards
-        run: python -m unittest tests.test_v112_pipeline -v
-      - name: Test V11.4 renderer routing and integer-frame timeline
-        run: python -m unittest tests.test_v114_timeline_routing -v
-      - name: Test existing MuJoCo H1 trace execution
-        run: python -m unittest tests.test_mujoco_simulation -v
+      - name: Run all CPU regressions including V11.5 motion, time mapping and execution cache
+        run: python -m unittest discover -s tests -v
       - name: Validate V11 capability routing and vendored robot asset
         run: |
           python scripts/inspect_capabilities.py --topic quantization

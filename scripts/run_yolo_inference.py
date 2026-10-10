@@ -20,11 +20,18 @@ def main() -> int:
     parser.add_argument("--confidence", type=float, default=.25)
     parser.add_argument("--iou", type=float, default=.45)
     parser.add_argument("--display-limit", type=int, default=12)
+    parser.add_argument("--imgsz", type=int, default=640)
+    parser.add_argument("--trace-display-floor", type=float, default=.05)
+    parser.add_argument("--metrics", type=Path)
     args = parser.parse_args()
+    timings = {}
     trace = run_yolo_inference(args.image, args.model, args.out,
                                confidence_threshold=args.confidence,
                                iou_threshold=args.iou,
-                               display_limit=args.display_limit)
+                               display_limit=args.display_limit, imgsz=args.imgsz,
+                               trace_display_floor=args.trace_display_floor, timings=timings)
+    if args.metrics:
+        args.metrics.write_text(json.dumps(timings))
     print(json.dumps({"trace": str(args.out),
                       "raw_prediction_count": trace["raw_prediction_count"],
                       "trace_candidates": trace["trace_candidate_count"],

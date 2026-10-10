@@ -23,8 +23,10 @@ class MuJoCoArmAdapter:
         module = importlib.util.module_from_spec(spec); spec.loader.exec_module(module)
         model = Path(config.get("model", self.root / "assets/unitree_h1/mjcf/h1_with_hand.xml"))
         output = Path(config["output_dir"])
+        self.last_execution_metrics = {}
         return module.run_arm_experiment(model, output, float(config.get("duration", 2.0)),
-            float(config.get("timestep", .002)), float(config.get("sample_period", .02)))
+            float(config.get("timestep", .002)), float(config.get("sample_period", .02)),
+            timings=self.last_execution_metrics)
 
     def validate(self, trace):
         path = self.root / "core/shared-data/validate_trace.py"

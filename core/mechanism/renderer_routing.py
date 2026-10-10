@@ -7,6 +7,7 @@ import shlex
 import subprocess
 from pathlib import Path
 from typing import Any
+from core.mechanism.joint_motion import analyze_joint_motion
 
 VISUAL_GOALS = ("auto", "numerical_explanation", "algorithm_flow", "image_space",
                 "motion_3d", "spatial_relationship", "comparative_analysis")
@@ -48,7 +49,7 @@ def infer_visual_goal(topic: str, trace: dict[str, Any] | None = None) -> str:
         return "image_space"
     if topic == "robot_kinematics":
         samples = (trace or {}).get("samples", [])
-        if len(samples) > 1 and samples[0].get("qpos") != samples[-1].get("qpos"):
+        if samples and analyze_joint_motion(trace)["motion_detected"]:
             return "motion_3d"
         return "comparative_analysis"
     if topic == "rag":
@@ -207,4 +208,5 @@ def decide_renderer(*, topic: str, requested_renderer: str, visual_goal: str,
             "visual_goal": resolved_goal, "selected_renderer": selected,
             "selection_reason": reason, "capabilities": CAPABILITIES.get(selected, {}),
             "runtime_preflight": candidate_preflight, "rejected_candidates": rejected,
-            "feature_loss": feature_loss}
+            "feature_loss": feature_loss,
+            "motion_evidence": analyze_joint_motion(trace) if topic == "robot_kinematics" and (trace or {}).get("samples") else None}

@@ -17,3 +17,11 @@
 - Current WSL session can launch Windows Blender only from an elevated process context: normal sandbox preflight fails with `UtilBindVsockAnyPort`, while elevated Blender 5.2.1 `--version` succeeds. H1 rendering is therefore host-context dependent; production correctly blocks when the process check fails.
 - Loopback binding is part of Three.js preflight because Chromium loads a locally served trace projection. When the host forbids local binds, RAG uses Manim and reports loss of the 3D embedding projection.
 - H1 Blender displays interpolated recorded MuJoCo states; the shared timeline changes playback mapping, not physics execution or the source simulation duration.
+
+## V11.5 specific limits
+
+- Motion noise/spike thresholds are documented routing heuristics, not measured encoder resolution or safety certification. Sparse spike versus true-motion ambiguity remains; arbitrary quaternion/free-base trajectories are not supported by the scalar joint analyzer.
+- Execution caching covers H1 and YOLO only, uses POSIX `flock`, and has not been tested on network filesystems or native Windows. Source-path relocation can still change render identity, but does not repeat computation for identical source bytes.
+- H1 displayed speed is phase-average speed under the existing endpoint-inclusive frame mapping. Its source state is interpolated trace playback; no new Blender dynamics are implied.
+- PID records remain discrete. Setpoint changes can be played back, while the existing generator still produces a constant target. Current common renderers remain 30 fps; mapper tests also cover other fps.
+- V11.5 checks validate actual media and renderer frame updates. Sampled pixels do not establish whole-video perception; no audio/subtitle QA was performed in this scope.

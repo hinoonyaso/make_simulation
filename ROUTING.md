@@ -97,3 +97,10 @@ Rendering may use Blender while another engine computes dynamics. Keyframed pose
 - YOLO checks each phase's start/end frame and rejects animations that overrun their interval. RAG's Three.js clip replaces exactly the `embeddings` interval; it retains the same trace/query/chunk/ranking data.
 - Run identity partitions requested and effective renderer, visual goal, timeline, relevant renderer code/version, trace and local asset hashes. A fallback may only be registered under the backend that actually rendered it. Explicit Blender failure remains BLOCKED.
 - Technical decode/frame-count checks do not imply continuity, motion review, or learner comprehension. Keep those QA results separate.
+
+## V11.5 temporal evidence and execution reuse
+
+- For YOLO/H1 executable requests: normalized input/content identity → locked execution cache → validated trace → visual-goal/runtime decision → integer-frame timeline → render cache → media. Explicit replay bypasses execution.
+- Route H1 auto from full-trajectory motion evidence; analytical goals still select Manim. Blender phase labels derive from the same source mapping as mesh poses, including holds and replay.
+- PID uses initial hold → recorded time series → labelled replay. Every displayed controller/encoder value is taken from one frame-selected discrete sample.
+- Cache provenance belongs to each invocation; reusing media must not overwrite its original production evidence. See `docs/v11/V11_5_EXECUTION_CACHE.md` for force/reuse semantics.

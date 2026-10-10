@@ -17,7 +17,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "core/robotics-simulation"))
 import mujoco_adapter  # noqa: E402
 sys.path.insert(0, str(ROOT))
-from core.mechanism.timeline import source_time_for_frame, validate_timeline  # noqa: E402
+from core.mechanism.timeline import source_time_for_frame, validate_timeline, phase_playback  # noqa: E402
 
 
 def sha256(path: Path) -> str:
@@ -129,6 +129,10 @@ def export(trace_path: Path, model_path: Path, out_dir: Path, fps: int = 30,
     else:
         frame_count = int(round((end - start) * fps)) + 1
         frame_mappings = [("trace_playback", float(t)) for t in np.linspace(start, end, frame_count)]
+    playback = ({p["phase_id"]: phase_playback(timeline, p) for p in timeline["phases"]}
+                if timeline else {"trace_playback": {"phase_id": "trace_playback", "playback_speed": 1.,
+                    "playback_state": "normal_speed", "source_duration_sec": end-start,
+                    "presentation_duration_sec": (frame_count-1)/fps}})
     frames = []
     bounds_min = np.full(3, np.inf); bounds_max = np.full(3, -np.inf)
     geom_specs = []
@@ -165,7 +169,8 @@ def export(trace_path: Path, model_path: Path, out_dir: Path, fps: int = 30,
             transforms.append({"id": geom_id, "position": pos.tolist(), "rotation": rot.reshape(-1).tolist()})
         frames.append({"frame": frame_num, "t": float(t), "source_time_sec": float(t),
                        "presentation_time_sec": (frame_num-1)/fps, "phase_id": phase_id,
-                       "qpos": qpos.tolist(),
+                       "playback_speed": playback[phase_id]["playback_speed"],
+                       "playback_state": playback[phase_id]["playback_state"], "qpos": qpos.tolist(),
                        "target": _interp(samples, float(t), "target").tolist(),
                        "transforms": transforms})
 
@@ -183,7 +188,7 @@ def export(trace_path: Path, model_path: Path, out_dir: Path, fps: int = 30,
                "fps": fps, "start_time": start, "end_time": end,
                "source_duration_sec": end-start,
                "presentation_duration_sec": timeline["total_duration_sec"] if timeline else (frame_count-1)/fps,
-               "playback_speed": (end-start)/timeline["total_duration_sec"] if timeline else 1.0,
+               "phase_playback": list(playback.values()),
                "timeline": timeline,
                "interpolation": "linear between stored qpos samples at frame-mapped source time; no new physics integration",
                "coordinate_mapping": {"source": "MuJoCo right-handed world frame, Z-up, meters",

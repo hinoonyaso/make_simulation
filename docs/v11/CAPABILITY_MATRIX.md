@@ -19,3 +19,10 @@ V11.3 adds RAG Preview/Final report selection and media checks, phase-ID matchin
 V11.3 retains trace-backed quantization mapping, synthetic NMS, PID and attention views, and adds explicit phase IDs to common storyboard beats. H1 Blender uses the existing pilot mesh renderer through the common CLI. YOLO uses its existing image-space scene through the common CLI, with its stage sequence checked against manifest phase IDs. RAG continues to use the existing four-stage V10 scene contract. These are silent technical renders; narration/reviewer/delivery remains separate.
 
 V11.4 resolves renderer selection from a declared/inferred visual goal and a process-level preflight. All implemented routes consume the common integer-frame timeline. H1 `motion_3d` requires successful Blender plus local model preflight; H1 numerical/comparative views use Manim. RAG spatial output can fall back to Manim when local Three.js, browser, or loopback capture is unavailable; the report records that projection feature loss.
+
+## V11.5 accuracy updates
+
+- `robot_kinematics`: full-trajectory auto routing, per-phase Blender hold/speed display, existing MuJoCo execution cache. Fixed-base H1 scope is unchanged.
+- `mcu_pid`: frame-to-recorded-sample Manim updates, zero-order-held controller/encoder state and explicit replay; generator remains a first-order plant with constant setpoint.
+- `object_detection`: validated execution cache skips repeated CPU YOLO11n inference; local image/verified checkpoint and the optional pinned runtime are still required.
+- RAG/Quantization/Attention renderer capabilities are unchanged. No asset or simulator support levels were raised by this maintenance release.

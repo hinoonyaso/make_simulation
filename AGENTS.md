@@ -56,3 +56,12 @@ For this user’s robotics episodes where physical motion/contact is relevant, r
 - YOLO phases consume the timeline ranges. RAG keeps its four phase IDs, and the Three.js projection replaces the embedding phase's exact frame range.
 - Run identity includes effective renderer, goal, timeline, renderer version, relevant code fingerprint and model/asset hash. A Git commit change by itself is not a render-input change.
 - Full decode and frame count do not prove motion continuity or educational review; report those checks separately.
+
+## V11.5 execution and frame accuracy
+
+- H1 motion evidence must inspect the complete ordered trajectory, not just endpoints. Thresholds are 0.001 rad for scalar revolute/continuous joints and 0.0001 m for explicit prismatic metadata; record screened isolated spikes.
+- Motion speed is source interval / that phase's frame duration. Holds must say hold; never label whole-video average as motion speed.
+- PID frame updates use `PIDPlayback` and one zero-order-held recorded sample for controller, plant and encoder values. `pid_terms` is an explicit replay, not a second simulation.
+- Check execution cache before heavyweight adapter execution. Verify identity, trace hash, provenance and domain validation. Keep execution fingerprints independent of scene/timeline edits.
+- Preserve incomplete/corrupt cache directories and completed runs. `--force-execution` and disabled execution reuse create independent siblings; `--force` retains its render-only scope.
+- Validate actual media with `scripts/validate_mechanism_render.py`; use optional renderer PID frame debug data for state correspondence. Distinguish numerical/frame evidence from sampled pixel review and full motion playback.

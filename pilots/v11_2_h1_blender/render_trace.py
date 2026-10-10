@@ -219,12 +219,19 @@ def main():
     title = add_text("Title", "Unitree H1 | 물리 실행 trace", .12, (.20, 1.04, -2.0), ink, font, camera)
     subtitle = add_text("Subtitle", "MuJoCo 관절 상태를 Blender 3D 메시와 그래프에 동기화", .064,
                         (.20, .86, -2.0), muted, font, camera)
-    playback_speed = float(payload.get("playback_speed", 1.0))
     scope_copy = (f"MuJoCo {payload.get('source_duration_sec', payload['end_time']-payload['start_time']):.2f}s"
                   f" · 영상 {payload.get('presentation_duration_sec', payload['end_time']-payload['start_time']):.2f}s"
-                  f" · 재생 {playback_speed:.2f}× · 고정 골반 / PD 토크")
-    scope = add_text("Scope", scope_copy, .052,
-                     (.20, .73, -2.0), muted, font, camera)
+                  " · 고정 골반 / PD 토크")
+    scope = add_text("Scope", scope_copy, .052, (.20, .73, -2.0), muted, font, camera)
+    for phase in payload.get("phase_playback", []):
+        phase_frames = [f['frame'] for f in payload['frames'] if f['phase_id'] == phase['phase_id']]
+        speed = phase['playback_speed']
+        label = ("정지 · 분석" if phase['playback_state'] == 'hold' else
+                 "배속 미정" if speed is None else f"운동 구간 재생 {speed:.2f}×")
+        obj = add_text("Playback_" + phase['phase_id'], label, .06, (.20, -.80, -2.0), ink, font, camera)
+        # Visibility drivers persist in the saved .blend and switch on exact video frame boundaries.
+        for prop in ('hide_render', 'hide_viewport'):
+            obj.driver_add(prop).driver.expression = f"frame < {min(phase_frames)} or frame > {max(phase_frames)}"
 
     # Graph of actual and commanded left-shoulder angles from the same trace.
     gx0, gx1 = .20, 1.91
@@ -276,10 +283,8 @@ def main():
         hand_path_points.append(tuple(v))
     trajectory_mat = mat_emission("Hand path", (.01, .38, .67), .85)
     path_obj = add_line("Recorded hand trajectory", hand_path_points, trajectory_mat, .003)
-    path_obj.data.bevel_factor_end = 0.0
-    path_obj.data.keyframe_insert(data_path="bevel_factor_end", frame=1)
+    # Static reference path; do not animate apparent motion during timeline holds.
     path_obj.data.bevel_factor_end = 1.0
-    path_obj.data.keyframe_insert(data_path="bevel_factor_end", frame=scene.frame_end)
     for action in bpy.data.actions:
         for curve in getattr(action, "fcurves", []):
             for point in curve.keyframe_points:

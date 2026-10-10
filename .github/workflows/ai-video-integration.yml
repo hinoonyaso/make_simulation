@@ -14,7 +14,7 @@ jobs:
       - name: Install render dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y ffmpeg fonts-nanum
+          sudo apt-get install -y ffmpeg fonts-nanum pkg-config libcairo2-dev libpango1.0-dev
           python -m pip install numpy==2.2.6 manim==0.21.0 mujoco==3.7.0
       - name: Run mechanism and replay regression tests
         run: python -m unittest discover -s tests -v
@@ -22,7 +22,8 @@ jobs:
         env:
           V10_MANIM_BIN: manim
         run: |
-          output="$(mktemp -d)"
+          output="$RUNNER_TEMP/v115-rag"
+          mkdir -p "$output"
           python pilots/v10_rag_poc/build_video.py preview --trace pilots/v10_rag_poc/data/ai_trace.json --manifest pilots/v10_rag_poc/visual_manifest.json --output-dir "$output" --silent
       - name: Render and full-decode the V11 Attention smoke preview
         run: |
@@ -30,6 +31,12 @@ jobs:
           export V11_MANIM_BIN=manim
           python scripts/produce_video.py --topic self_attention --preview --output-dir "$output/runs"
           python scripts/produce_video.py --topic quantization --preview --output-dir "$output/runs"
+          V115_FRAME_DEBUG="$output/pid_frames.json" python scripts/produce_video.py --topic mcu_pid --preview --output-dir "$output/runs"
+          pid_report="$(find "$output/runs" -path '*/mcu_pid-*/production_report.json' -print -quit)"
+          python scripts/validate_mechanism_render.py "$pid_report" --pid-frames "$output/pid_frames.json"
+          while IFS= read -r report; do
+            python scripts/validate_mechanism_render.py "$report"
+          done < <(find "$output/runs" -name production_report.json)
           trace="$(find "$output/runs" -path '*/quantization-*/trace.json' -print -quit)"
           test -n "$trace"
           python scripts/produce_video.py --topic quantization --mode replay --trace "$trace" \
@@ -45,16 +52,24 @@ jobs:
           replay_preview="$(find "$output/replay-runs" -path '*/quantization-*/preview.mp4' -print -quit)"
           nms_zero_preview="$(find "$output/nms-runs" -path '*/nms-*/preview.mp4' -print -quit)"
           test -n "$quant_preview" && test -n "$attention_preview" && test -n "$replay_preview" && test -n "$nms_zero_preview"
+          pid_preview="$(find "$output/runs" -path '*/mcu_pid-*/preview.mp4' -print -quit)"
+          cp "$pid_preview" "$output/artifacts/pid.mp4"
+          cp "$output/pid_frames.json" "$output/artifacts/pid_frames.json"
           cp "$quant_preview" "$output/artifacts/quantization.mp4"
           cp "$attention_preview" "$output/artifacts/self_attention.mp4"
           cp "$replay_preview" "$output/artifacts/quantization_replay.mp4"
           cp "$nms_zero_preview" "$output/artifacts/nms_all_confidence_rejected.mp4"
           echo "V11_OUTPUT_DIR=$output/artifacts" >> "$GITHUB_ENV"
+      - name: Upload RAG preview
+        uses: actions/upload-artifact@v4
+        with:
+          name: v115-rag-preview
+          path: ${{ runner.temp }}/v115-rag/*.mp4
       - name: Upload generated mechanism previews
         uses: actions/upload-artifact@v4
         with:
           name: v11-mechanism-previews
-          path: ${{ env.V11_OUTPUT_DIR }}/*.mp4
+          path: ${{ env.V11_OUTPUT_DIR }}/*
 
   threejs-browser:
     runs-on: ubuntu-latest
