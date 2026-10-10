@@ -1,0 +1,20 @@
+{
+  "schema": "education-lesson-spec/v1",
+  "topic": "ball_bearing_concept_smoke",
+  "title": "베어링 구름 접촉 개념 미리보기",
+  "question": "볼은 어떻게 미끄럼을 구름으로 바꾸는가?",
+  "audience": "beginner",
+  "language": "ko-KR",
+  "duration_target_sec": 4,
+  "learning_objectives": ["구름 접촉과 미끄럼 접촉을 구분한다"],
+  "modes": ["concept_visualization"],
+  "visualization": "manim",
+  "computation_policy": "only_when_needed",
+  "output_profile": "ci_smoke",
+  "solver": null,
+  "trace": null,
+  "beats": [
+    {"id":"S01","phase_id":"contact_compare","sec":2,"text":"볼은 접점에서 구릅니다.","caption":"미끄럼 접촉과 구름 접촉","object":"두 접촉 방식","state_change":"접촉 운동을 비교","focus":"접촉점의 운동","tool":"M","blueprint":"before_after","evidence_type":"conceptual_illustration"},
+    {"id":"S02","phase_id":"friction_limit","sec":2,"text":"구름 베어링에도 마찰은 남습니다.","caption":"마찰은 줄지만 0은 아니다","object":"볼과 궤도 접촉","state_change":"남는 손실을 확인","focus":"실제 접촉 손실","tool":"M","blueprint":"before_after","evidence_type":"conceptual_illustration"}
+  ]
+}

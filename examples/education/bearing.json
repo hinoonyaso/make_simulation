@@ -1,0 +1,40 @@
+{
+  "schema": "education-lesson-spec/v1",
+  "topic": "ball_bearing",
+  "title": "볼 베어링은 어떻게 마찰을 줄일까?",
+  "question": "볼 베어링은 어떻게 마찰을 줄이고 하중을 전달할까?",
+  "audience": "beginner",
+  "language": "ko-KR",
+  "duration_target_sec": 84,
+  "learning_objectives": [
+    "내륜·외륜·볼·케이지의 역할을 구분한다",
+    "구름 접촉과 미끄럼 접촉을 비교한다",
+    "하중이 축에서 하우징으로 전달되는 경로를 설명한다",
+    "베어링이 마찰을 완전히 없애지 않는 이유를 안다"
+  ],
+  "common_misconceptions": ["베어링은 마찰을 완전히 없앤다", "케이지가 하중을 직접 지지한다"],
+  "prerequisites": ["축과 하우징의 회전 관계"],
+  "engineering_domain": "mechanical_engineering",
+  "technical_references": [
+    "https://cdn.skfmediahub.skf.com/api/public/0901d196802809de/pdf_preview_medium/0901d196802809de_pdf_preview_medium.pdf",
+    "https://evolution.skf.com/en/simulation-of-dynamic-behavior-of-rolling-bearings/",
+    "https://evolution.skf.com/at-the-boundary-between-lubrication-and-wear-part-1/"
+  ],
+  "modes": ["concept_visualization", "mathematical_demonstration"],
+  "visualization": "auto",
+  "computation_policy": "only_when_needed",
+  "output_profile": "youtube_education",
+  "bearing_type": "single-row deep-groove ball bearing, conceptual geometry",
+  "solver": null,
+  "trace": null,
+  "beats": [
+    {"id":"B01","phase_id":"question","sec":8,"text":"축은 돌고 하우징은 멈춰 있어야 합니다. 두 부품이 직접 닿으면 어떤 문제가 생길까요?","caption":"축은 돌고 하우징은 멈춰 있어야 합니다. 두 부품이 직접 닿으면 어떤 문제가 생길까요?","visual_caption":"축과 하우징 사이의 마찰 문제","object":"축과 하우징","state_change":"축 회전, 하우징 정지","focus":"상대 회전 경계","tool":"B","blueprint":"before_after","evidence_type":"conceptual_illustration"},
+    {"id":"B02","phase_id":"contact_compare","sec":10,"text":"미끄럼에서는 넓은 면이 서로 스치지만, 베어링은 볼이 접점에서 굴러가도록 바꿉니다.","caption":"미끄럼에서는 넓은 면이 서로 스칩니다. 베어링은 볼이 접점에서 굴러가도록 바꿉니다.","visual_caption":"미끄럼 접촉과 구름 접촉","object":"두 접촉 방식","state_change":"접촉 운동 비교","focus":"접촉점과 상대 운동","tool":"M","blueprint":"before_after","evidence_type":"conceptual_illustration"},
+    {"id":"B03","phase_id":"exploded","sec":11,"text":"여기서는 단열 깊은 홈 볼 베어링을 봅니다. 내륜과 외륜 사이에 볼이 놓이고 케이지가 간격을 유지합니다.","caption":"여기서는 단열 깊은 홈 볼 베어링을 봅니다. 내륜과 외륜 사이에 볼이 놓입니다. 케이지는 볼의 간격을 유지합니다.","visual_caption":"단열 깊은 홈 볼 베어링의 네 부품","object":"베어링 조립체","state_change":"네 부품 분해","focus":"내륜·외륜·볼·케이지","tool":"B","blueprint":"exploded_assembly","evidence_type":"conceptual_illustration"},
+    {"id":"B04","phase_id":"parts_reassemble","sec":10,"text":"내륜은 축과 함께 돌고, 외륜은 하우징에 고정됩니다. 볼은 두 궤도 사이를 구르고 케이지는 볼끼리 부딪히지 않게 간격을 둡니다.","caption":"내륜은 축과 함께 회전합니다. 외륜은 하우징에 고정됩니다. 볼은 두 궤도 사이를 구릅니다. 케이지는 볼의 간격을 유지합니다.","visual_caption":"부품을 다시 조립하며 역할 확인","object":"베어링 부품","state_change":"부품 역할을 따라 재조립","focus":"부품과 기능의 대응","tool":"B","blueprint":"exploded_assembly","evidence_type":"conceptual_illustration"},
+    {"id":"B05","phase_id":"rotation","sec":10,"text":"내륜이 회전하면 볼은 궤도 안에서 굴러 움직이고, 케이지는 볼의 간격을 유지하며 함께 이동합니다.","caption":"내륜이 회전하면 볼은 궤도 안에서 굴러 움직입니다. 케이지는 볼의 간격을 유지하며 함께 이동합니다.","visual_caption":"회전 중인 내륜과 구르는 볼","object":"회전 베어링","state_change":"내륜·볼·케이지 운동","focus":"회전 방향과 볼의 궤도","tool":"B","blueprint":"coordinate_transform","evidence_type":"conceptual_illustration"},
+    {"id":"B06","phase_id":"load_path","sec":10,"text":"축에 하중이 걸리면 내륜에서 볼을 거쳐 외륜, 그리고 하우징으로 힘이 전달됩니다.","caption":"축에 하중이 걸립니다. 내륜에서 볼을 거쳐 외륜으로 힘이 전달됩니다. 하우징이 그 힘을 받습니다.","visual_caption":"축 → 내륜 → 볼 → 외륜 → 하우징","object":"하중 경로","state_change":"하중 전달 위치 강조","focus":"하중 방향과 접촉 영역","tool":"B","blueprint":"layered_structure","evidence_type":"conceptual_illustration"},
+    {"id":"B07","phase_id":"friction_limit","sec":12,"text":"구름은 미끄럼보다 접촉면 전체가 빠르게 서로 스치는 상황을 줄여 줍니다. 하지만 변형과 윤활, 미세한 미끄럼 때문에 마찰이 0이 되지는 않습니다.","caption":"구름 접촉은 접촉면 전체가 서로 스치는 상황을 줄여 줍니다. 하지만 변형과 윤활, 미세한 미끄럼 때문에 마찰이 0이 되지는 않습니다.","visual_caption":"마찰은 줄지만 0은 아니다","object":"볼과 궤도 접촉","state_change":"이상적 구름과 실제 손실 비교","focus":"접촉 변형·윤활·미세 미끄럼","tool":"M","blueprint":"before_after","evidence_type":"conceptual_illustration"},
+    {"id":"B08","phase_id":"summary","sec":13,"text":"정리하면 볼 베어링은 직접 미끄러지는 경계를 작은 접점의 구름으로 바꾸고, 네 부품이 회전과 하중을 나눠 맡습니다.","caption":"볼 베어링은 직접 미끄러지는 경계를 작은 접점의 구름으로 바꿉니다. 네 부품이 회전과 하중을 나눠 맡습니다.","visual_caption":"구름 접촉으로 마찰을 줄이고 하중을 전달","object":"전체 베어링","state_change":"운동·역할·하중을 한 화면에 정리","focus":"구름 접촉, 부품 역할, 남는 손실","tool":"B","blueprint":"exploded_assembly","evidence_type":"conceptual_illustration"}
+  ]
+}

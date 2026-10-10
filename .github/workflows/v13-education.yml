@@ -1,0 +1,43 @@
+name: V13 education smoke
+
+on:
+  pull_request:
+    paths:
+      - 'core/education/**'
+      - 'core/visual_primitives/**'
+      - 'scripts/produce_lesson.py'
+      - 'examples/education/**'
+      - 'pilots/v13_education/**'
+      - 'tests/test_education_first.py'
+      - '.github/workflows/v13-education.yml'
+  workflow_dispatch:
+
+jobs:
+  concept-preview:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install lightweight render requirements
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg fonts-nanum pkg-config libcairo2-dev libpango1.0-dev
+          python -m pip install numpy==2.2.6 manim==0.21.0
+      - name: Run education and existing regression tests
+        run: python -m unittest discover -s tests -v
+      - name: Render concept-only Manim preview
+        env:
+          V11_MANIM_BIN: manim
+        run: |
+          python scripts/produce_lesson.py \
+            --spec examples/education/education_smoke.json \
+            --preview --manim-only \
+            --output-root "$RUNNER_TEMP/v13-education"
+      - name: Upload preview and validation evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: v13-education-concept-preview
+          if-no-files-found: error
+          path: ${{ runner.temp }}/v13-education/

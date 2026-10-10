@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://make-simulation.local/schemas/education-lesson-spec-v1.json",
+  "title": "Education-first Lesson Spec V1",
+  "type": "object",
+  "required": [
+    "schema", "topic", "question", "audience", "language", "duration_target_sec",
+    "learning_objectives", "modes", "visualization", "computation_policy", "output_profile", "beats"
+  ],
+  "properties": {
+    "schema": {"const": "education-lesson-spec/v1"},
+    "topic": {"type": "string", "minLength": 1},
+    "title": {"type": "string", "minLength": 1},
+    "question": {"type": "string", "minLength": 1},
+    "audience": {"type": "string", "minLength": 1},
+    "language": {"type": "string", "minLength": 2},
+    "duration_target_sec": {"type": "integer", "minimum": 1, "maximum": 3600},
+    "learning_objectives": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+    "common_misconceptions": {"type": "array", "items": {"type": "string"}},
+    "prerequisites": {"type": "array", "items": {"type": "string"}},
+    "engineering_domain": {"type": "string"},
+    "technical_references": {"type": "array", "items": {"type": "string", "format": "uri"}},
+    "modes": {"type": "array", "minItems": 1, "items": {"enum": [
+      "concept_visualization", "mathematical_demonstration", "computed_engineering_demonstration"
+    ]}},
+    "visualization": {"type": "string"},
+    "computation_policy": {"enum": ["only_when_needed", "always", "never"]},
+    "output_profile": {"type": "string"},
+    "solver": {"type": ["string", "null"]},
+    "trace": {"type": ["string", "null"]},
+    "beats": {
+      "type": "array", "minItems": 1, "maxItems": 16,
+      "items": {
+        "type": "object",
+        "required": ["id", "phase_id", "sec", "text", "caption", "object", "state_change", "focus", "tool", "evidence_type"],
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "phase_id": {"type": "string", "minLength": 1},
+          "sec": {"type": "number", "exclusiveMinimum": 0, "maximum": 20},
+          "min_sec": {"type": "number", "exclusiveMinimum": 0, "maximum": 20},
+          "text": {"type": "string", "minLength": 1},
+          "caption": {"type": "string", "minLength": 1},
+          "visual_caption": {"type": "string"},
+          "object": {"type": "string", "minLength": 1},
+          "state_change": {"type": "string", "minLength": 1},
+          "focus": {"type": "string", "minLength": 1},
+          "tool": {"enum": ["M", "B", "E"]},
+          "blueprint": {"type": "string"},
+          "evidence_type": {"enum": ["conceptual_illustration", "derived_calculation", "computed_result", "measured_data"]},
+          "trace": {"type": "string"},
+          "references": {"type": "array", "items": {"type": "string"}}
+        },
+        "additionalProperties": true
+      }
+    }
+  },
+  "additionalProperties": true
+}
