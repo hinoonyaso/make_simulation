@@ -144,8 +144,8 @@ def validate_timeline(timeline: dict[str, Any], *, expected_phase_ids: list[str]
         errors.append("timeline phase IDs/order do not match storyboard")
     cursor = 0
     stored_range = timeline.get("source_range_sec")
-    source_low = source_high = None
-    for bounds in (stored_range, source_range):
+    validated_ranges = {}
+    for label, bounds in (("stored", stored_range), ("trace", source_range)):
         if bounds is None:
             continue
         try:
@@ -154,11 +154,14 @@ def validate_timeline(timeline: dict[str, Any], *, expected_phase_ids: list[str]
             low, high = (_finite_number(v, "source range") for v in bounds)
             if low > high:
                 raise ValueError("source range end precedes start")
-            if source_range is not None and bounds is stored_range and (low < source_range[0] or high > source_range[1]):
-                errors.append("stored source range exceeds trace range")
-            source_low, source_high = low, high
+            validated_ranges[label] = (low, high)
         except (ValueError, TypeError) as exc:
             errors.append(str(exc))
+    if "stored" in validated_ranges and "trace" in validated_ranges:
+        stored_low, stored_high = validated_ranges["stored"]
+        trace_low, trace_high = validated_ranges["trace"]
+        if stored_low < trace_low or stored_high > trace_high:
+            errors.append("stored source range exceeds trace range")
     for phase in phases:
         if not isinstance(phase, dict):
             continue
@@ -189,8 +192,9 @@ def validate_timeline(timeline: dict[str, Any], *, expected_phase_ids: list[str]
                 b = _finite_number(end_source, "source_end_sec")
                 if b < a and phase.get("playback_mode") != "replay":
                     errors.append(f"phase {phase.get('phase_id')} moves source time backward")
-                if source_low is not None and any(v < source_low - 1e-9 or v > source_high + 1e-9 for v in (a, b)):
-                    errors.append(f"phase {phase.get('phase_id')} exceeds source range")
+                for label, (low, high) in validated_ranges.items():
+                    if any(v < low - 1e-9 or v > high + 1e-9 for v in (a, b)):
+                        errors.append(f"phase {phase.get('phase_id')} exceeds {label} source range")
                 if phase.get("playback_mode") in {"hold", "hold_and_analysis"} and a != b:
                     errors.append("hold source endpoints must match")
                 if end - start == 1 and a != b:

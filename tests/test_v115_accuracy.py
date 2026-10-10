@@ -166,3 +166,73 @@ class PIDFrameTests(unittest.TestCase):
         for field in ('pwm_duty','encoder_speed_rad_s','time_s','error_rad_s'):
             p=copy.deepcopy(self.p);p['samples'][0][field]=float('nan')
             with self.assertRaises(ValueError): PIDPlayback(p,player.timeline)
+
+
+class FinalHardeningTests(unittest.TestCase):
+    def timeline(self, stored=(0., 2.), phase=(.5, 1.5), mode='replay'):
+        tl = build_timeline([{'phase_id': 'motion', 'sec': 1}], source_range=(0, 2),
+                            phase_source={'motion': {'playback_mode': mode}})
+        tl['source_range_sec'] = list(stored)
+        tl['phases'][0].update(source_start_sec=phase[0], source_end_sec=phase[1])
+        tl['timeline_sha256'] = timeline_hash(tl)
+        return tl
+
+    def test_ranges_are_independent(self):
+        for stored, external, phase, valid in (
+            ((0, 1), (0, 2), (1.5, 1.8), False),
+            ((0, 2), (0, 1), (1.5, 1.8), False),
+            ((0, 2), (0, 2), (.5, 1.5), True),
+            ((0, 2), (0, 2), (1.5, .5), True),
+            ((0, 2), (0, 2), (2.5, .5), False),
+        ):
+            with self.subTest(stored=stored, external=external, phase=phase):
+                errors = validate_timeline(self.timeline(stored, phase), source_range=external)
+                self.assertFalse(any('sha256' in e for e in errors))
+                self.assertEqual(not errors, valid, errors)
+
+    def test_hold_and_invalid_ranges(self):
+        self.assertEqual(validate_timeline(self.timeline(phase=(.5, .5), mode='hold')), [])
+        self.assertTrue(validate_timeline(self.timeline(phase=(.5, .6), mode='hold')))
+        for bounds in ((2, 0), (0,), (), (0, float('nan')), (0, float('inf'))):
+            with self.subTest(bounds=bounds):
+                self.assertTrue(validate_timeline(self.timeline(), source_range=bounds))
+        for bounds in ((2, 0), (0,), ()):
+            self.assertTrue(validate_timeline(self.timeline(stored=bounds)))
+
+    def test_nonfinite_phase_times(self):
+        for value in (float('nan'), float('inf'), -float('inf')):
+            for key in ('source_start_sec', 'source_end_sec'):
+                tl = self.timeline()
+                tl['phases'][0][key] = value
+                # Nonfinite JSON cannot have a valid canonical hash; check the range error itself.
+                errors = validate_timeline(tl)
+                self.assertTrue(any(key in e and 'finite' in e for e in errors))
+
+    def player(self):
+        payload = MCUPIDAdapter().execute({'duration': 1., 'dt': .1})['payload']
+        return PIDPlayback(payload, self.timeline(phase=(0, 1), stored=(0, 1)))
+
+    def test_pid_endpoint_tolerance_never_selects_negative_index(self):
+        player = self.player()
+        for source, expected in ((0., 0), (-1e-10, 0), (1., 10), (1.+1e-10, 10)):
+            with self.subTest(source=source):
+                # Exercise the actual frame mapping, including tolerated endpoint drift.
+                tl = self.timeline(stored=(0, 1), phase=(source, source), mode='hold')
+                p = PIDPlayback({'samples': player.rows, 'pid': player.gains}, tl)
+                state = p.state(0)
+                self.assertEqual(state['sample_index'], expected)
+                self.assertEqual(state['encoder_count'], player.rows[expected]['encoder_count'])
+                self.assertEqual(state['pwm_duty'], player.rows[expected]['pwm_duty'])
+
+    def test_pid_outside_tolerance_and_nonfinite(self):
+        from unittest.mock import patch
+        player = self.player()
+        for source in (-2e-9, 1.+2e-9, float('nan'), float('inf'), -float('inf')):
+            with self.subTest(source=source), patch('core.mechanism.pid_playback.source_time_for_frame',
+                                                   return_value=('motion', source)):
+                with self.assertRaises(ValueError):
+                    player.state(0)
+
+    def test_empty_pid_samples(self):
+        with self.assertRaisesRegex(ValueError, 'requires samples'):
+            PIDPlayback({'samples': [], 'pid': {}}, self.timeline())

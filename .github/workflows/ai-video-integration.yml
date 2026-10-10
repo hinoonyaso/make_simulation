@@ -34,9 +34,6 @@ jobs:
           V115_FRAME_DEBUG="$output/pid_frames.json" python scripts/produce_video.py --topic mcu_pid --preview --output-dir "$output/runs"
           pid_report="$(find "$output/runs" -path '*/mcu_pid-*/production_report.json' -print -quit)"
           python scripts/validate_mechanism_render.py "$pid_report" --pid-frames "$output/pid_frames.json"
-          while IFS= read -r report; do
-            python scripts/validate_mechanism_render.py "$report"
-          done < <(find "$output/runs" -name production_report.json)
           trace="$(find "$output/runs" -path '*/quantization-*/trace.json' -print -quit)"
           test -n "$trace"
           python scripts/produce_video.py --topic quantization --mode replay --trace "$trace" \
@@ -46,7 +43,14 @@ jobs:
           JSON
           python scripts/produce_video.py --topic nms --config "$output/nms-zero.json" \
             --preview --output-dir "$output/nms-runs"
-          mkdir -p "$output/artifacts"
+          mkdir -p "$output/artifacts/evidence"
+          while IFS= read -r report; do
+            run_dir="$(dirname "$report")"
+            evidence="$output/artifacts/evidence/$(basename "$(dirname "$run_dir")")/$(basename "$run_dir")"
+            mkdir -p "$evidence"
+            python scripts/validate_mechanism_render.py "$report" | tee "$evidence/media_validation.log"
+            cp "$run_dir"/*.json "$evidence/"
+          done < <(find "$output/runs" "$output/replay-runs" "$output/nms-runs" -name production_report.json)
           quant_preview="$(find "$output/runs" -path '*/quantization-*/preview.mp4' -print -quit)"
           attention_preview="$(find "$output/runs" -path '*/self_attention-*/preview.mp4' -print -quit)"
           replay_preview="$(find "$output/replay-runs" -path '*/quantization-*/preview.mp4' -print -quit)"
@@ -64,12 +68,16 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: v115-rag-preview
-          path: ${{ runner.temp }}/v115-rag/*.mp4
+          if-no-files-found: error
+          path: |
+            ${{ runner.temp }}/v115-rag/*.mp4
+            ${{ runner.temp }}/v115-rag/*.json
       - name: Upload generated mechanism previews
         uses: actions/upload-artifact@v4
         with:
           name: v11-mechanism-previews
-          path: ${{ env.V11_OUTPUT_DIR }}/*
+          if-no-files-found: error
+          path: ${{ env.V11_OUTPUT_DIR }}/
 
   threejs-browser:
     runs-on: ubuntu-latest

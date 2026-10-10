@@ -34,10 +34,12 @@ class PIDPlayback:
 
     def state(self, frame: int) -> dict:
         phase, source = source_time_for_frame(self.timeline, frame)
-        if source is None or not self.times[0]-1e-9 <= source <= self.times[-1]+1e-9:
+        if source is None or not math.isfinite(source) or not self.times[0]-1e-9 <= source <= self.times[-1]+1e-9:
             raise ValueError('PID source time outside trace')
-        # Tolerance only absorbs binary floating-point error at an exact sample boundary.
-        index = min(len(self.rows)-1, bisect_right(self.times, source + 1e-12)-1)
+        # Match the timeline's endpoint tolerance, then preserve ZOH within the trace.
+        # Keep the original mapped time in debug output so tolerated drift is observable.
+        sample_source = min(self.times[-1], max(self.times[0], source))
+        index = max(0, min(len(self.rows)-1, bisect_right(self.times, sample_source + 1e-12)-1))
         row = self.rows[index]
         return {'frame_index': frame, 'phase_id': phase, 'presentation_time_sec': frame/self.timeline['fps'],
                 'source_time_sec': source, 'sample_index': index, 'sample_time_sec': self.times[index],

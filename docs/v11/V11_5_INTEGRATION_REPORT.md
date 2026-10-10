@@ -76,3 +76,16 @@ PID short timeline: hold [0,141), response [141,282), replay [282,422). Long tim
 - P2 scope: whole-video perceptual playback was not performed. Motion thresholds are configurable only through the documented metadata/type policy and are not validated against arbitrary real sensors. Native Windows/network filesystem execution locking is not supported by this test evidence. No new world/model/controller/speech capability is implied.
 
 Implementation commit `c208f0e` was pushed normally to `origin/main`. The unchanged-code post-commit YOLO invocation reused both caches (0 adapter calls; 1.3521 s total), confirming commit metadata does not invalidate the verified render. The following documentation-only commit records the completed remote result; its implementation is identical.
+
+## Final hardening (2026-10-10)
+
+Baseline `029f74f`: 114 tests passed before edits. Six added test methods reproduced two assertion failures (stored bounds overwritten by external bounds; PID `-1e-10` selecting index `-1`) and two malformed-range `IndexError` subcases before production changes.
+
+- `timeline.py` validates and retains stored and external ranges independently; both phase endpoints must satisfy both. Only validated range pairs are compared. Existing schema, hash, replay and hold policies remain.
+- `pid_playback.py` rejects nonfinite/out-of-range source time, clamps tolerated endpoint drift (1e-9 seconds) before bisect, and bounds sample indices on both sides. Existing 1e-12 sample-boundary rounding and zero-order hold remain. Debug source time retains the original mapping so drift stays observable.
+- Added tests cover unequal ranges, reverse replay, hold, malformed/nonfinite bounds, nonfinite phase times, PID exact and ±1e-10 endpoints, out-of-tolerance/nonfinite mapping and empty samples. Existing tests retain PWM/encoder transitions and real PID/H1 timelines.
+- After fixes: focused accuracy/routing suite **28 PASS**; full suite **120 PASS** (3.473 s); compileall and `git diff --check` PASS.
+- Manual workflow audit: Python 3.12, Manim 0.21.0, MuJoCo 3.7.0, FFmpeg, Cairo/Pango, Nanum, V11_MANIM_BIN, Node 22/Playwright and manual trigger retained. Common previews remain 960×540/30. Added replay/NMS technical gates, JSON validation evidence to artifacts and missing-artifact failure policy. No heavy CI added.
+- Remote manual render: **NOT_RUN pending authenticated dispatch**. This session has no `gh` CLI, no configured GH_TOKEN/GITHUB_TOKEN, and no connector workflow-dispatch method. No credentials were searched for. SSH push authorization does not provide Actions API dispatch authentication. Once the fix is pushed, use the workflow page's **Run workflow → main**, or `gh workflow run ai-video-integration.yml --repo hinoonyaso/make_simulation --ref main`. Record the resulting SHA, run/jobs/artifacts before marking remote acceptance criteria 6–8 complete.
+
+Remaining P0 acceptance: independent runner MP4 creation/decode/artifact verification is pending remote dispatch. No unresolved failure in the tested local boundary fixes. Whole-video visual/audio review remains outside this technical hardening scope.
