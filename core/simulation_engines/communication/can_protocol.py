@@ -125,6 +125,30 @@ def _wire_tick_for_raw_bit(frame: EncodedFrame, raw_bit_index: int) -> int:
     return len(stuffed_prefix)
 
 
+def arbitration_wire_extent(events: list[dict], physical_bit_count: int) -> tuple[int, int]:
+    """Return the exclusive arbitration boundary and display slots incl. margin.
+
+    Event timestamps are zero-based physical wire slots. The arbitration winner
+    timestamp is the boundary after SOF, 11 identifier bits and RTR, including
+    any stuff bits inserted before that boundary.
+    """
+    if type(physical_bit_count) is not int or physical_bit_count < 1:
+        raise ValueError("physical bit count must be a positive integer")
+    boundaries = [event for event in events if isinstance(event, dict)
+                  and event.get("event") in {"ARBITRATION_WON", "IDENTICAL_ARBITRATION_FIELDS"}]
+    if len(boundaries) != 1:
+        raise ValueError("CAN events require exactly one arbitration boundary")
+    end_tick = boundaries[0].get("timestamp")
+    if type(end_tick) is not int or not 1 <= end_tick <= physical_bit_count:
+        raise ValueError("arbitration boundary is outside physical wire bits")
+    for event in events:
+        if isinstance(event, dict) and event.get("event") == "ARBITRATION_LOST":
+            tick = event.get("timestamp")
+            if type(tick) is not int or not 0 <= tick < end_tick:
+                raise ValueError("arbitration loss marker must precede the winner boundary")
+    return end_tick, end_tick + 1
+
+
 def arbitrate(raw_frames: list[dict], *, bitrate: int = 1_000_000,
               receivers: list[str] | None = None) -> dict:
     if not isinstance(raw_frames, list) or not raw_frames:
