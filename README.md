@@ -4,7 +4,7 @@
 
 공학·과학 개념을 재현 가능한 계산과 시각 자료로 설명하는 교육 영상 제작 프로젝트입니다. Manim으로 수식·그래프·2D 도식을 만들고, 필요한 장면은 Blender로 3D 구조와 동작을 보여줍니다. 일부 주제는 검증된 trace나 수치 모델을 렌더링에 연결하지만, CAD·FEM·CFD·전자기 Solver 자체를 제공하지는 않습니다.
 
-> 현재 V13 교육 제작 기능은 `v13-education-first` 브랜치에 있습니다. 이 기능이 `main`에 포함된 것으로 가정하지 마세요.
+> V12.1 정확도 개선은 `main`의 `d0e868c`에 merge commit으로 반영됐습니다. V13 교육 제작 기능은 아직 `v13-education-first` 브랜치에 있으며, 이 브랜치의 main 통합 PR 검증이 끝나기 전에는 main에 포함된 것으로 간주하지 마세요.
 
 ## Quick Start
 
@@ -245,9 +245,9 @@ git diff --check
 
 Manim smoke preview는 Quick Start 명령으로 실제 미디어를 생성하고 FFmpeg로 검사합니다. Blender 검증은 Blender 설치 및 실행 가능한 환경에서 수행합니다. CI 정의는 [workflow](.github/workflows/v13-education.yml)를 참고하세요.
 
-**CI 상태 (2026-10-11):** [AI trace run #29](https://github.com/hinoonyaso/make_simulation/actions/runs/38062554626)은 성공했고, 원격 로그에서 전체 155개 unittest PASS를 확인했습니다. run #28의 Vendor CAD 오류는 9a43b20에서 수정되어, CAD가 없는 clone에서도 catalog·license·재배포 정책·Git 미추적 검사는 유지되고 로컬 파일 검사는 파일이 있을 때만 실행됩니다.
+**CI 상태 (2026-10-11):** [AI trace run #29](https://github.com/hinoonyaso/make_simulation/actions/runs/38062554626)와 push 후 [run #30](https://github.com/hinoonyaso/make_simulation/actions/runs/38063673583)이 성공했고, 원격 로그에서 전체 155개 unittest PASS를 확인했습니다. V12.1 PR의 [run #7](https://github.com/hinoonyaso/make_simulation/actions/runs/38033443003)도 7개 check 모두 성공해 Merge Commit `d0e868c`로 main에 반영됐습니다. run #28의 Vendor CAD 오류는 9a43b20에서 수정되어, CAD가 없는 clone에서도 catalog·license·재배포 정책·Git 미추적 검사는 유지되고 로컬 파일 검사는 파일이 있을 때만 실행됩니다.
 
-V13 전용 workflow는 교육 테스트만 실행하며, Python/Manim 패키지는 `uv.lock`의 `sim-render` group으로 설치합니다. education asset 검증, 계획 검증, Manim-only smoke, 960×540·30 fps·H.264 metadata, VTT와 production report, FFmpeg 전체 디코드를 검사하고 로그·미디어·리포트를 Artifact로 보관합니다. 교육 관련 경로를 바꾼 PR, `main`/`v13-education-first`의 관련 파일 push, 수동 dispatch에서 실행됩니다. 전체 회귀는 `ai-trace.yml`이 계속 담당합니다. 이 workflow 개정의 로컬 clean-environment 검증은 통과했으며, 원격 실행 결과는 해당 변경을 push한 뒤 확인해야 합니다.
+V13 전용 workflow는 교육 테스트만 실행하며, Python/Manim 패키지는 `uv.lock`의 `sim-render` group으로 설치합니다. education asset 검증, 계획 검증, Manim-only smoke, 960×540·30 fps·H.264 metadata, VTT와 production report, FFmpeg 전체 디코드를 검사하고 로그·미디어·리포트를 Artifact로 보관합니다. 교육 관련 경로를 바꾼 PR, `main`/`v13-education-first`의 관련 파일 push, 수동 dispatch에서 실행됩니다. 전체 회귀는 `ai-trace.yml`이 계속 담당합니다. [V13 run #1](https://github.com/hinoonyaso/make_simulation/actions/runs/38063673678)과 [전체 회귀 run #30](https://github.com/hinoonyaso/make_simulation/actions/runs/38063673583)은 성공했습니다. 이번 main 통합 후보의 PR checks는 별도로 확인해야 합니다.
 
 | 검증 | 상태 | 범위 |
 |---|---|---|

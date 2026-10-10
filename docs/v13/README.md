@@ -30,6 +30,8 @@ On 2026-10-11, the Manim-only smoke command above was rerun from the pushed-bran
 
 ## CI status
 
+V12.1 was merged into `main` as merge commit `d0e868c` from [PR #2](https://github.com/hinoonyaso/make_simulation/pull/2). The V13 branch has now merged that updated `main` with a regular Git merge; the V13-to-main PR and its checks are still pending.
+
 The Vendor CAD failure from run #28 was fixed in commit `9a43b205`: local Livox/Ouster/ZED 2i CAD is optional, while the catalog and license boundaries and Git tracking prohibition remain unconditional checks.
 
 [AI trace run #29](https://github.com/hinoonyaso/make_simulation/actions/runs/38062554626) succeeded and its log records all 155 repository unit tests passing. This is the full CPU regression job; it is distinct from the V13-only education workflow.
