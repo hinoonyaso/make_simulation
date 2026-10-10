@@ -4,14 +4,14 @@
 
 공학·과학 개념을 재현 가능한 계산과 시각 자료로 설명하는 교육 영상 제작 프로젝트입니다. Manim으로 수식·그래프·2D 도식을 만들고, 필요한 장면은 Blender로 3D 구조와 동작을 보여줍니다. 일부 주제는 검증된 trace나 수치 모델을 렌더링에 연결하지만, CAD·FEM·CFD·전자기 Solver 자체를 제공하지는 않습니다.
 
-> V12.1 정확도 개선은 `main`의 `d0e868c`에 merge commit으로 반영됐습니다. V13 교육 제작 기능은 아직 `v13-education-first` 브랜치에 있으며, 이 브랜치의 main 통합 PR 검증이 끝나기 전에는 main에 포함된 것으로 간주하지 마세요.
+> V12.1 정확도 개선과 V13 Education-First 기능은 각각 Merge Commit `d0e868c`, `0a2979b`로 `main`에 통합됐습니다.
 
 ## Quick Start
 
 Ubuntu 24.04 / WSL2에서 Python 3.12와 `uv`를 준비한 뒤 프로젝트 환경을 설치합니다.
 
 ```bash
-git clone --branch v13-education-first --single-branch https://github.com/hinoonyaso/make_simulation.git
+git clone https://github.com/hinoonyaso/make_simulation.git
 cd make_simulation
 sudo apt update
 sudo apt install -y build-essential python3-dev pkg-config libcairo2-dev libpango1.0-dev ffmpeg fonts-nanum
@@ -89,11 +89,11 @@ Blender는 Blender 장면이나 Blender asset을 생성·검증할 때만 필요
 ### 1. Clone 및 브랜치
 
 ```bash
-git clone --branch v13-education-first --single-branch https://github.com/hinoonyaso/make_simulation.git
+git clone https://github.com/hinoonyaso/make_simulation.git
 cd make_simulation
 ```
 
-`main`과 V13 브랜치는 이 README 작성 시점에 기능 차이가 있으므로 V13 lesson CLI가 필요하면 명령에 지정된 브랜치를 사용합니다.
+V12.1과 V13은 `main`에 통합됐습니다. 새 clone은 기본 `main` 브랜치를 사용하면 됩니다.
 
 ### 2. 시스템 패키지
 
@@ -245,17 +245,17 @@ git diff --check
 
 Manim smoke preview는 Quick Start 명령으로 실제 미디어를 생성하고 FFmpeg로 검사합니다. Blender 검증은 Blender 설치 및 실행 가능한 환경에서 수행합니다. CI 정의는 [workflow](.github/workflows/v13-education.yml)를 참고하세요.
 
-**CI 상태 (2026-10-11):** [AI trace run #29](https://github.com/hinoonyaso/make_simulation/actions/runs/38062554626)와 push 후 [run #30](https://github.com/hinoonyaso/make_simulation/actions/runs/38063673583)이 성공했고, 원격 로그에서 전체 155개 unittest PASS를 확인했습니다. V12.1 PR의 [run #7](https://github.com/hinoonyaso/make_simulation/actions/runs/38033443003)도 7개 check 모두 성공해 Merge Commit `d0e868c`로 main에 반영됐습니다. run #28의 Vendor CAD 오류는 9a43b20에서 수정되어, CAD가 없는 clone에서도 catalog·license·재배포 정책·Git 미추적 검사는 유지되고 로컬 파일 검사는 파일이 있을 때만 실행됩니다.
+**CI 상태 (2026-10-11, main `0a2979b`):** [AI trace run #35](https://github.com/hinoonyaso/make_simulation/actions/runs/38065253356), [V13 Education run #3](https://github.com/hinoonyaso/make_simulation/actions/runs/38065253393), [V12 Engineering run #10](https://github.com/hinoonyaso/make_simulation/actions/runs/38065253366)이 모두 성공했습니다. run #35에서 전체 155개 unittest를 통과했고, Education run은 실제 Manim smoke 미디어를 렌더·검증했습니다. V12 Engineering run은 physics, CAN, motor FOC, timeline 테스트와 세 편의 렌더·전체 디코드를 통과했습니다. V12.1 PR의 [run #7](https://github.com/hinoonyaso/make_simulation/actions/runs/38033443003)도 7개 check 모두 성공해 Merge Commit `d0e868c`로 main에 반영됐습니다. run #28의 Vendor CAD 오류는 9a43b20에서 수정되어, CAD가 없는 clone에서도 catalog·license·재배포 정책·Git 미추적 검사는 유지되고 로컬 파일 검사는 파일이 있을 때만 실행됩니다.
 
-V13 전용 workflow는 교육 테스트만 실행하며, Python/Manim 패키지는 `uv.lock`의 `sim-render` group으로 설치합니다. education asset 검증, 계획 검증, Manim-only smoke, 960×540·30 fps·H.264 metadata, VTT와 production report, FFmpeg 전체 디코드를 검사하고 로그·미디어·리포트를 Artifact로 보관합니다. 교육 관련 경로를 바꾼 PR, `main`/`v13-education-first`의 관련 파일 push, 수동 dispatch에서 실행됩니다. 전체 회귀는 `ai-trace.yml`이 계속 담당합니다. [V13 run #1](https://github.com/hinoonyaso/make_simulation/actions/runs/38063673678)과 [전체 회귀 run #30](https://github.com/hinoonyaso/make_simulation/actions/runs/38063673583)은 성공했습니다. 이번 main 통합 후보의 PR checks는 별도로 확인해야 합니다.
+V13 전용 workflow는 교육 테스트만 실행하며, Python/Manim 패키지는 `uv.lock`의 `sim-render` group으로 설치합니다. education asset 검증, 계획 검증, Manim-only smoke, 960×540·30 fps·H.264 metadata, VTT와 production report, FFmpeg 전체 디코드를 검사하고 로그·미디어·리포트를 Artifact로 보관합니다. 교육 관련 경로를 바꾼 PR, `main`/`v13-education-first`의 관련 파일 push, 수동 dispatch에서 실행됩니다. 전체 회귀는 `ai-trace.yml`이 계속 담당합니다. main 통합 후 세 workflow의 성공은 위 run #35, #3, #10에서 확인했습니다.
 
 | 검증 | 상태 | 범위 |
 |---|---|---|
-| AI trace 전체 unittest | PASS, 155/155 | GitHub Actions run #29 및 push 후 run #30 |
-| V13 education unittest | PASS, 16/16 | `sim-render` locked environment |
+| AI trace 전체 unittest | PASS, 155/155 | main run #35 |
+| V13 education unittest | PASS, 16/16 | main V13 run #3; `sim-render` locked environment |
 | Asset registry / education asset validation | PASS | Registry 39 entries, 6 generated models |
 | Education plan | PASS | `education_smoke.json`, concept-only |
-| Manim smoke preview | PASS | [GitHub Actions V13 run #1](https://github.com/hinoonyaso/make_simulation/actions/runs/38063673678), 960×540, 30 fps, silent, VTT/report present, full decode |
+| Manim smoke preview | PASS | [GitHub Actions main V13 run #3](https://github.com/hinoonyaso/make_simulation/actions/runs/38065253393), 960×540, 30 fps, silent, VTT/report present, full decode |
 | Blender render | PASS (기록된 R6 로컬 검증) | Windows Blender 5.2.1 from WSL; Ubuntu CI에서는 실행하지 않음 |
 | Narration/TTS | NOT TESTED | Smoke는 무음이며 외부 TTS를 호출하지 않음 |
 | 최종 1080p 영상 검증 | NOT TESTED | CI preview는 960×540 무음 smoke |
