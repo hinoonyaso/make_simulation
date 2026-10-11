@@ -19,7 +19,7 @@
 - Manim actual-data smoke: PASS, 6 seconds / 180 frames / 960×540 / 30 fps / H.264 / full decode.
 - Complete unittest discovery: 207 tests PASS.
 - Compileall, asset registry, education-asset metadata validation, plan-only and `git diff --check`: PASS.
-- Battery Blender asset validation and 24-second mixed preview: NOT RUN locally because Windows executable interop failed with `UtilBindVsockAnyPort:309: socket failed 1`. Official Blender 5.2.1 CI now reaches the battery scene. It exposed and prompted a fix for Blender 5.2's removed `FFMPEG` image format enum; the corrected `media_type="VIDEO"` path still needs a passing runtime rerun. See [Battery Educational QA](BATTERY_EDUCATIONAL_QA.md).
+- Battery Blender asset validation and 24-second mixed preview: NOT RUN locally because Windows executable interop failed with `UtilBindVsockAnyPort:309: socket failed 1`. Official Blender 5.2.1 CI now reaches the scene; it confirmed media type must be switched before selecting the image/video file-format enum. The ordering is fixed and needs a passing runtime rerun. See [Battery Educational QA](BATTERY_EDUCATIONAL_QA.md).
 - Dedicated Battery Simulation Actions: PASS — [run 38119694050](https://github.com/hinoonyaso/make_simulation/actions/runs/38119694050) executed PyBaMM, validated the result, rendered Manim from solver output, and decoded the media.
 - Education renderer smoke: PASS — [run 38119694096](https://github.com/hinoonyaso/make_simulation/actions/runs/38119694096).
 - AI trace reproducibility: PASS — [run 38119694060](https://github.com/hinoonyaso/make_simulation/actions/runs/38119694060).

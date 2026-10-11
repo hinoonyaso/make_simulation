@@ -237,8 +237,8 @@ def render_lesson(args: argparse.Namespace):
     if args.still_frame is not None:
         if args.still_frame < 1 or args.still_frame > scene.frame_end:
             raise ValueError(f"still frame must be between 1 and {scene.frame_end}")
-        scene.render.image_settings.file_format = "PNG"
         scene.render.image_settings.media_type = "IMAGE"
+        scene.render.image_settings.file_format = "PNG"
         still_path = args.output.with_suffix(".png").resolve()
         scene.render.filepath = str(still_path)
         scene.frame_set(args.still_frame)
