@@ -155,7 +155,9 @@ uv run python scripts/produce_lesson.py \
   --spec examples/education/bearing.json --preview --with-tts
 ```
 
-이 경로는 대본을 Microsoft Edge TTS 서비스로 보내 음성을 만들고 Whisper 기반 정렬로 자막 타이밍을 산출합니다. 외부 서비스 연결과 모델 dependency가 필요합니다. Edge TTS는 명시적 승인 후에만 실행하세요. VTT/SRT와 화면 삽입 자막은 동일한 `caption_timing.json` cue를 사용하며, 최종 오디오 검증은 mux된 파일에 대해 수행합니다. 무음 preview는 무음 결과로만 보고합니다.
+이 경로는 대본을 Microsoft Edge TTS 서비스로 보내 음성을 만들고 Whisper 기반 정렬로 자막 타이밍을 산출합니다. 외부 서비스 연결과 모델 dependency가 필요합니다. Edge TTS는 명시적 승인 후에만 실행하세요. `--plan-only --with-tts` 조합은 외부 호출과 출력 디렉터리 생성 전에 거부됩니다. Preview와 final 모두 최초 및 mux 후 검증에서 각각 960×540과 1920×1080 기준을 유지합니다. VTT/SRT와 화면 삽입 자막은 동일한 `caption_timing.json` cue를 사용하며, 오디오 PASS는 mux 후 파일 검증까지 성공한 경우에만 기록됩니다. 기본 무음 경로는 `NOT_REQUESTED`; CLI가 알 수 없는 승인 거부 상태를 추측하지 않습니다.
+
+`production_report.json`, `audio_qa.json`, `qa_report.json` 및 `qa_report.md`는 동일한 오디오 상태를 기록합니다. Engineering QA는 manifest 계약, 영상/타임라인 검증, evidence 종류, 사람의 내용 정확성 검토를 분리합니다. 베어링은 `CONCEPTUAL_ILLUSTRATION`이며 접촉력·마찰·응력·변형을 계산했다고 주장하지 않습니다.
 
 V13.5 bearing preview와 QA 상태는 [`docs/v13/EDUCATIONAL_QA.md`](docs/v13/EDUCATIONAL_QA.md)에 기록합니다. 현재 production branch의 84초 preview는 960×540 무음 검토본이며, 사용자가 Edge TTS 전송을 거절해 AAC narration과 1080p master는 생성하지 않았습니다. Sampled-frame review에서 blocker/high 결함은 없었지만, normal-speed full-motion 재생과 novice comprehension은 미검증입니다.
 

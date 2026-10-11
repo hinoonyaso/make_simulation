@@ -80,3 +80,11 @@ The script uses these as technical review sources, but the video is still an ill
 - Increased the title from 0.15 to 0.19 scene units, the part rows from 0.105 to 0.14, and the emission strength to 1.5 with pure white text. Kept the text unboxed and outside the bearing silhouette.
 - R5 preview: `pilots/v13_education/output/lessons/bearing-v13.5-silent-readable-r5/preview.mp4`; 84 seconds, 2,520 frames, 960×540, 30 fps, H.264, silent. Full decode and 20-cue caption timing validation passed.
 - The 31-second rendered frame confirms larger, high-contrast text with no panel or model overlap. This remains a sampled-frame check, not full-motion or comprehension review.
+
+### V13.5 production QA reporting fix
+
+- The existing R5 preview evidence above is retained unchanged. No TTS, Whisper end-to-end run, 1080p render, or full-motion review was performed for this code change.
+- Delivery validation now uses the same mode-specific minimum dimensions before and after audio mux: 960×540 for preview and 1920×1080 for final.
+- Silent runs record audio as `NOT_REQUESTED`. Audio `PASS` requires a present audio stream and successful post-mux delivery validation; requested-path errors record `FAIL`. `BLOCKED` is only reportable when an explicit denied-authorization state is supplied. The CLI does not expose that state, so the script does not infer approval or denial.
+- QA JSON and Markdown separate manifest contract validation, video/timeline validation, evidence type, and pending human accuracy review. The bearing remains `CONCEPTUAL_ILLUSTRATION`; automated rendering and delivery checks do not calculate contact force, friction, stress, or deformation.
+- These changes are covered by mocked unit tests. The recorded R5 video and its earlier validation are not reclassified as evidence for the new code path.

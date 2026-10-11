@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 import sys
-from contextlib import redirect_stdout
+from contextlib import redirect_stderr, redirect_stdout
 from io import StringIO
 from pathlib import Path
 from types import SimpleNamespace
@@ -128,7 +128,142 @@ class EducationFirstTests(unittest.TestCase):
             self.assertFalse(run.called)
             report = json.loads((Path(directory) / "silent-plan/production_report.json").read_text())
         self.assertEqual(report["status"], "PLAN_VALIDATED")
-        self.assertEqual(report["audio_status"], "not generated")
+        self.assertEqual(report["audio_status"], "NOT_REQUESTED")
+
+    def test_plan_only_with_tts_errors_before_side_effects(self):
+        from scripts.produce_lesson import main
+        with TemporaryDirectory() as directory:
+            stderr = StringIO()
+            with patch.object(sys, "argv", ["produce_lesson.py", "--spec",
+                    str(ROOT / "examples/education/education_smoke.json"), "--plan-only", "--with-tts",
+                    "--output-root", directory]), \
+                 patch("scripts.produce_lesson.subprocess.run") as run, redirect_stderr(stderr):
+                with self.assertRaises(SystemExit) as error:
+                    main()
+            self.assertEqual(error.exception.code, 2)
+            self.assertIn("--plan-only cannot be combined with --with-tts", stderr.getvalue())
+            self.assertFalse(run.called)
+            self.assertEqual(list(Path(directory).iterdir()), [])
+
+    def test_delivery_resolution_for_all_render_and_audio_modes(self):
+        from scripts.produce_lesson import main
+        for preview in (True, False):
+            for with_tts in (True, False):
+                with self.subTest(preview=preview, with_tts=with_tts), TemporaryDirectory() as directory:
+                    output_root = Path(directory)
+                    run_id = f"case-{int(preview)}-{int(with_tts)}"
+                    args = ["produce_lesson.py", "--spec", str(ROOT / "examples/education/education_smoke.json"),
+                            "--output-root", str(output_root), "--run-id", run_id]
+                    if preview:
+                        args.append("--preview")
+                    if with_tts:
+                        args.append("--with-tts")
+
+                    def fake_run(command, **kwargs):
+                        if not any("prepare_audio.py" in str(part) for part in command):
+                            return SimpleNamespace(returncode=0)
+                        mode = command[-2]
+                        manifest_path = Path(command[-1])
+                        audio_output = manifest_path.parent / "output"
+                        audio_output.mkdir(exist_ok=True)
+                        if mode == "tts":
+                            (audio_output / "narration.wav").write_bytes(b"mock")
+                            audio_manifest = manifest_path.parent / "assets/audio/manifest.json"
+                            audio_manifest.parent.mkdir(parents=True, exist_ok=True)
+                            audio_manifest.write_text("[]", encoding="utf-8")
+                        else:
+                            cues = [{"start": 0, "end": 1, "caption": "mock caption"}]
+                            (audio_output / "caption_timing.json").write_text(json.dumps(cues), encoding="utf-8")
+                            (audio_output / "subtitles.ko.vtt").write_text("WEBVTT\n", encoding="utf-8")
+                            (audio_output / "subtitles.ko.srt").write_text("", encoding="utf-8")
+                        return SimpleNamespace(returncode=0)
+
+                    def fake_render(_manifest, _timeline, run_dir, mode, **_kwargs):
+                        video = run_dir / ("preview.mp4" if mode == "preview" else "silent_final.mp4")
+                        video.write_bytes(b"mock-video")
+                        return video, {"blender_render_sec": 0, "manim_render_sec": 0}
+
+                    def fake_mux(_video, _narration, output):
+                        output.write_bytes(b"mock-final-video")
+
+                    probe = {"streams": [{"codec_type": "video", "codec_name": "h264", "width": 960 if preview else 1920,
+                                "height": 540 if preview else 1080, "r_frame_rate": "30/1", "nb_frames": "30"}],
+                             "format": {"duration": "1.0"}}
+                    if with_tts:
+                        probe["streams"].append({"codec_type": "audio", "codec_name": "aac"})
+                    with patch.object(sys, "argv", args), \
+                         patch("scripts.produce_lesson.subprocess.run", side_effect=fake_run) as run, \
+                         patch("scripts.produce_lesson.render", side_effect=fake_render), \
+                         patch("scripts.produce_lesson.mux_narration", side_effect=fake_mux), \
+                         patch("scripts.produce_lesson.subprocess.check_output", return_value=json.dumps(probe)), \
+                         redirect_stdout(StringIO()):
+                        self.assertEqual(main(), 0)
+
+                    expected = ["--min-width", "960" if preview else "1920",
+                                "--min-height", "540" if preview else "1080"]
+                    delivery_calls = [call.args[0] for call in run.call_args_list
+                                      if any("validate_delivery.py" in str(part) for part in call.args[0])]
+                    self.assertEqual(len(delivery_calls), 2 if with_tts else 1)
+                    for command in delivery_calls:
+                        indices = [command.index("--min-width"), command.index("--min-height")]
+                        actual = [command[indices[0]], command[indices[0] + 1],
+                                  command[indices[1]], command[indices[1] + 1]]
+                        self.assertEqual(actual, expected)
+                    production = json.loads((output_root / run_id / "production_report.json").read_text())
+                    expected_audio_status = "PASS" if with_tts else "NOT_REQUESTED"
+                    self.assertEqual(production["audio_status"], expected_audio_status)
+
+    def test_audio_and_engineering_qa_states_are_explicit_and_consistent(self):
+        from scripts.produce_lesson import write_qa_reports
+        states = ("NOT_REQUESTED", "BLOCKED", "PASS", "FAIL")
+        for status in states:
+            with self.subTest(status=status), TemporaryDirectory() as directory:
+                root = Path(directory)
+                video = root / "preview.mp4"
+                video.touch()
+                streams = [{"codec_type": "video", "codec_name": "h264", "width": 960,
+                            "height": 540, "r_frame_rate": "30/1", "nb_frames": "30"}]
+                if status == "PASS":
+                    streams.append({"codec_type": "audio", "codec_name": "aac"})
+                probe = {"streams": streams, "format": {"duration": "1.0"}}
+                production = {"status": "SILENT_PREVIEW", "audio_status": "PENDING"}
+                with patch("scripts.produce_lesson.subprocess.check_output", return_value=json.dumps(probe)):
+                    result = write_qa_reports(root, video, [{"caption": "문장"}], audio_status=status,
+                        production_report=production, manifest_validated=True, timeline_validated=True,
+                        evidence_types=["conceptual_illustration"])
+                audio_qa = json.loads((root / "audio_qa.json").read_text())
+                qa = json.loads((root / "qa_report.json").read_text())
+                production_file = json.loads((root / "production_report.json").read_text())
+                markdown = (root / "qa_report.md").read_text()
+                self.assertEqual(audio_qa["status"], status)
+                self.assertEqual(qa["audio"]["status"], status)
+                self.assertEqual(production["audio_status"], status)
+                self.assertEqual(production_file["audio_status"], status)
+                self.assertIn(f"- Audio: {status}", markdown)
+                self.assertEqual(result["audio_qa"]["status"], status)
+                engineering = qa["engineering"]
+                self.assertEqual(engineering["status"], "REVIEW_REQUIRED")
+                self.assertEqual(engineering["manifest_contract"]["status"], "PASS")
+                self.assertEqual(engineering["video_timeline"]["status"], "PASS")
+                self.assertEqual(engineering["evidence"]["type"], "CONCEPTUAL_ILLUSTRATION")
+                self.assertEqual(engineering["evidence"]["calculation_status"], "NOT_COMPUTED")
+                self.assertEqual(engineering["human_accuracy_review"]["status"], "PENDING")
+                self.assertIn("no contact force, friction, stress, or deformation calculation", markdown)
+
+    def test_requested_audio_failure_writes_consistent_fail_reports(self):
+        from scripts.produce_lesson import write_audio_failure_reports
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            report = {"status": "RUNNING", "audio_status": "NOT_REQUESTED"}
+            write_audio_failure_reports(root, report, RuntimeError("mock validator failure"))
+            audio = json.loads((root / "audio_qa.json").read_text())
+            qa = json.loads((root / "qa_report.json").read_text())
+            production = json.loads((root / "production_report.json").read_text())
+            self.assertEqual(report["audio_status"], "FAIL")
+            self.assertEqual(audio["status"], "FAIL")
+            self.assertEqual(qa["audio"]["status"], "FAIL")
+            self.assertEqual(production["audio_status"], "FAIL")
+            self.assertIn("- Audio: FAIL", (root / "qa_report.md").read_text())
 
     def test_tts_generation_uses_mock_service_and_measured_durations(self):
         from core.narration import prepare_audio

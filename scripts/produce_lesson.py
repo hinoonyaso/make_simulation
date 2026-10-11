@@ -21,6 +21,57 @@ from core.education.education_planner import plan_lesson
 from core.education.lesson_spec import LessonSpec, validate_lesson_spec
 
 
+AUDIO_QA_STATUSES = {"NOT_REQUESTED", "BLOCKED", "PASS", "FAIL"}
+
+
+def delivery_resolution_args(preview: bool) -> list[str]:
+    """Return the minimum delivery dimensions for the selected render mode."""
+    width, height = (960, 540) if preview else (1920, 1080)
+    return ["--min-width", str(width), "--min-height", str(height)]
+
+
+def engineering_qa(*, manifest_validated: bool, timeline_validated: bool,
+                   evidence_types: list[str]) -> dict:
+    evidence = {item.upper() for item in evidence_types}
+    if evidence == {"CONCEPTUAL_ILLUSTRATION"}:
+        evidence_type = "CONCEPTUAL_ILLUSTRATION"
+        computation = "NOT_COMPUTED"
+        boundary = "Illustrative geometry and motion only; no contact force, friction, stress, or deformation calculation."
+    else:
+        evidence_type = sorted(evidence)
+        computation = "NOT_ASSERTED"
+        boundary = "See per-beat evidence declarations; automated delivery checks do not review engineering claims."
+    return {
+        "status": "REVIEW_REQUIRED",
+        "manifest_contract": {"status": "PASS" if manifest_validated else "NOT_RUN"},
+        "video_timeline": {"status": "PASS" if timeline_validated else "NOT_RUN"},
+        "evidence": {"type": evidence_type, "calculation_status": computation,
+                     "boundary": boundary},
+        "human_accuracy_review": {"status": "PENDING"},
+    }
+
+
+def write_audio_failure_reports(run_dir: Path, report: dict, error: Exception) -> None:
+    """Persist a requested audio path failure without claiming a media review."""
+    report.update({"status": "FAILED", "audio_status": "FAIL",
+                   "audio_error": f"{type(error).__name__}: {error}"})
+    audio_qa = {"status": "FAIL", "audio_streams": None, "codec": None,
+                "narration_generation": "FAILED", "authorization": "NOT_EXPOSED_BY_CLI",
+                "duration_sync": "FAILED_OR_NOT_REACHED", "silence_clipping_last_word": "NOT_REVIEWED"}
+    qa = {"video": {"status": "NOT_RUN"}, "audio": audio_qa,
+          "subtitles": {"status": "NOT_RUN"},
+          "engineering": engineering_qa(manifest_validated=False, timeline_validated=False,
+                                         evidence_types=[]),
+          "learner_comprehension": "NOT_TESTED"}
+    (run_dir / "audio_qa.json").write_text(json.dumps(audio_qa, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    (run_dir / "qa_report.json").write_text(json.dumps(qa, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    (run_dir / "qa_report.md").write_text(
+        "# Bearing lesson QA\n\n- Audio: FAIL\n- Audio pipeline error: "
+        f"{type(error).__name__}: {error}\n- Video and engineering review: not completed.\n",
+        encoding="utf-8")
+    (run_dir / "production_report.json").write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+
 def blender_path_arg(path: Path, executable: str) -> str:
     if executable.casefold().endswith(".exe"):
         return subprocess.run(["wslpath", "-w", str(path.resolve())], capture_output=True,
@@ -187,24 +238,34 @@ def render(manifest_path: Path, timeline_path: Path, run_dir: Path, mode: str, m
     return final, {"blender_render_sec": blender_sec, "manim_render_sec": manim_sec}
 
 
-def write_qa_reports(run_dir: Path, video: Path, cues: list[dict], *, narrated: bool) -> dict:
+def write_qa_reports(run_dir: Path, video: Path, cues: list[dict], *, audio_status: str,
+                     production_report: dict, manifest_validated: bool = True,
+                     timeline_validated: bool = True,
+                     evidence_types: list[str] | None = None) -> dict:
+    if audio_status not in AUDIO_QA_STATUSES:
+        raise ValueError(f"invalid audio QA status: {audio_status}")
     probe = json.loads(subprocess.check_output(["ffprobe", "-v", "error", "-show_streams",
         "-show_format", "-of", "json", str(video)], text=True))
     streams = probe.get("streams", [])
     video_stream = next((s for s in streams if s.get("codec_type") == "video"), {})
     audio_streams = [s for s in streams if s.get("codec_type") == "audio"]
+    if audio_status == "PASS" and not audio_streams:
+        raise ValueError("audio QA cannot PASS without an audio stream")
+    if audio_status in {"NOT_REQUESTED", "BLOCKED"} and audio_streams:
+        raise ValueError(f"audio QA {audio_status} requires a silent output")
     video_qa = {"status": "PASS", "path": video.name,
         "codec": video_stream.get("codec_name"), "width": video_stream.get("width"),
         "height": video_stream.get("height"), "fps": video_stream.get("r_frame_rate"),
         "frames": video_stream.get("nb_frames"), "duration_sec": float(probe["format"]["duration"]),
         "full_decode": "PASS (validate_delivery.py)",
         "black_freeze_review": "NOT_AUTOMATED", "full_motion_human_review": "PENDING"}
-    audio_status = "PASS" if narrated and audio_streams else "BLOCKED — USER AUTHORIZATION REQUIRED"
     audio_qa = {"status": audio_status, "audio_streams": len(audio_streams),
         "codec": audio_streams[0].get("codec_name") if audio_streams else None,
-        "narration_generation": "Edge TTS + Whisper" if narrated else "NOT_RUN",
-        "authorization": "approved" if narrated else "not granted",
-        "duration_sync": "validated against narration manifest" if narrated else "NOT_APPLICABLE_TO_SILENT_OUTPUT",
+        "narration_generation": ("Edge TTS + Whisper" if audio_status == "PASS" else
+                                 "BLOCKED" if audio_status == "BLOCKED" else "NOT_RUN"),
+        "authorization": "NOT_EXPOSED_BY_CLI",
+        "duration_sync": ("validated against narration manifest" if audio_status == "PASS" else
+                          "BLOCKED" if audio_status == "BLOCKED" else "NOT_APPLICABLE_TO_SILENT_OUTPUT"),
         "silence_clipping_last_word": "NOT_REVIEWED"}
     (run_dir / "video_qa.json").write_text(json.dumps(video_qa, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     (run_dir / "audio_qa.json").write_text(json.dumps(audio_qa, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
@@ -212,18 +273,28 @@ def write_qa_reports(run_dir: Path, video: Path, cues: list[dict], *, narrated: 
         "status": "PASS" if cues else "FAIL", "cue_count": len(cues),
         "sidecars": ["subtitles.ko.vtt", "subtitles.ko.srt"],
         "burn_in_source": "caption_timing.json", "burn_in_sidecar_parity": "same cue JSON; ASS rounded to centiseconds"},
-        "engineering": {"status": "PASS", "evidence_boundary": "conceptual illustration only; no contact/friction solver",
-                        "human_accuracy_review": "PENDING"},
+        "engineering": engineering_qa(manifest_validated=manifest_validated,
+            timeline_validated=timeline_validated,
+            evidence_types=evidence_types or ["conceptual_illustration"]),
         "learner_comprehension": "NOT_TESTED"}
     md = ["# Bearing lesson QA", "", f"- Video: {video.name} — {video_qa['width']}×{video_qa['height']}, "
           f"{video_qa['fps']} fps, {video_qa['duration_sec']:.3f}s, {video_qa['codec']}",
           f"- Video decode: {video_qa['full_decode']}", f"- Audio: {audio_status}",
           f"- Subtitle cues: {len(cues)}; VTT/SRT and burn-in share caption_timing.json.",
-          "- Engineering evidence: conceptual illustration; no contact, friction, or deformation solver.",
+          f"- Engineering QA: {qa['engineering']['status']}; manifest contract "
+          f"{qa['engineering']['manifest_contract']['status']}; video/timeline "
+          f"{qa['engineering']['video_timeline']['status']}.",
+          f"- Engineering evidence: {qa['engineering']['evidence']['type']} — "
+          f"{qa['engineering']['evidence']['calculation_status']}; "
+          f"{qa['engineering']['evidence']['boundary']}",
+          f"- Human accuracy review: {qa['engineering']['human_accuracy_review']['status']}.",
           "- Full normal-speed motion, narration listening, and learner comprehension: not reviewed.", ""]
     (run_dir / "qa_report.md").write_text("\n".join(md), encoding="utf-8")
     (run_dir / "qa_report.json").write_text(json.dumps(qa, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    return {"video_qa": video_qa, "audio_qa": audio_qa}
+    production_report["audio_status"] = audio_status
+    (run_dir / "production_report.json").write_text(
+        json.dumps(production_report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    return {"video_qa": video_qa, "audio_qa": audio_qa, "engineering_qa": qa["engineering"]}
 
 
 def mux_narration(video: Path, narration: Path, output: Path) -> None:
@@ -243,6 +314,8 @@ def main() -> int:
     parser.add_argument("--output-root", type=Path, default=ROOT / "pilots/v13_education/output/lessons")
     parser.add_argument("--run-id", default=None)
     args = parser.parse_args()
+    if args.plan_only and args.with_tts:
+        parser.error("--plan-only cannot be combined with --with-tts; planning never generates audio")
     raw = json.loads(args.spec.read_text(encoding="utf-8"))
     errors = validate_lesson_spec(raw)
     if errors:
@@ -261,54 +334,66 @@ def main() -> int:
     timeline_path.write_text(json.dumps(planned["timeline"], ensure_ascii=False, indent=2)+"\n", encoding="utf-8")
     (run_dir / "visual_plan.json").write_text(json.dumps(planned["visual_plan"], ensure_ascii=False, indent=2)+"\n", encoding="utf-8")
     (run_dir / "evidence_report.json").write_text(json.dumps(planned["evidence"], ensure_ascii=False, indent=2)+"\n", encoding="utf-8")
-    if args.with_tts:
-        subprocess.run([sys.executable, str(ROOT / "core/narration/prepare_audio.py"), "tts", str(manifest_path)],
-                       cwd=ROOT, check=True)
-        synced_manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-        planned = plan_lesson({**raw, "beats": synced_manifest["beats"]})
-        planned["visual_manifest"].update({key: value for key, value in synced_manifest.items()
-                                           if key not in {"beats", "format", "language"}})
-        timeline_path.write_text(json.dumps(planned["timeline"], ensure_ascii=False, indent=2)+"\n", encoding="utf-8")
-        subprocess.run([sys.executable, str(ROOT / "core/narration/prepare_audio.py"), "captions", str(manifest_path)],
-                       cwd=ROOT, check=True)
-        audio_output = run_dir / "output"
-        for name in ("subtitles.ko.vtt", "subtitles.ko.srt", "caption_timing.json"):
-            source = audio_output / name
-            if source.exists():
-                (run_dir / name).write_bytes(source.read_bytes())
-    else:
-        write_captions(planned["visual_manifest"], run_dir, planned["timeline"])
     report = {"status": "PLANNED" if args.plan_only else "RUNNING", "solver_used": False,
               "evidence_status": planned["evidence"], "manifest": str(manifest_path),
-              "timeline": str(timeline_path), "audio_status": "not generated",
+              "timeline": str(timeline_path), "audio_status": "NOT_REQUESTED",
               "output_dir": str(run_dir)}
+    if args.with_tts:
+        try:
+            subprocess.run([sys.executable, str(ROOT / "core/narration/prepare_audio.py"), "tts", str(manifest_path)],
+                           cwd=ROOT, check=True)
+            synced_manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            planned = plan_lesson({**raw, "beats": synced_manifest["beats"]})
+            planned["visual_manifest"].update({key: value for key, value in synced_manifest.items()
+                                               if key not in {"beats", "format", "language"}})
+            timeline_path.write_text(json.dumps(planned["timeline"], ensure_ascii=False, indent=2)+"\n", encoding="utf-8")
+            subprocess.run([sys.executable, str(ROOT / "core/narration/prepare_audio.py"), "captions", str(manifest_path)],
+                           cwd=ROOT, check=True)
+            audio_output = run_dir / "output"
+            for name in ("subtitles.ko.vtt", "subtitles.ko.srt", "caption_timing.json"):
+                source = audio_output / name
+                if source.exists():
+                    (run_dir / name).write_bytes(source.read_bytes())
+        except Exception as exc:
+            write_audio_failure_reports(run_dir, report, exc)
+            raise
+    else:
+        write_captions(planned["visual_manifest"], run_dir, planned["timeline"])
     if args.plan_only:
         report["status"] = "PLAN_VALIDATED"
     else:
         video, metrics = render(manifest_path, timeline_path, run_dir,
                                 "preview" if args.preview else "final", manim_only=args.manim_only)
         validation = [sys.executable, str(ROOT / "scripts/validate_delivery.py"), str(video),
-                      "--min-width", "540" if args.preview else "1080", "--min-height", "540" if args.preview else "1080",
+                      *delivery_resolution_args(args.preview),
                       "--fps", "30", "--full-decode", "--caption-timing", str(run_dir / "caption_timing.json")]
         if args.with_tts:
             validation.extend(["--audio-manifest", str(run_dir / "assets/audio/manifest.json")])
         else:
             validation.extend(["--timeline", str(timeline_path)])
-        subprocess.run(validation, cwd=ROOT, check=True)
+        try:
+            subprocess.run(validation, cwd=ROOT, check=True)
+        except Exception as exc:
+            if args.with_tts:
+                write_audio_failure_reports(run_dir, report, exc)
+            raise
         report.update(metrics)
         if args.with_tts:
-            narration = run_dir / "output/narration.wav"
-            if not narration.exists():
-                raise FileNotFoundError(f"TTS stage did not produce {narration}")
-            narrated = run_dir / "final.mp4"
-            mux_narration(video, narration, narrated)
-            video = narrated
-            report["audio_status"] = "Edge TTS generated; captions aligned by Whisper"
-            subprocess.run([sys.executable, str(ROOT / "scripts/validate_delivery.py"), str(video),
-                "--min-width", "1920", "--min-height", "1080", "--require-audio", "--fps", "30",
-                "--audio-manifest", str(run_dir / "assets/audio/manifest.json"),
-                "--caption-timing", str(run_dir / "caption_timing.json"), "--full-decode"],
-                cwd=ROOT, check=True)
+            try:
+                narration = run_dir / "output/narration.wav"
+                if not narration.exists():
+                    raise FileNotFoundError(f"TTS stage did not produce {narration}")
+                narrated = run_dir / "final.mp4"
+                mux_narration(video, narration, narrated)
+                video = narrated
+                final_validation = [sys.executable, str(ROOT / "scripts/validate_delivery.py"), str(video),
+                    *delivery_resolution_args(args.preview), "--require-audio", "--fps", "30",
+                    "--audio-manifest", str(run_dir / "assets/audio/manifest.json"),
+                    "--caption-timing", str(run_dir / "caption_timing.json"), "--full-decode"]
+                subprocess.run(final_validation, cwd=ROOT, check=True)
+            except Exception as exc:
+                write_audio_failure_reports(run_dir, report, exc)
+                raise
         rendered_manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
         rendered_timeline = json.loads(timeline_path.read_text(encoding="utf-8"))
         for beat, phase in zip(rendered_manifest["beats"], rendered_timeline["phases"]):
@@ -323,9 +408,11 @@ def main() -> int:
         report.update({"status": "NARRATED_COMPLETE" if args.with_tts else ("SILENT_PREVIEW" if args.preview else "SILENT_RENDER"),
                        "video": str(video), "video_sha256": __import__("hashlib").sha256(video.read_bytes()).hexdigest()})
         cues = json.loads((run_dir / "caption_timing.json").read_text(encoding="utf-8"))
-        report.update(write_qa_reports(run_dir, video, cues, narrated=args.with_tts))
-        if not args.with_tts:
-            report["audio_status"] = "BLOCKED — USER AUTHORIZATION REQUIRED"
+        evidence_types = planned["evidence"].get("beat_evidence", ["conceptual_illustration"])
+        report.update(write_qa_reports(run_dir, video, cues,
+            audio_status="PASS" if args.with_tts else "NOT_REQUESTED",
+            production_report=report, manifest_validated=True, timeline_validated=True,
+            evidence_types=evidence_types))
     (run_dir / "production_report.json").write_text(json.dumps(report, ensure_ascii=False, indent=2)+"\n", encoding="utf-8")
     print(json.dumps(report, ensure_ascii=False, indent=2))
     return 0
