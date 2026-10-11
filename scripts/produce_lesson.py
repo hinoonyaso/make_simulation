@@ -20,7 +20,12 @@ if str(ROOT) not in sys.path:
 
 from core.education.education_planner import plan_lesson
 from core.education.lesson_spec import LessonSpec, validate_lesson_spec
-from core.education.renderer_registry import EducationRenderer, RendererResolutionError, resolve_renderer
+from core.education.renderer_registry import (EducationRenderer, RendererResolutionError,
+    resolve_renderer, validate_battery_asset_load_report)
+from core.education.evidence_router import route_evidence
+from core.education.solver_registry import load_solver_config
+from core.simulation_engines.battery.result_validator import load_validated_result
+from core.simulation_engines.battery.trace import TRACE_SCHEMA
 
 
 AUDIO_QA_STATUSES = {"NOT_REQUESTED", "BLOCKED", "PASS", "FAIL"}
@@ -55,12 +60,16 @@ def validate_media_frame_range(video: Path, timeline: dict) -> dict:
 
 
 def engineering_qa(*, manifest_validated: bool, timeline_validated: bool,
-                   evidence_types: list[str]) -> dict:
+                   evidence_types: list[str], solver_result_validated: bool = False) -> dict:
     evidence = {item.upper() for item in evidence_types}
     if evidence == {"CONCEPTUAL_ILLUSTRATION"}:
         evidence_type = "CONCEPTUAL_ILLUSTRATION"
         computation = "NOT_COMPUTED"
         boundary = "Illustrative geometry and motion only; no contact force, friction, stress, or deformation calculation."
+    elif evidence and evidence <= {"COMPUTED_RESULT", "CONCEPTUAL_ILLUSTRATION"} and solver_result_validated:
+        evidence_type = sorted(evidence)
+        computation = "COMPUTED_AND_VALIDATED"
+        boundary = "PyBaMM SPM solver output and saved provenance were validated; educational renderers display that output and do not rerun the solver."
     else:
         evidence_type = sorted(evidence)
         computation = "NOT_ASSERTED"
@@ -216,6 +225,9 @@ def renderer_runtime_preflight(renderer: EducationRenderer, contract: dict, *, m
 
 def validate_blender_asset_load_report(report: dict, renderer_contract: dict) -> None:
     """Reject Blender output unless its report proves the registered asset was loaded."""
+    if renderer_contract.get("registry_id") == "li_ion_battery":
+        validate_battery_asset_load_report(report, renderer_contract)
+        return
     expected_asset = renderer_contract["asset_validation"]
     expected_objects = set(expected_asset.get("metadata", {}).get("objects", []))
     observed_objects = set(report.get("blender_loaded_objects", []))
@@ -324,7 +336,8 @@ def render(manifest_path: Path, timeline_path: Path, run_dir: Path, mode: str, m
         "blender_render_sec": blender_sec,
         "manim_render_sec": manim_sec,
         "composition": "per-beat renderer selected by V9 manifest tool and shared V12 integer-frame timeline",
-        "solver_used": False,
+        "solver_used": renderer_contract.get("solver_result") is not None,
+        "solver_result": renderer_contract.get("solver_result"),
         "manim_only": manim_only,
         "selected_modes": sorted(selected),
         "media_validation": "PENDING",
@@ -355,6 +368,7 @@ def write_qa_reports(run_dir: Path, video: Path, cues: list[dict], *, audio_stat
                      production_report: dict, manifest_validated: bool = True,
                      timeline_validated: bool = True,
                      evidence_types: list[str] | None = None,
+                     solver_result_validated: bool = False,
                      lesson_title: str = "Education lesson") -> dict:
     if audio_status not in AUDIO_QA_STATUSES:
         raise ValueError(f"invalid audio QA status: {audio_status}")
@@ -389,7 +403,8 @@ def write_qa_reports(run_dir: Path, video: Path, cues: list[dict], *, audio_stat
         "burn_in_source": "caption_timing.json", "burn_in_sidecar_parity": "same cue JSON; ASS rounded to centiseconds"},
         "engineering": engineering_qa(manifest_validated=manifest_validated,
             timeline_validated=timeline_validated,
-            evidence_types=evidence_types or ["conceptual_illustration"]),
+            evidence_types=evidence_types or ["conceptual_illustration"],
+            solver_result_validated=solver_result_validated),
         "learner_comprehension": "NOT_TESTED"}
     md = [f"# {lesson_title} QA", "", f"- Video: {video.name} — {video_qa['width']}×{video_qa['height']}, "
           f"{video_qa['fps']} fps, {video_qa['duration_sec']:.3f}s, {video_qa['codec']}",
@@ -425,11 +440,15 @@ def main() -> int:
     parser.add_argument("--plan-only", action="store_true", help="validate and write plan artifacts without rendering")
     parser.add_argument("--with-tts", action="store_true", help="send manifest narration to configured Edge TTS voice")
     parser.add_argument("--manim-only", action="store_true", help="render with Manim only (for lightweight CI smoke preview)")
+    parser.add_argument("--solver-result", type=Path,
+                        help="validated solver output directory; required for computed-result rendering")
     parser.add_argument("--output-root", type=Path, default=ROOT / "pilots/v13_education/output/lessons")
     parser.add_argument("--run-id", default=None)
     args = parser.parse_args()
     if args.plan_only and args.with_tts:
         parser.error("--plan-only cannot be combined with --with-tts; planning never generates audio")
+    if args.plan_only and args.solver_result:
+        parser.error("--plan-only cannot be combined with --solver-result; planning never consumes solver output")
     raw = json.loads(args.spec.read_text(encoding="utf-8"))
     errors = validate_lesson_spec(raw)
     if errors:
@@ -440,6 +459,35 @@ def main() -> int:
         renderer = resolve_renderer(raw["topic"])
     except (ValueError, OSError) as exc:
         parser.error(str(exc))
+    solver_files = None
+    if not args.plan_only and planned["evidence"].get("execution_required"):
+        if args.solver_result is None:
+            parser.error("computed lesson rendering requires --solver-result from run_battery_simulation.py")
+        try:
+            solver_files = load_validated_result(args.solver_result)
+        except (OSError, ValueError, KeyError) as exc:
+            parser.error(f"solver result validation failed before rendering: {exc}")
+        expected_solver_config = load_solver_config(raw)
+        if expected_solver_config is None or solver_files["config"] != expected_solver_config[0]:
+            parser.error("solver result config does not match the lesson's registered solver_config")
+        route = route_evidence(raw, raw["beats"], solver_files["result"])
+        if route.get("status") != "RESULT_VALIDATED":
+            parser.error("computed lesson evidence route is not validated: " + str(route.get("reason")))
+        planned["evidence"] = route
+        result = solver_files["result"]
+        planned["renderer_contract"]["solver_result"] = {
+            "solver_id": result["solver_execution"]["solver_id"],
+            "run_id": result["solver_execution"]["run_id"],
+            "result_sha256": result["result_sha256"],
+            "config_sha256": result["config_sha256"],
+            "result_file": "result.json", "config_file": "simulation_config.json",
+            "timeseries_file": "battery_timeseries.csv",
+            "actual_end_time_s": result["actual_end_time_s"],
+            "sample_count": result["sample_count"],
+            "sample_interval_s": result["sample_interval_s"],
+            "solver_name": result["solver_execution"]["solver_name"],
+            "pybamm_version": result["solver_execution"]["pybamm_version"],
+        }
     if not args.plan_only and planned["evidence"]["status"] in {"PLANNED", "BLOCKED"}:
         parser.error("lesson evidence route is not renderable: " + str(planned["evidence"].get("reason")))
     runtime_versions = {}
@@ -452,6 +500,28 @@ def main() -> int:
     run_id = args.run_id or f"{raw['topic']}-{time.strftime('%Y%m%d-%H%M%S')}"
     run_dir = args.output_root.resolve() / run_id
     run_dir.mkdir(parents=True, exist_ok=False)
+    if solver_files is not None:
+        for name in ("result.json", "simulation_config.json", "battery_timeseries.csv"):
+            (run_dir / name).write_bytes((solver_files["directory"] / name).read_bytes())
+        result = solver_files["result"]
+        trace = {"schema": TRACE_SCHEMA, "solver_id": "pybamm",
+                 "run_id": result["solver_execution"]["run_id"],
+                 "result_sha256": result["result_sha256"],
+                 "config_sha256": result["config_sha256"],
+                 "sample_count": result["sample_count"],
+                 "actual_end_time_s": result["actual_end_time_s"],
+                 "result_file": "result.json", "config_file": "simulation_config.json",
+                 "timeseries_file": "battery_timeseries.csv"}
+        (run_dir / "battery_trace.json").write_text(
+            json.dumps(trace, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        for beat in planned["visual_manifest"]["beats"]:
+            if beat.get("evidence_type") == "computed_result":
+                beat["trace"] = "battery_trace.json"
+            beat["solver_trace"] = {"solver_id": planned["evidence"]["solver"],
+                                    "run_id": planned["evidence"]["run_id"],
+                                    "result_sha256": planned["evidence"]["result_sha256"],
+                                    "file": "battery_timeseries.csv",
+                                    "trace": "battery_trace.json"}
     (run_dir / "lesson_spec.json").write_text(json.dumps(raw, ensure_ascii=False, indent=2)+"\n", encoding="utf-8")
     manifest_path = run_dir / "visual_manifest.json"
     timeline_path = run_dir / "timeline.json"
@@ -464,7 +534,7 @@ def main() -> int:
         json.dumps({"status": "PASS", **planned["renderer_contract"]}, ensure_ascii=False, indent=2)+"\n",
         encoding="utf-8")
     (run_dir / "evidence_report.json").write_text(json.dumps(planned["evidence"], ensure_ascii=False, indent=2)+"\n", encoding="utf-8")
-    report = {"status": "PLANNED" if args.plan_only else "RUNNING", "solver_used": False,
+    report = {"status": "PLANNED" if args.plan_only else "RUNNING", "solver_used": solver_files is not None,
               "renderer_registry_id": planned["renderer_contract"]["registry_id"],
               "asset_id": planned["renderer_contract"]["asset_id"],
               "asset_validation": planned["renderer_contract"]["asset_validation"]["status"],
@@ -477,6 +547,15 @@ def main() -> int:
                            cwd=ROOT, check=True)
             synced_manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
             planned = plan_lesson({**raw, "beats": synced_manifest["beats"]})
+            if solver_files is not None:
+                planned["evidence"] = route_evidence(raw, synced_manifest["beats"], solver_files["result"])
+                planned["renderer_contract"]["solver_result"] = json.loads(
+                    (run_dir / "renderer_context.json").read_text(encoding="utf-8"))["solver_result"]
+                synced_by_id = {beat["id"]: beat for beat in synced_manifest["beats"]}
+                for beat in planned["visual_manifest"]["beats"]:
+                    if beat.get("evidence_type") == "computed_result":
+                        beat["trace"] = "battery_trace.json"
+                        beat["solver_trace"] = synced_by_id[beat["id"]].get("solver_trace")
             planned["visual_manifest"].update({key: value for key, value in synced_manifest.items()
                                                if key not in {"beats", "format", "language"}})
             timeline_path.write_text(json.dumps(planned["timeline"], ensure_ascii=False, indent=2)+"\n", encoding="utf-8")
@@ -548,6 +627,12 @@ def main() -> int:
                            video_sha256,
                            "timeline_sha256": rendered_timeline.get("timeline_sha256"),
                            "frame_range": frame_range})
+        if solver_files is not None:
+            provenance.update({"solver_used": True,
+                               "solver_provenance": {"solver_id": planned["evidence"]["solver"],
+                                   "run_id": planned["evidence"]["run_id"],
+                                   "result_sha256": planned["evidence"]["result_sha256"],
+                                   "config_sha256": solver_files["result"]["config_sha256"]}})
         provenance_path.write_text(json.dumps(provenance, ensure_ascii=False, indent=2)+"\n", encoding="utf-8")
         report.update({"status": "NARRATED_COMPLETE" if args.with_tts else ("SILENT_PREVIEW" if args.preview else "SILENT_RENDER"),
                        "video": str(video), "video_sha256": video_sha256,
@@ -555,12 +640,14 @@ def main() -> int:
                        "frame_range_validation": frame_range["status"],
                        "observed_video_frames": frame_range["observed_frames"],
                        "renderer_provenance": str(provenance_path)})
+        report["solver_used"] = solver_files is not None
         cues = json.loads((run_dir / "caption_timing.json").read_text(encoding="utf-8"))
         evidence_types = planned["evidence"].get("beat_evidence", ["conceptual_illustration"])
         report.update(write_qa_reports(run_dir, video, cues,
             audio_status="PASS" if args.with_tts else "NOT_REQUESTED",
             production_report=report, manifest_validated=True, timeline_validated=True,
-            evidence_types=evidence_types, lesson_title=raw.get("title", raw["question"])))
+            evidence_types=evidence_types, solver_result_validated=solver_files is not None,
+            lesson_title=raw.get("title", raw["question"])))
     (run_dir / "production_report.json").write_text(json.dumps(report, ensure_ascii=False, indent=2)+"\n", encoding="utf-8")
     print(json.dumps(report, ensure_ascii=False, indent=2))
     return 0

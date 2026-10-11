@@ -1,0 +1,29 @@
+{
+  "schema": "education-lesson-spec/v1",
+  "topic": "li_ion_battery",
+  "asset_id": "edu.mechanical_primitives.v1",
+  "solver": "pybamm",
+  "solver_config": "examples/education/battery_spm_config.json",
+  "title": "실제 배터리 Solver 시계열 확인",
+  "question": "PyBaMM SPM 계산값은 시간에 따라 어떻게 변할까?",
+  "audience": "beginner",
+  "language": "ko-KR",
+  "duration_target_sec": 6,
+  "learning_objectives": ["검증된 Solver 시계열을 읽고 모델 한계를 구분한다"],
+  "modes": ["computed_engineering_demonstration"],
+  "visualization": "manim",
+  "computation_policy": "always",
+  "output_profile": "technical_preview",
+  "beats": [
+    {
+      "id": "BAT-M01", "phase_id": "voltage_curve", "sec": 6,
+      "text": "이 곡선은 PyBaMM SPM이 계산한 전압입니다.",
+      "caption": "PyBaMM SPM이 계산한 단자 전압입니다.",
+      "visual_caption": "검증된 solver 결과 · 단자 전압 [V]",
+      "object": "고정 간격의 실제 Solver 전압 시계열",
+      "state_change": "저장된 Solver 시계열에 맞춰 표식이 이동",
+      "focus": "실행 결과와 모델 계산의 경계",
+      "tool": "M", "blueprint": "signal_timing", "evidence_type": "computed_result"
+    }
+  ]
+}

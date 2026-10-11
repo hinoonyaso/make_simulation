@@ -1,0 +1,93 @@
+name: PyBaMM battery education smoke
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/v14.2-battery.yml'
+      - 'pyproject.toml'
+      - 'uv.lock'
+      - 'core/education/**'
+      - 'core/simulation_engines/battery/**'
+      - 'core/robotics-ai-visual-director-skill/templates/validate_visual_manifest.py'
+      - 'examples/education/battery_*.json'
+      - 'pilots/v14_education/manim/battery_scene.py'
+      - 'scripts/produce_lesson.py'
+      - 'scripts/run_battery_simulation.py'
+      - 'scripts/validate_battery_result.py'
+  push:
+    branches: [v14.2-pybamm-battery-simulation]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  battery-simulation-smoke:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7
+        with:
+          version: '0.12.3'
+          enable-cache: true
+      - name: Install Manim system requirements
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg fonts-nanum pkg-config libcairo2-dev libpango1.0-dev
+      - name: Install locked solver and render dependencies
+        run: uv sync --locked --group sim-battery --group sim-render --no-install-project
+      - name: Run actual PyBaMM SPM and validate saved output
+        run: |
+          uv run --locked --no-sync python scripts/run_battery_simulation.py \
+            --config examples/education/battery_spm_config.json \
+            --output-dir "$RUNNER_TEMP/battery-solver" --run-id "ci-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          uv run --locked --no-sync python scripts/validate_battery_result.py "$RUNNER_TEMP/battery-solver"
+      - name: Validate PyBaMM lesson plan without solver execution
+        run: |
+          uv run --locked --no-sync python scripts/produce_lesson.py \
+            --spec examples/education/battery_spm_smoke.json --plan-only \
+            --output-root "$RUNNER_TEMP/battery-plan" --run-id "plan-${GITHUB_RUN_ID}"
+      - name: Render Manim graph from actual solver output
+        env:
+          V11_MANIM_BIN: manim
+        run: |
+          uv run --locked --no-sync python scripts/produce_lesson.py \
+            --spec examples/education/battery_manim_smoke.json \
+            --solver-result "$RUNNER_TEMP/battery-solver" --preview --manim-only \
+            --output-root "$RUNNER_TEMP/battery-render" --run-id "manim-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+      - name: Validate manifest trace, provenance and media
+        run: |
+          run_dir="$RUNNER_TEMP/battery-render/manim-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          uv run --locked --no-sync python core/robotics-ai-visual-director-skill/templates/validate_visual_manifest.py \
+            "$run_dir/visual_manifest.json" --require-media
+          uv run --locked --no-sync python scripts/validate_delivery.py "$run_dir/preview.mp4" \
+            --min-width 960 --min-height 540 --fps 30 --timeline "$run_dir/timeline.json" \
+            --caption-timing "$run_dir/caption_timing.json" --full-decode
+          uv run --locked --no-sync python - "$run_dir" <<'PY'
+          import json, sys
+          from pathlib import Path
+          run = Path(sys.argv[1])
+          report = json.loads((run / "production_report.json").read_text())
+          provenance = json.loads((run / "renderer_provenance.json").read_text())
+          manifest = json.loads((run / "visual_manifest.json").read_text())
+          if report.get("solver_used") is not True or report.get("evidence_status", {}).get("status") != "RESULT_VALIDATED":
+              raise SystemExit("production report does not prove a validated computed run")
+          if provenance.get("solver_provenance", {}).get("run_id") != manifest["beats"][0]["solver_trace"]["run_id"]:
+              raise SystemExit("manifest trace and renderer provenance run IDs differ")
+          if manifest["beats"][0].get("trace") != "battery_trace.json":
+              raise SystemExit("computed beat does not point to the shared battery trace")
+          print("PASS: actual solver result is linked to Manim media and manifest")
+          PY
+      - name: Upload battery solver and preview evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: battery-simulation-${{ github.run_id }}-${{ github.run_attempt }}
+          if-no-files-found: error
+          path: |
+            ${{ runner.temp }}/battery-solver/
+            ${{ runner.temp }}/battery-render/

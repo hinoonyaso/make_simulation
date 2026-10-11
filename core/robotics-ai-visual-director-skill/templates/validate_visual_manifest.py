@@ -46,6 +46,11 @@ def _trace_validator(trace_path):
                 sys.path.insert(0, str(BUNDLE))
             validator_path = BUNDLE / "core/mechanism/adapters/object_detection.py"
             module_name = "validate_object_detection_trace"
+        elif schema == "battery-simulation-trace/v1":
+            if str(BUNDLE) not in sys.path:
+                sys.path.insert(0, str(BUNDLE))
+            from core.simulation_engines.battery.trace import validate_trace
+            return validate_trace(str(target))
         else:
             return [f"unsupported trace schema: {schema!r}"]
         try:

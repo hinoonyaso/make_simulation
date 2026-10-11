@@ -1,0 +1,14 @@
+{
+  "schema": "battery-simulation-config/v1",
+  "solver": "pybamm",
+  "model": "SPM",
+  "parameter_set": "Chen2020",
+  "initial_soc": 1.0,
+  "discharge_c_rate": 1.0,
+  "requested_duration_s": 1800,
+  "sample_interval_s": 5,
+  "solver_options": {
+    "rtol": 1e-6,
+    "atol": 1e-8
+  }
+}

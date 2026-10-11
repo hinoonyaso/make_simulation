@@ -38,3 +38,6 @@ sim-motor = [
 sim-render = [
     "manim>=0.21.0,<0.22",
 ]
+sim-battery = [
+    "pybamm==26.10.0.0",
+]

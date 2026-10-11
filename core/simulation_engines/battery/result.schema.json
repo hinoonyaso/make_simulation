@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://make-simulation.local/schemas/battery-simulation-result-v1.json",
+  "title": "PyBaMM Battery Simulation Result V1",
+  "type": "object",
+  "required": ["schema", "status", "engine", "model", "parameter_set", "units", "solver_execution", "initial_soc", "estimated_soc_method", "discharge_c_rate", "nominal_capacity_ah", "requested_duration_s", "actual_end_time_s", "termination_reason", "sample_interval_s", "sample_count", "config_sha256", "result_file", "result_sha256", "validation", "assumptions", "limitations"],
+  "properties": {
+    "schema": {"const": "battery-simulation-result/v1"},
+    "status": {"const": "PASS"},
+    "engine": {"const": "PyBaMM"},
+    "model": {"const": "SPM"},
+    "parameter_set": {"const": "Chen2020"},
+    "units": {"type": "object", "required": ["time", "terminal_voltage", "current", "discharge_capacity", "estimated_soc"]},
+    "solver_execution": {"type": "object", "required": ["executed", "solver_id", "solver_name", "solver_options", "pybamm_version", "python_version", "execution_seconds", "run_id", "executed_at_utc"], "properties": {"executed": {"const": true}, "solver_id": {"const": "pybamm"}}},
+    "initial_soc": {"type": "number", "exclusiveMinimum": 0, "maximum": 1},
+    "estimated_soc_method": {"const": "coulomb_counting_from_model_output"},
+    "discharge_c_rate": {"type": "number", "exclusiveMinimum": 0},
+    "nominal_capacity_ah": {"type": "number", "exclusiveMinimum": 0},
+    "requested_duration_s": {"type": "number", "exclusiveMinimum": 0},
+    "actual_end_time_s": {"type": "number", "exclusiveMinimum": 0},
+    "termination_reason": {"type": "string", "minLength": 1},
+    "sample_interval_s": {"type": "number", "exclusiveMinimum": 0},
+    "sample_count": {"type": "integer", "minimum": 2},
+    "config_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "result_file": {"const": "battery_timeseries.csv"},
+    "result_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "validation": {"type": "object", "required": ["status", "checks"], "properties": {"status": {"const": "PASS"}, "checks": {"type": "array", "minItems": 1}}},
+    "assumptions": {"type": "array", "items": {"type": "string"}},
+    "limitations": {"type": "array", "items": {"type": "string"}}
+  },
+  "additionalProperties": true
+}
