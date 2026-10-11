@@ -11,6 +11,7 @@ V14 PR #5 (`2dcfafbd5c95a2b38ce609c5933f5dbfb1192a96`) was verified with success
 - Added pure shared frame planning for continuous one-turn/half-turn animation and tests for half-open frame boundaries.
 - Added a Blender scene that opens the registered asset in memory, clears its embedded generator preview actions, validates geometry centers/hubs, creates temporary axis pivots, renders the full shared timeline, and writes asset-load evidence.
 - Updated generic composition to pass the shared renderer context to Blender and reject a missing or mismatched asset report before asserting the Blender asset was loaded.
+- Compatibility hardening declares Blender context/report requirements per registry entry. Bearing keeps its legacy Blender CLI and does not need a gear report; gear rendering still requires strict load evidence. The gear formula scene no longer uses `MathTex` and has a dedicated five-second Manim smoke.
 - Extended CI plan validation for the full lesson; Blender is not installed or runnable in the current Linux CI workflow, so this does not replace local Blender integration evidence.
 
 ## Local mixed-renderer validation
@@ -26,5 +27,11 @@ V14 PR #5 (`2dcfafbd5c95a2b38ce609c5933f5dbfb1192a96`) was verified with success
 - Delivery recheck: PASS with 960×540 preview thresholds, 30 fps, shared timeline and caption timing, and FFmpeg full decode. The default 1080p delivery threshold correctly rejects this preview-sized file.
 - Black-frame scan: FFmpeg `blackdetect` reported no black intervals. `freezedetect` reports held portions in the storyboard, so this signal alone is not treated as a defect. Representative transition and motion frames were inspected; uninterrupted 80-second normal-speed playback review remains pending.
 - TTS/Whisper and 1080p output were not requested and were not run. The output is a silent 960×540 review preview, not a narrated master.
+
+## Compatibility hardening validation
+
+For the compatibility follow-up, local checks passed: `tests.test_education_renderer_registry` (33 tests), full unittest discovery (200 tests), `compileall`, asset registry validation (39 entries), education asset validation (39 registry entries / 6 catalog models / 6 generated assets), plan-only for Bearing, full spur gears, and ratio smoke, and style checks for both Bearing and spur-gear Blender/Manim scenes. A real Blender 5.2.1 Bearing single-frame render completed at 960×540 without `--context`; a 12-second gear Manim smoke decoded successfully; the new ratio smoke rendered 150 frames (5 seconds) at 960×540/30 fps and passed manifest, timeline, caption timing, and full decode validation. Local output is saved under `pilots/v14_education/output/v14.1-compatibility-smokes/` in the shared checkout (ignored by Git).
+
+The compatibility smoke is not a replacement for the existing 80-second mixed render. GitHub Actions for the follow-up commit must be recorded after the pushed commit's workflow runs finish; no remote result is implied by local validation.
 
 This confirms the Blender + Manim mixed preview path locally. It does not validate full-motion playback end-to-end, narration, 1080p delivery, or gear contact mechanics.

@@ -145,6 +145,10 @@ uv run python scripts/produce_lesson.py --spec examples/education/bearing.json -
 uv run python scripts/produce_lesson.py \
   --spec examples/education/spur_gears.json --preview --manim-only
 
+# Gear ratio formula compatibility smoke (5 seconds)
+uv run python scripts/produce_lesson.py \
+  --spec examples/education/gear_ratio_smoke.json --preview --manim-only
+
 # 80초 Blender + Manim 혼합 기어 Preview (Blender 실행 환경 필요)
 uv run python scripts/produce_lesson.py \
   --spec examples/education/spur_gears_full.json --preview \

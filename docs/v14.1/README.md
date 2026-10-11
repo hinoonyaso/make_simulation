@@ -6,10 +6,16 @@ V14.1 builds the first mixed-renderer gear lesson on the V14 generic education p
 
 `examples/education/spur_gears_full.json` is an 80-second Korean beginner lesson at 30 fps. Blender beats show the tracked 20T/40T asset and its rotation. Manim beats explain equal ideal tangential velocity, opposite angular directions, the `−Z₁/Z₂` ratio, and the boundary between ideal kinematics and physical contact analysis. The original 12-second `spur_gears.json` Manim smoke remains supported.
 
+Blender context and asset-load-report requirements are explicit per-renderer registry flags. This preserves the existing Bearing Blender CLI while the spur-gear renderer opts into shared context and strict report validation. Gear formulas use plain Manim text glyphs, so the ratio smoke does not require system LaTeX.
+
 ```bash
 uv run python scripts/produce_lesson.py \
   --spec examples/education/spur_gears_full.json --plan-only \
   --output-root /tmp/v14.1-gear-plan --run-id plan
+
+uv run python scripts/produce_lesson.py \
+  --spec examples/education/gear_ratio_smoke.json --preview --manim-only \
+  --output-root pilots/v14_education/output/compatibility-smokes --run-id gear-ratio
 
 uv run python scripts/produce_lesson.py \
   --spec examples/education/spur_gears_full.json --preview \
@@ -28,7 +34,7 @@ The generated geometry is CC0-1.0 according to the tracked sidecar. It is styliz
 
 The V14 context builder derives module 2 mm, pitch radii 20/40 mm, center distance 60 mm, and `ω₂/ω₁ = −20/40 = −0.5` from the validated asset metadata. Both renderer tracks consume that context. `core/education/gear_animation.py` maps each Blender beat's input turns to continuous, half-open-timeline-aligned Blender keyframes; both gears and hubs share their axis rotation. Manim retains exact duration for Blender-owned beats, and the generic compositor selects each beat's renderer by manifest tool and phase ID.
 
-After Blender has loaded the asset and validated pivots, it writes `asset_load_report.json` with the actual Blender version, file hashes, object names/origins/bounds, axis locations, and center distance. The common pipeline requires this report before marking `asset_loaded_by_renderer` true.
+After Blender has loaded the asset and validated pivots, it writes `asset_load_report.json` with the actual Blender version, file hashes, object names/origins/bounds, axis locations, and center distance. The gear registry entry requires this report before marking `asset_loaded_by_renderer` true. Bearing does not require or receive this gear-specific report contract.
 
 ## Verification status
 

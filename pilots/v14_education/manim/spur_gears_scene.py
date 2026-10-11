@@ -190,13 +190,14 @@ class SpurGearsLessonScene(Scene):
                 if pitch_guides is not None:
                     self.play(FadeOut(pitch_guides), run_time=prefix)
                 remaining_frames = phase_frames - (prefix_frames if pitch_guides is not None else 0)
+                result = format(float(data["omega_2_over_omega_1"]), ".6g").replace("-", "−")
                 steps = [
-                    MathTex(r"\frac{\omega_2}{\omega_1}=-\frac{Z_1}{Z_2}", color=P.fg),
-                    MathTex(r"\frac{\omega_2}{\omega_1}=-\frac{20}{40}", color=P.fg),
-                    MathTex(r"\frac{\omega_2}{\omega_1}=-0.5", color=P.result),
+                    txt("ω₂ / ω₁ = −Z₁ / Z₂", 27, P.fg),
+                    txt(f"ω₂ / ω₁ = −{z1} / {z2}", 27, P.fg),
+                    txt(f"ω₂ / ω₁ = {result}", 30, P.result),
                 ]
                 for item in steps:
-                    item.scale(.88).move_to([0, -2.72, 0])
+                    item.move_to([0, -2.1, 0])
                 hold_frames = min(24, remaining_frames // 10)
                 reveal_frames = min(48, (remaining_frames - 2 * hold_frames) // 3)
                 hold = seconds_for_frames(hold_frames)
@@ -207,7 +208,9 @@ class SpurGearsLessonScene(Scene):
                 self.play(ReplacementTransform(current_formula, steps[1]), run_time=reveal)
                 self.wait(hold)
                 self.play(ReplacementTransform(steps[1], steps[2]), run_time=reveal)
-                self.wait(seconds_for_frames(remaining_frames - 3 * reveal_frames - 2 * hold_frames))
+                tail_frames = remaining_frames - 3 * reveal_frames - 2 * hold_frames
+                if tail_frames > 0:
+                    self.wait(seconds_for_frames(tail_frames))
                 formula = steps[2]
             elif beat["phase_id"] == "ideal_boundary":
                 boundary = txt("이상적 속도 비 · 효율/응력/백래시는 미계산", 18, P.muted)

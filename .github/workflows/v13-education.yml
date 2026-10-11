@@ -113,6 +113,11 @@ jobs:
             --run-id "gear-full-plan-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" \
             2>&1 | tee "$RUNNER_TEMP/education-renderer/gear-full-plan.log"
           uv run --locked --no-sync python scripts/produce_lesson.py \
+            --spec examples/education/gear_ratio_smoke.json --plan-only \
+            --output-root "$RUNNER_TEMP/education-renderer/plan-output" \
+            --run-id "gear-ratio-plan-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" \
+            2>&1 | tee "$RUNNER_TEMP/education-renderer/gear-ratio-plan.log"
+          uv run --locked --no-sync python scripts/produce_lesson.py \
             --spec examples/education/education_smoke.json --plan-only \
             --output-root "$RUNNER_TEMP/education-renderer/plan-output" \
             --run-id "plan-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" \
@@ -250,6 +255,55 @@ jobs:
             --min-width 960 --min-height 540 --fps 30 --timeline "$run_dir/timeline.json" \
             --caption-timing "$run_dir/caption_timing.json" --full-decode \
             2>&1 | tee "$RUNNER_TEMP/education-renderer/spur-gear-full-decode.log"
+
+      - name: Render gear ratio calculation smoke without LaTeX
+        env:
+          V11_MANIM_BIN: manim
+        run: |
+          set -o pipefail
+          uv run --locked --no-sync python scripts/produce_lesson.py \
+            --spec examples/education/gear_ratio_smoke.json --preview --manim-only \
+            --output-root "$RUNNER_TEMP/education-renderer/output" \
+            --run-id "gear-ratio-smoke-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" \
+            2>&1 | tee "$RUNNER_TEMP/education-renderer/gear-ratio-smoke.log"
+
+      - name: Verify gear ratio calculation smoke
+        run: |
+          set -o pipefail
+          run_dir="$RUNNER_TEMP/education-renderer/output/gear-ratio-smoke-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          preview="$run_dir/preview.mp4"
+          test -s "$preview"
+          test -s "$run_dir/subtitles.ko.vtt"
+          uv run --locked --no-sync python - "$run_dir" <<'PY' | tee "$RUNNER_TEMP/education-renderer/gear-ratio-validation.log"
+          import json
+          import sys
+          from pathlib import Path
+          run_dir = Path(sys.argv[1])
+          report = json.loads((run_dir / "production_report.json").read_text(encoding="utf-8"))
+          context = json.loads((run_dir / "renderer_context.json").read_text(encoding="utf-8"))
+          provenance = json.loads((run_dir / "renderer_provenance.json").read_text(encoding="utf-8"))
+          manifest = json.loads((run_dir / "visual_manifest.json").read_text(encoding="utf-8"))
+          if report.get("status") != "SILENT_PREVIEW" or report.get("asset_id") != "edu.spur_gears_20_40.v1":
+              raise SystemExit(f"unexpected ratio smoke report: {report!r}")
+          if context["calculated_results"].get("omega_2_over_omega_1") != -0.5:
+              raise SystemExit("ratio smoke did not use the registered gear calculation")
+          if [beat.get("phase_id") for beat in manifest.get("beats", [])] != ["ratio_calculation"]:
+              raise SystemExit("ratio smoke did not execute the calculation phase")
+          frame_range = provenance.get("frame_range", {})
+          if frame_range.get("status") != "PASS" or frame_range.get("expected_frames") != 150 or frame_range.get("observed_frames") != 150:
+              raise SystemExit(f"unexpected ratio smoke frame range: {frame_range!r}")
+          if provenance.get("renderers") != ["manim"] or provenance.get("media_validation") != "PASS":
+              raise SystemExit("ratio smoke renderer provenance is invalid")
+          print(json.dumps({"status": "PASS", "frames": frame_range["observed_frames"],
+                            "ratio": context["calculated_results"]["omega_2_over_omega_1"]}, indent=2))
+          PY
+          uv run --locked --no-sync python core/robotics-ai-visual-director-skill/templates/validate_visual_manifest.py \
+            "$run_dir/visual_manifest.json" --require-media \
+            2>&1 | tee "$RUNNER_TEMP/education-renderer/gear-ratio-manifest-validation.log"
+          uv run --locked --no-sync python scripts/validate_delivery.py "$preview" \
+            --min-width 960 --min-height 540 --fps 30 --timeline "$run_dir/timeline.json" \
+            --caption-timing "$run_dir/caption_timing.json" --full-decode \
+            2>&1 | tee "$RUNNER_TEMP/education-renderer/gear-ratio-full-decode.log"
 
       - name: Upload preview, reports, validation and logs
         if: always()

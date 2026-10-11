@@ -1,0 +1,31 @@
+{
+  "schema": "education-lesson-spec/v1",
+  "topic": "spur_gears",
+  "asset_id": "edu.spur_gears_20_40.v1",
+  "title": "잇수에서 각속도 비 계산하기",
+  "question": "20T와 40T의 잇수 비는 각속도 비를 어떻게 정할까?",
+  "audience": "beginner",
+  "language": "ko-KR",
+  "duration_target_sec": 5,
+  "learning_objectives": ["잇수 비에서 이상적인 각속도 비를 계산한다"],
+  "modes": ["mathematical_demonstration"],
+  "visualization": "manim",
+  "computation_policy": "only_when_needed",
+  "output_profile": "ci_smoke",
+  "beats": [
+    {
+      "id": "GR01",
+      "phase_id": "ratio_calculation",
+      "sec": 5,
+      "text": "잇수 비에 20과 40을 대입하면 각속도 비는 마이너스 0.5입니다.",
+      "caption": "20 나누기 40을 대입하면 각속도 비는 마이너스 0.5입니다.",
+      "visual_caption": "ω₂ / ω₁ = −20 / 40 = −0.5",
+      "object": "20T와 40T의 잇수 및 각속도 비",
+      "state_change": "기호식에 등록 자산의 잇수를 대입하고 계산 결과로 변환",
+      "focus": "ω₂ / ω₁ = −20 / 40 = −0.5",
+      "tool": "M",
+      "blueprint": "before_after",
+      "evidence_type": "derived_calculation"
+    }
+  ]
+}

@@ -25,6 +25,8 @@ class EducationRenderer:
     supported_modes: tuple[str, ...]
     blueprint_support: tuple[tuple[str, tuple[str, ...]], ...]
     context_builder: Callable[[dict[str, Any]], dict[str, Any]] | None = None
+    blender_context_required: bool = False
+    asset_load_report_required: bool = False
 
     def blueprints_for(self, renderer: str) -> tuple[str, ...]:
         return dict(self.blueprint_support).get(renderer, ())
@@ -88,6 +90,8 @@ REGISTRY: dict[str, EducationRenderer] = {
         blueprint_support=(("manim", ("before_after",)),
                            ("blender", ("before_after",))),
         context_builder=_spur_gear_context,
+        blender_context_required=True,
+        asset_load_report_required=True,
     ),
 }
 
@@ -129,6 +133,9 @@ def validate_renderer_registration(renderer: EducationRenderer, *, root: Path = 
         raise RendererResolutionError(f"BLOCKED: {renderer.topic} must register its Manim timeline renderer")
     if bool(renderer.blender_script) != ("blender" in modes):
         raise RendererResolutionError(f"BLOCKED: Blender mode and scene path disagree for {renderer.topic}")
+    if (renderer.blender_context_required or renderer.asset_load_report_required) and not renderer.blender_script:
+        raise RendererResolutionError(
+            f"BLOCKED: Blender runtime contracts require a Blender scene for {renderer.topic}")
     manim_path = _inside_root(root, renderer.manim_script, "Manim scene path")
     if not manim_path.is_file():
         raise RendererResolutionError(f"BLOCKED: registered Manim scene is missing: {renderer.manim_script}")
@@ -220,6 +227,8 @@ def resolve_lesson_contract(spec: dict[str, Any], *, root: Path = ROOT) -> dict[
         "asset_validation": asset,
         "calculated_results": calculated_results,
         "supported_modes": list(renderer.supported_modes),
+        "blender_context_required": renderer.blender_context_required,
+        "asset_load_report_required": renderer.asset_load_report_required,
         "selected_modes": sorted(selected),
         "scene": {"blender_script": renderer.blender_script,
                   "manim_script": renderer.manim_script,

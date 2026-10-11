@@ -251,10 +251,12 @@ def render(manifest_path: Path, timeline_path: Path, run_dir: Path, mode: str, m
         blender_output = run_dir / f"{renderer.topic}_blender.mp4"
         blender_args = [blender, "--background", "--factory-startup", "--python-exit-code", "1", "--python",
             blender_path_arg(blender_script, blender), "--", "--manifest", blender_path_arg(manifest_path, blender),
-            "--timeline", blender_path_arg(timeline_path, blender), "--context",
-            blender_path_arg(run_dir / "renderer_context.json", blender),
+            "--timeline", blender_path_arg(timeline_path, blender)]
+        if renderer.blender_context_required:
+            blender_args.extend(["--context", blender_path_arg(run_dir / "renderer_context.json", blender)])
+        blender_args.extend([
             "--output", blender_path_arg(blender_output, blender),
-            "--width", str(width), "--height", str(height), "--fps", "30"]
+            "--width", str(width), "--height", str(height), "--fps", "30"])
         blender_args.extend(["--samples", "16" if mode == "preview" else "32"])
         started = time.perf_counter()
         subprocess.run(blender_args, cwd=ROOT, check=True)
@@ -262,10 +264,12 @@ def render(manifest_path: Path, timeline_path: Path, run_dir: Path, mode: str, m
         if not blender_output.is_file() or blender_output.stat().st_size == 0:
             raise RuntimeError(f"Blender exited without producing its expected video: {blender_output}")
         asset_report_path = run_dir / "asset_load_report.json"
-        if not asset_report_path.is_file():
-            raise RuntimeError("Blender rendered without its required asset_load_report.json")
-        asset_load_report = json.loads(asset_report_path.read_text(encoding="utf-8"))
-        validate_blender_asset_load_report(asset_load_report, renderer_contract)
+        if renderer.asset_load_report_required:
+            if not asset_report_path.is_file():
+                raise RuntimeError(
+                    f"Blender renderer {renderer.topic!r} requires asset_load_report.json, but none was produced")
+            asset_load_report = json.loads(asset_report_path.read_text(encoding="utf-8"))
+            validate_blender_asset_load_report(asset_load_report, renderer_contract)
 
     scene = ROOT / renderer.manim_script
     manim_dir = run_dir / f"{renderer.topic}_manim"

@@ -34,6 +34,8 @@ class EducationRendererRegistryTests(unittest.TestCase):
         self.assertEqual(from_spec, smoke_alias)
         self.assertEqual(from_spec.manim_scene_class, "BearingLessonScene")
         self.assertIn("blender", from_spec.supported_modes)
+        self.assertFalse(from_spec.blender_context_required)
+        self.assertFalse(from_spec.asset_load_report_required)
 
     def test_spur_gear_renderer_and_asset_resolve(self):
         renderer = resolve_renderer("spur_gears")
@@ -43,6 +45,122 @@ class EducationRendererRegistryTests(unittest.TestCase):
         self.assertEqual(asset["status"], "PASS")
         self.assertEqual(asset["metadata"]["pinion_teeth"], 20)
         self.assertEqual(asset["metadata"]["gear_teeth"], 40)
+        self.assertTrue(renderer.blender_context_required)
+        self.assertTrue(renderer.asset_load_report_required)
+
+    def _render_with_fake_runtimes(self, spec_name: str, asset_report: dict | None):
+        from scripts.produce_lesson import render
+        planned = plan_lesson(self.load(spec_name))
+        renderer = resolve_renderer(planned["renderer_contract"]["registry_id"])
+        calls = []
+        context_asset_ids = []
+        with TemporaryDirectory() as directory:
+            run_dir = Path(directory)
+            manifest_path, timeline_path = run_dir / "visual_manifest.json", run_dir / "timeline.json"
+            (run_dir / "renderer_context.json").write_text(
+                json.dumps(planned["renderer_contract"]), encoding="utf-8")
+            manifest_path.write_text(json.dumps(planned["visual_manifest"]), encoding="utf-8")
+            timeline_path.write_text(json.dumps(planned["timeline"]), encoding="utf-8")
+
+            def fake_run(args, **kwargs):
+                calls.append(args)
+                if args[0] == "ffmpeg":
+                    Path(args[-1]).touch()
+                elif "--output" in args:
+                    if "--context" in args:
+                        context_path = Path(args[args.index("--context") + 1])
+                        context_asset_ids.append(json.loads(context_path.read_text(encoding="utf-8")).get("asset_id"))
+                    output = Path(args[args.index("--output") + 1])
+                    output.write_bytes(b"video")
+                    if asset_report is not None:
+                        (run_dir / "asset_load_report.json").write_text(
+                            json.dumps(asset_report), encoding="utf-8")
+                elif "--media_dir" in args:
+                    media_dir = Path(args[args.index("--media_dir") + 1])
+                    scene_class = args[-1]
+                    manim_video = media_dir / "videos" / "scene" / "540p30" / f"{scene_class}.mp4"
+                    manim_video.parent.mkdir(parents=True)
+                    manim_video.touch()
+                return __import__("subprocess").CompletedProcess(args, 0)
+
+            with patch("core.mechanism.renderer._blender_binary", return_value="blender-test"), \
+                 patch("scripts.produce_lesson.subprocess.run", side_effect=fake_run):
+                result = render(manifest_path, timeline_path, run_dir, "preview",
+                                renderer=renderer, renderer_contract=planned["renderer_contract"],
+                                runtime_versions={"manim": "test", "blender": "test"})
+            provenance = json.loads((run_dir / "renderer_provenance.json").read_text(encoding="utf-8"))
+            saved_report = run_dir / "asset_load_report.json"
+            return result, calls, provenance, saved_report.exists(), planned["renderer_contract"], context_asset_ids
+
+    def test_bearing_blender_keeps_legacy_cli_and_report_is_optional(self):
+        _, calls, provenance, has_report, _, _ = self._render_with_fake_runtimes("bearing.json", None)
+        blender_args = calls[0]
+        self.assertIn("--manifest", blender_args)
+        self.assertIn("--timeline", blender_args)
+        self.assertNotIn("--context", blender_args)
+        self.assertFalse(has_report)
+        self.assertFalse(provenance["asset_loaded_by_renderer"])
+        self.assertIsNone(provenance["asset_load_report"])
+
+    def test_gear_blender_receives_context_and_validates_registered_asset_report(self):
+        contract = plan_lesson(self.load("spur_gears_full.json"))["renderer_contract"]
+        metadata = contract["asset_validation"]["metadata"]
+        report = {"status": "PASS", "asset_id": contract["asset_id"],
+                  "asset_sha256": contract["asset_validation"]["sha256"],
+                  "blender_loaded_objects": metadata["objects"],
+                  "loaded_objects_present": True, "pivot_validation": "PASS",
+                  "centers_fixed_during_animation": True,
+                  "fixed_center_validation": {"status": "PASS"}}
+        _, calls, provenance, has_report, _, context_asset_ids = self._render_with_fake_runtimes(
+            "spur_gears_full.json", report)
+        blender_args = calls[0]
+        self.assertIn("--context", blender_args)
+        self.assertEqual(context_asset_ids, ["edu.spur_gears_20_40.v1"])
+        self.assertTrue(has_report)
+        self.assertTrue(provenance["asset_loaded_by_renderer"])
+
+    def test_gear_blender_missing_asset_report_fails_before_success_provenance(self):
+        from scripts.produce_lesson import render
+        planned = plan_lesson(self.load("spur_gears_full.json"))
+        renderer = resolve_renderer("spur_gears")
+        with TemporaryDirectory() as directory:
+            run_dir = Path(directory)
+            manifest_path, timeline_path = run_dir / "manifest.json", run_dir / "timeline.json"
+            (run_dir / "renderer_context.json").write_text("{}", encoding="utf-8")
+            manifest_path.write_text(json.dumps(planned["visual_manifest"]), encoding="utf-8")
+            timeline_path.write_text(json.dumps(planned["timeline"]), encoding="utf-8")
+            def fake_blender(args, **kwargs):
+                Path(args[args.index("--output") + 1]).write_bytes(b"video")
+                return __import__("subprocess").CompletedProcess(args, 0)
+            with patch("core.mechanism.renderer._blender_binary", return_value="blender-test"), \
+                 patch("scripts.produce_lesson.subprocess.run", side_effect=fake_blender):
+                with self.assertRaisesRegex(RuntimeError, "requires asset_load_report.json"):
+                    render(manifest_path, timeline_path, run_dir, "preview", renderer=renderer,
+                           renderer_contract=planned["renderer_contract"])
+            self.assertFalse((run_dir / "renderer_provenance.json").exists())
+
+    def test_gear_asset_report_rejects_hash_object_and_pivot_failures(self):
+        from scripts.produce_lesson import validate_blender_asset_load_report
+        contract = plan_lesson(self.load("spur_gears_full.json"))["renderer_contract"]
+        metadata = contract["asset_validation"]["metadata"]
+        base = {"status": "PASS", "asset_id": contract["asset_id"],
+                "asset_sha256": contract["asset_validation"]["sha256"],
+                "blender_loaded_objects": metadata["objects"],
+                "loaded_objects_present": True, "pivot_validation": "PASS",
+                "centers_fixed_during_animation": True,
+                "fixed_center_validation": {"status": "PASS"}}
+        invalid_reports = []
+        for key, value in (("asset_sha256", "0" * 64),
+                           ("blender_loaded_objects", metadata["objects"][:-1]),
+                           ("pivot_validation", "FAIL"),
+                           ("fixed_center_validation", {"status": "FAIL"})):
+            invalid = copy.deepcopy(base)
+            invalid[key] = value
+            invalid_reports.append(invalid)
+        for report in invalid_reports:
+            with self.subTest(report=report):
+                with self.assertRaisesRegex(RuntimeError, "does not prove"):
+                    validate_blender_asset_load_report(report, contract)
 
     def test_unregistered_topic_is_rejected(self):
         with self.assertRaisesRegex(RendererResolutionError, "no education renderer registered"):
@@ -99,6 +217,16 @@ class EducationRendererRegistryTests(unittest.TestCase):
         self.assertEqual(plan["renderer_contract"]["calculated_results"]["pinion_center_m"], (-.03, 0, 0))
         self.assertEqual(plan["renderer_contract"]["calculated_results"]["gear_center_m"], (.03, 0, 0))
         self.assertEqual(plan["evidence"]["status"], "CONCEPT_ONLY")
+
+    def test_ratio_calculation_smoke_is_a_five_second_manim_only_lesson(self):
+        spec = self.load("gear_ratio_smoke.json")
+        planned = plan_lesson(spec)
+        self.assertEqual(planned["timeline"]["total_frames"], 150)
+        self.assertEqual(planned["renderer_contract"]["selected_modes"], ["manim"])
+        self.assertEqual(planned["renderer_contract"]["asset_id"], "edu.spur_gears_20_40.v1")
+        self.assertEqual(planned["renderer_contract"]["calculated_results"]["omega_2_over_omega_1"], -.5)
+        scene = (ROOT / "pilots/v14_education/manim/spur_gears_scene.py").read_text(encoding="utf-8")
+        self.assertNotIn("MathTex(", scene)
 
     def test_blender_gear_keys_share_ideal_ratio_and_continuous_phase_boundaries(self):
         from core.education.gear_animation import plan_gear_rotation_keys

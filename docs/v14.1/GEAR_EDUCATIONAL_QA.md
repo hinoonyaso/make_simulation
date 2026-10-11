@@ -32,3 +32,9 @@
 | Playback review | Normal-speed motion and visual clarity | Partial; representative Blender and Manim transition frames inspected. Full-length normal-speed review and automated black/freeze analysis remain pending. |
 
 No TTS, Whisper, 1080p master, contact solver, or force/stress result is included in this V14.1 scope. The preview is at `pilots/v14_education/output/gear-v14.1-final-fixed/preview.mp4`; delivery validation reports 960×540, 30 fps, 2,400 frames, 80.0 seconds, and full decode PASS.
+
+## Compatibility regression checks
+
+- Bearing Blender retains its `--manifest` and `--timeline` interface; it does not need the gear-specific context argument or load report. Local compatibility validation invokes the actual Blender scene without `--context`.
+- Spur gears declares the context and strict load-report requirements in the renderer registry. Regression tests verify the expected asset ID/hash, objects, pivots and fixed-center evidence, and prevent provenance from claiming an import when the report is missing.
+- The ratio-only smoke uses ordinary Manim text for formula glyphs, avoiding `MathTex` and a system LaTeX dependency. CI renders and decodes the 5-second, 150-frame smoke.
