@@ -1,0 +1,63 @@
+{
+  "schema": "education-lesson-spec/v1",
+  "topic": "spur_gears",
+  "asset_id": "edu.spur_gears_20_40.v1",
+  "title": "기어는 어떻게 회전 방향과 속도를 바꿀까?",
+  "question": "20T와 40T 기어는 회전 방향과 속도를 어떻게 바꿀까?",
+  "audience": "beginner",
+  "language": "ko-KR",
+  "duration_target_sec": 12,
+  "learning_objectives": [
+    "구동 기어와 종동 기어의 역할을 구분한다",
+    "외접 기어의 회전 방향이 반대임을 설명한다",
+    "잇수 비로 이상적인 각속도 비를 계산한다",
+    "이상적 관계와 실제 손실 해석의 범위를 구분한다"
+  ],
+  "common_misconceptions": ["큰 기어는 작은 기어와 같은 방향으로 돈다", "잇수 비가 실제 효율까지 나타낸다"],
+  "prerequisites": ["회전 속도와 기어 잇수"],
+  "engineering_domain": "mechanical_engineering",
+  "modes": ["concept_visualization", "mathematical_demonstration"],
+  "visualization": "manim",
+  "computation_policy": "only_when_needed",
+  "output_profile": "ci_smoke",
+  "solver": null,
+  "trace": null,
+  "beats": [
+    {
+      "id": "G01", "phase_id": "gear_pair", "sec": 3,
+      "text": "작은 20T 기어가 입력을 받고 큰 40T 기어가 출력을 받습니다.",
+      "caption": "20T 구동 기어가 입력을 받습니다. 40T 종동 기어가 출력을 받습니다.",
+      "visual_caption": "20T 구동 기어와 40T 종동 기어",
+      "object": "20T와 40T 외접 기어 쌍", "state_change": "입력 기어와 출력 기어를 구분",
+      "focus": "잇수와 기어 역할", "tool": "M", "blueprint": "before_after",
+      "evidence_type": "conceptual_illustration"
+    },
+    {
+      "id": "G02", "phase_id": "opposite_direction", "sec": 3,
+      "text": "두 기어의 이가 맞물리면 접점에서 서로 밀기 때문에 회전 방향은 반대가 됩니다.",
+      "caption": "외접 기어는 접점에서 서로 밀기 때문에 반대 방향으로 회전합니다.",
+      "visual_caption": "맞물린 외접 기어는 반대 방향으로 회전",
+      "object": "회전하는 기어 쌍", "state_change": "두 기어에 반대 방향 회전을 적용",
+      "focus": "맞물림과 회전 방향", "tool": "M", "blueprint": "before_after",
+      "evidence_type": "conceptual_illustration"
+    },
+    {
+      "id": "G03", "phase_id": "speed_ratio", "sec": 3,
+      "text": "이상적인 각속도 비는 마이너스 Z1 나누기 Z2입니다. 20 나누기 40은 마이너스 0.5이므로 출력 속도 크기는 입력의 절반입니다.",
+      "caption": "이상적인 각속도 비는 −Z1/Z2입니다. 20T와 40T에서는 출력 속도가 입력의 절반입니다.",
+      "visual_caption": "잇수 비가 출력 각속도를 정한다",
+      "object": "20T·40T 잇수와 각속도 비", "state_change": "잇수 대입으로 출력 속도 비를 도출",
+      "focus": "−Z1/Z2 = −0.5", "tool": "M", "blueprint": "before_after",
+      "evidence_type": "derived_calculation"
+    },
+    {
+      "id": "G04", "phase_id": "ideal_boundary", "sec": 3,
+      "text": "이 값은 이상적인 운동학 관계입니다. 실제 효율과 치면 응력, 백래시는 별도 물리 해석이 필요합니다.",
+      "caption": "−0.5는 이상적인 속도 비입니다. 실제 효율과 치면 응력, 백래시는 여기서 계산하지 않습니다.",
+      "visual_caption": "이상적인 속도 비와 실제 해석은 다르다",
+      "object": "이상적 계산과 실제 기어의 경계", "state_change": "계산 범위와 미해석 항목을 분리",
+      "focus": "손실·백래시·치면 응력은 미해석", "tool": "M", "blueprint": "before_after",
+      "evidence_type": "conceptual_illustration"
+    }
+  ]
+}

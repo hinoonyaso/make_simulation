@@ -18,5 +18,10 @@ def get_blueprint(name: str) -> dict:
         raise ValueError(f"unknown educational blueprint: {name}") from exc
 
 
+def supports_renderer(name: str, renderer: str) -> bool:
+    """Return whether a declared Blueprint has a real implementation backend."""
+    return renderer in get_blueprint(name).get("renderers", [])
+
+
 def available_blueprints() -> dict[str, dict]:
     return {key: dict(value) for key, value in BLUEPRINTS.items()}

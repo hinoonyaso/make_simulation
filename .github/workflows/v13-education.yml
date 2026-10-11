@@ -1,4 +1,4 @@
-name: V13 education smoke
+name: Education renderer smoke
 
 on:
   pull_request:
@@ -23,10 +23,12 @@ on:
       - 'scripts/validate_delivery.py'
       - 'examples/education/**'
       - 'pilots/v13_education/**'
+      - 'pilots/v14_education/**'
       - 'tests/test_education_assets.py'
       - 'tests/test_education_first.py'
+      - 'tests/test_education_renderer_registry.py'
   push:
-    branches: [main, v13-education-first]
+    branches: [main, v13-education-first, v14-generic-education-renderer]
     paths:
       - '.github/workflows/v13-education.yml'
       - '.python-version'
@@ -46,8 +48,10 @@ on:
       - 'scripts/validate_delivery.py'
       - 'examples/education/**'
       - 'pilots/v13_education/**'
+      - 'pilots/v14_education/**'
       - 'tests/test_education_assets.py'
       - 'tests/test_education_first.py'
+      - 'tests/test_education_renderer_registry.py'
   workflow_dispatch:
 
 permissions:
@@ -75,39 +79,47 @@ jobs:
           sudo apt-get install -y ffmpeg fonts-nanum pkg-config libcairo2-dev libpango1.0-dev
 
       - name: Prepare artifact directory
-        run: mkdir -p "$RUNNER_TEMP/v13-education"
+        run: mkdir -p "$RUNNER_TEMP/education-renderer"
 
-      - name: Install locked render dependencies only
-        run: uv sync --locked --only-group sim-render --no-install-project
+      - name: Install locked render and CPU regression dependencies
+        run: uv sync --locked --group sim-math --group sim-can --group sim-motor --group sim-render --no-install-project
 
-      - name: Run V13 education tests
+      - name: Run complete CPU unittest regression
         run: |
           set -o pipefail
-          uv run --locked --no-sync python -m unittest \
-            tests.test_education_assets tests.test_education_first -v \
-            2>&1 | tee "$RUNNER_TEMP/v13-education/education-tests.log"
+          uv run --locked --no-sync python -m unittest discover -s tests -v \
+            2>&1 | tee "$RUNNER_TEMP/education-renderer/unittest.log"
 
       - name: Validate asset registries and education plan
         run: |
           set -o pipefail
           uv run --locked --no-sync python core/visual-assets/asset_registry.py validate \
-            2>&1 | tee "$RUNNER_TEMP/v13-education/asset-registry.log"
+            2>&1 | tee "$RUNNER_TEMP/education-renderer/asset-registry.log"
           uv run --locked --no-sync python scripts/acquire_education_assets.py --validate \
-            2>&1 | tee "$RUNNER_TEMP/v13-education/education-assets.log"
+            2>&1 | tee "$RUNNER_TEMP/education-renderer/education-assets.log"
+          uv run --locked --no-sync python scripts/produce_lesson.py \
+            --spec examples/education/bearing.json --plan-only \
+            --output-root "$RUNNER_TEMP/education-renderer/plan-output" \
+            --run-id "bearing-plan-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" \
+            2>&1 | tee "$RUNNER_TEMP/education-renderer/bearing-plan.log"
+          uv run --locked --no-sync python scripts/produce_lesson.py \
+            --spec examples/education/spur_gears.json --plan-only \
+            --output-root "$RUNNER_TEMP/education-renderer/plan-output" \
+            --run-id "gear-plan-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" \
+            2>&1 | tee "$RUNNER_TEMP/education-renderer/gear-plan.log"
           uv run --locked --no-sync python scripts/produce_lesson.py \
             --spec examples/education/education_smoke.json --plan-only \
-            --output-root "$RUNNER_TEMP/v13-education/plan-output" \
+            --output-root "$RUNNER_TEMP/education-renderer/plan-output" \
             --run-id "plan-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" \
-            2>&1 | tee "$RUNNER_TEMP/v13-education/plan-validation.log"
+            2>&1 | tee "$RUNNER_TEMP/education-renderer/plan-validation.log"
 
       - name: Check V13 Python syntax
         run: |
           set -o pipefail
           uv run --locked --no-sync python -m compileall -q \
-            core/education core/visual_primitives scripts/produce_lesson.py \
-            scripts/acquire_education_assets.py scripts/validate_blender_education_assets.py \
-            tests/test_education_assets.py tests/test_education_first.py \
-            2>&1 | tee "$RUNNER_TEMP/v13-education/compileall.log"
+            core/education core/visual_primitives pilots/v14_education \
+            scripts/produce_lesson.py tests/test_education_renderer_registry.py \
+            2>&1 | tee "$RUNNER_TEMP/education-renderer/compileall.log"
 
       - name: Render Manim-only smoke preview
         env:
@@ -117,19 +129,19 @@ jobs:
           uv run --locked --no-sync python scripts/produce_lesson.py \
             --spec examples/education/education_smoke.json \
             --preview --manim-only \
-            --output-root "$RUNNER_TEMP/v13-education/output" \
+            --output-root "$RUNNER_TEMP/education-renderer/output" \
             --run-id "smoke-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" \
-            2>&1 | tee "$RUNNER_TEMP/v13-education/manim-smoke.log"
+            2>&1 | tee "$RUNNER_TEMP/education-renderer/manim-smoke.log"
 
       - name: Verify smoke media, captions, report and full decode
         run: |
           set -o pipefail
-          run_dir="$RUNNER_TEMP/v13-education/output/smoke-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          run_dir="$RUNNER_TEMP/education-renderer/output/smoke-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
           preview="$run_dir/preview.mp4"
           test -s "$preview"
           test -s "$run_dir/subtitles.ko.vtt"
           test -s "$run_dir/production_report.json"
-          python - "$run_dir" <<'PY' | tee "$RUNNER_TEMP/v13-education/media-metadata-validation.log"
+          python - "$run_dir" <<'PY' | tee "$RUNNER_TEMP/education-renderer/media-metadata-validation.log"
           import json
           import subprocess
           import sys
@@ -180,12 +192,64 @@ jobs:
           PY
           uv run --locked --no-sync python scripts/validate_delivery.py "$preview" \
             --min-width 960 --min-height 540 --fps 30 --full-decode \
-            2>&1 | tee "$RUNNER_TEMP/v13-education/full-decode-validation.log"
+            2>&1 | tee "$RUNNER_TEMP/education-renderer/full-decode-validation.log"
+
+      - name: Render Spur Gear Manim smoke preview
+        env:
+          V11_MANIM_BIN: manim
+        run: |
+          set -o pipefail
+          uv run --locked --no-sync python scripts/produce_lesson.py \
+            --spec examples/education/spur_gears.json --preview --manim-only \
+            --output-root "$RUNNER_TEMP/education-renderer/output" \
+            --run-id "spur-gears-smoke-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" \
+            2>&1 | tee "$RUNNER_TEMP/education-renderer/spur-gears-smoke.log"
+
+      - name: Verify Spur Gear asset, calculation, manifest and full decode
+        run: |
+          set -o pipefail
+          run_dir="$RUNNER_TEMP/education-renderer/output/spur-gears-smoke-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          preview="$run_dir/preview.mp4"
+          test -s "$preview"
+          uv run --locked --no-sync python - "$run_dir" <<'PY' | tee "$RUNNER_TEMP/education-renderer/spur-gears-validation.log"
+          import json
+          import sys
+          from pathlib import Path
+          run_dir = Path(sys.argv[1])
+          report = json.loads((run_dir / "production_report.json").read_text(encoding="utf-8"))
+          context = json.loads((run_dir / "renderer_context.json").read_text(encoding="utf-8"))
+          provenance = json.loads((run_dir / "renderer_provenance.json").read_text(encoding="utf-8"))
+          manifest = json.loads((run_dir / "visual_manifest.json").read_text(encoding="utf-8"))
+          result = context["calculated_results"]
+          if report.get("status") != "SILENT_PREVIEW":
+              raise SystemExit(f"unexpected gear smoke status: {report.get('status')}")
+          if report.get("renderer_registry_id") != "spur_gears" or report.get("asset_id") != "edu.spur_gears_20_40.v1":
+              raise SystemExit("gear renderer or asset mapping is incorrect")
+          if result.get("omega_2_over_omega_1") != -0.5 or result.get("center_distance_m") != 0.06:
+              raise SystemExit(f"unexpected gear derived result: {result!r}")
+          if provenance.get("media_validation") != "PASS" or provenance.get("renderers") != ["manim"]:
+              raise SystemExit("gear renderer provenance is incomplete")
+          frame_range = provenance.get("frame_range", {})
+          if frame_range.get("status") != "PASS" or frame_range.get("expected_frames") != frame_range.get("observed_frames"):
+              raise SystemExit(f"gear encoded frame range did not validate: {frame_range!r}")
+          if provenance.get("solver_used") is not False or not manifest.get("beats"):
+              raise SystemExit("solver/evidence boundary or V9 manifest is invalid")
+          print(json.dumps({"status": "PASS", "renderer": report["renderer_registry_id"],
+                            "asset": report["asset_id"],
+                            "frames": frame_range["observed_frames"], "result": result}, indent=2))
+          PY
+          uv run --locked --no-sync python core/robotics-ai-visual-director-skill/templates/validate_visual_manifest.py \
+            "$run_dir/visual_manifest.json" --require-media \
+            2>&1 | tee "$RUNNER_TEMP/education-renderer/spur-gear-manifest-validation.log"
+          uv run --locked --no-sync python scripts/validate_delivery.py "$preview" \
+            --min-width 960 --min-height 540 --fps 30 --timeline "$run_dir/timeline.json" \
+            --caption-timing "$run_dir/caption_timing.json" --full-decode \
+            2>&1 | tee "$RUNNER_TEMP/education-renderer/spur-gear-full-decode.log"
 
       - name: Upload preview, reports, validation and logs
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: v13-education-${{ github.run_id }}-${{ github.run_attempt }}
+          name: education-renderer-${{ github.run_id }}-${{ github.run_attempt }}
           if-no-files-found: error
-          path: ${{ runner.temp }}/v13-education/
+          path: ${{ runner.temp }}/education-renderer/

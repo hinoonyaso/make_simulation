@@ -26,6 +26,7 @@
     "visualization": {"type": "string"},
     "computation_policy": {"enum": ["only_when_needed", "always", "never"]},
     "output_profile": {"type": "string"},
+    "asset_id": {"type": "string", "minLength": 1},
     "solver": {"type": ["string", "null"]},
     "trace": {"type": ["string", "null"]},
     "beats": {

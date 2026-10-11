@@ -19,6 +19,7 @@ if str(ROOT) not in sys.path:
 
 from core.education.education_planner import plan_lesson
 from core.education.lesson_spec import LessonSpec, validate_lesson_spec
+from core.education.renderer_registry import EducationRenderer, RendererResolutionError, resolve_renderer
 
 
 AUDIO_QA_STATUSES = {"NOT_REQUESTED", "BLOCKED", "PASS", "FAIL"}
@@ -28,6 +29,28 @@ def delivery_resolution_args(preview: bool) -> list[str]:
     """Return the minimum delivery dimensions for the selected render mode."""
     width, height = (960, 540) if preview else (1920, 1080)
     return ["--min-width", str(width), "--min-height", str(height)]
+
+
+def validate_media_frame_range(video: Path, timeline: dict) -> dict:
+    """Compare the encoded video frame count with the planned half-open range."""
+    result = subprocess.check_output([
+        "ffprobe", "-v", "error", "-count_frames", "-select_streams", "v:0",
+        "-show_entries", "stream=nb_read_frames,r_frame_rate", "-of", "json", str(video),
+    ], text=True)
+    streams = json.loads(result).get("streams", [])
+    if len(streams) != 1:
+        raise RuntimeError(f"Expected one video stream in {video}, found {len(streams)}")
+    stream = streams[0]
+    try:
+        observed = int(stream["nb_read_frames"])
+    except (KeyError, TypeError, ValueError) as exc:
+        raise RuntimeError(f"ffprobe did not report a valid frame count for {video}") from exc
+    expected = int(timeline["total_frames"])
+    if observed != expected:
+        raise RuntimeError(f"Encoded frame count {observed} does not match timeline {expected}")
+    return {"status": "PASS", "start_inclusive": 0, "end_exclusive": expected,
+            "expected_frames": expected, "observed_frames": observed,
+            "frame_rate": stream.get("r_frame_rate")}
 
 
 def engineering_qa(*, manifest_validated: bool, timeline_validated: bool,
@@ -51,7 +74,8 @@ def engineering_qa(*, manifest_validated: bool, timeline_validated: bool,
     }
 
 
-def write_audio_failure_reports(run_dir: Path, report: dict, error: Exception) -> None:
+def write_audio_failure_reports(run_dir: Path, report: dict, error: Exception,
+                                lesson_title: str = "Education lesson") -> None:
     """Persist a requested audio path failure without claiming a media review."""
     report.update({"status": "FAILED", "audio_status": "FAIL",
                    "audio_error": f"{type(error).__name__}: {error}"})
@@ -66,7 +90,7 @@ def write_audio_failure_reports(run_dir: Path, report: dict, error: Exception) -
     (run_dir / "audio_qa.json").write_text(json.dumps(audio_qa, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     (run_dir / "qa_report.json").write_text(json.dumps(qa, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     (run_dir / "qa_report.md").write_text(
-        "# Bearing lesson QA\n\n- Audio: FAIL\n- Audio pipeline error: "
+        f"# {lesson_title} QA\n\n- Audio: FAIL\n- Audio pipeline error: "
         f"{type(error).__name__}: {error}\n- Video and engineering review: not completed.\n",
         encoding="utf-8")
     (run_dir / "production_report.json").write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
@@ -160,16 +184,53 @@ def burn_captions(video: Path, cues: list[dict], output: Path) -> None:
                     "-movflags", "+faststart", str(output)], check=True)
 
 
-def render(manifest_path: Path, timeline_path: Path, run_dir: Path, mode: str, manim_only: bool = False):
+def renderer_runtime_preflight(renderer: EducationRenderer, contract: dict, *, manim_only: bool = False) -> dict:
+    """Probe only the backends required by the beats; never downgrade B beats to Manim."""
+    from core.mechanism.renderer import _blender_binary
+    selected = set(contract["selected_modes"])
+    if manim_only and "blender" in selected:
+        raise RendererResolutionError(
+            "BLOCKED: --manim-only cannot render Blender-required beats as a valid lesson; "
+            "no renderer fallback was applied")
+    command = shlex.split(os.environ.get("V11_MANIM_BIN", "uv run manim"))
+    if not command:
+        raise RendererResolutionError("BLOCKED: V11_MANIM_BIN does not name a Manim executable")
+    manim_check = subprocess.run([*command, "--version"], cwd=ROOT, capture_output=True,
+                                 text=True, check=True)
+    def version_line(completed, prefix: str) -> str:
+        output = "\n".join(filter(None, (getattr(completed, "stdout", None),
+                                             getattr(completed, "stderr", None))))
+        candidates = [line.strip() for line in output.splitlines() if line.strip()]
+        return next((line for line in candidates if line.startswith(prefix)),
+                    candidates[-1] if candidates else "version unavailable")
+
+    result = {"manim": version_line(manim_check, "Manim Community v")}
+    if "blender" in selected and not manim_only:
+        blender = _blender_binary()
+        blender_check = subprocess.run([blender, "--version"], cwd=ROOT, capture_output=True,
+                                       text=True, check=True)
+        result["blender"] = version_line(blender_check, "Blender ")
+    return result
+
+
+def render(manifest_path: Path, timeline_path: Path, run_dir: Path, mode: str, manim_only: bool = False,
+           *, renderer: EducationRenderer | None = None, renderer_contract: dict | None = None,
+           runtime_versions: dict | None = None):
+    if renderer is None or renderer_contract is None:
+        raise ValueError("generic education render requires an allow-listed renderer and resolved contract")
     from core.mechanism.renderer import _blender_binary
     width, height, manim_quality = (960, 540, "-ql") if mode == "preview" else (1920, 1080, "-qh")
     blender_sec = 0.0
     blender_output = None
     blender = None
-    if not manim_only:
+    selected = set(renderer_contract["selected_modes"])
+    uses_blender = "blender" in selected and not manim_only
+    if uses_blender:
+        if not renderer.blender_script:
+            raise RendererResolutionError(f"BLOCKED: {renderer.topic} has no registered Blender scene")
         blender = _blender_binary()
-        blender_script = ROOT / "pilots/v13_education/blender/bearing_scene.py"
-        blender_output = run_dir / "bearing_blender.mp4"
+        blender_script = ROOT / renderer.blender_script
+        blender_output = run_dir / f"{renderer.topic}_blender.mp4"
         blender_args = [blender, "--background", "--factory-startup", "--python-exit-code", "1", "--python",
             blender_path_arg(blender_script, blender), "--", "--manifest", blender_path_arg(manifest_path, blender),
             "--timeline", blender_path_arg(timeline_path, blender), "--output", blender_path_arg(blender_output, blender),
@@ -181,18 +242,22 @@ def render(manifest_path: Path, timeline_path: Path, run_dir: Path, mode: str, m
         if not blender_output.is_file() or blender_output.stat().st_size == 0:
             raise RuntimeError(f"Blender exited without producing its expected video: {blender_output}")
 
-    scene = ROOT / "pilots/v13_education/manim/bearing_scene.py"
-    manim_dir = run_dir / "bearing_manim"
+    scene = ROOT / renderer.manim_script
+    manim_dir = run_dir / f"{renderer.topic}_manim"
     env = os.environ.copy()
+    env["EDUCATION_MANIFEST_PATH"] = str(manifest_path.resolve())
+    env["EDUCATION_TIMELINE_PATH"] = str(timeline_path.resolve())
+    env["EDUCATION_RENDER_CONTEXT_PATH"] = str((run_dir / "renderer_context.json").resolve())
+    # Keep the V13 environment names for the unchanged bearing scene.
     env["V13_MANIFEST_PATH"] = str(manifest_path.resolve())
     env["V13_TIMELINE_PATH"] = str(timeline_path.resolve())
     command = shlex.split(os.environ.get("V11_MANIM_BIN", "uv run manim"))
     started = time.perf_counter()
     subprocess.run([*command, manim_quality, "--fps", "30", "--resolution", f"{width},{height}",
-                    "--disable_caching", "--media_dir", str(manim_dir), str(scene), "BearingLessonScene"],
+                    "--disable_caching", "--media_dir", str(manim_dir), str(scene), renderer.manim_scene_class],
                    cwd=ROOT, env=env, check=True)
     manim_sec = time.perf_counter() - started
-    manim_files = list(manim_dir.rglob("BearingLessonScene.mp4"))
+    manim_files = list(manim_dir.rglob(f"{renderer.manim_scene_class}.mp4"))
     if len(manim_files) != 1:
         raise FileNotFoundError(f"expected exactly one Manim render, found {len(manim_files)}")
     manim_video = manim_files[0]
@@ -202,25 +267,43 @@ def render(manifest_path: Path, timeline_path: Path, run_dir: Path, mode: str, m
     filters, inputs = [], []
     concat_labels = []
     for index, (beat, phase) in enumerate(zip(manifest["beats"], timeline["phases"])):
-        source = 0 if manim_only else (1 if beat.get("tool") == "M" else 0)
+        source = (1 if uses_blender else 0) if beat.get("tool") == "M" else 0
         label = f"v{index}"
         filters.append(f"[{source}:v]trim=start_frame={phase['presentation_start_frame']}:"
                        f"end_frame={phase['presentation_end_frame']},setpts=PTS-STARTPTS[{label}]")
         concat_labels.append(f"[{label}]")
     filters.append("".join(concat_labels) + f"concat=n={len(concat_labels)}:v=1:a=0[outv]")
     ffmpeg_inputs = ["ffmpeg", "-v", "error", "-y"]
-    if not manim_only:
+    if uses_blender:
         ffmpeg_inputs.extend(["-i", str(blender_output)])
     ffmpeg_inputs.extend(["-i", str(manim_video), "-filter_complex", ";".join(filters),
                           "-map", "[outv]", "-an", "-r", "30", "-c:v", "libx264",
                           "-pix_fmt", "yuv420p", "-movflags", "+faststart", str(final)])
     subprocess.run(ffmpeg_inputs, cwd=ROOT, check=True)
-    (run_dir / "renderer_provenance.json").write_text(json.dumps({
-        "blender": blender, "blender_render_sec": blender_sec,
-        "manim_render_sec": manim_sec, "composition": "per-beat renderer selected by V9 manifest tool",
-        "fps": 30, "resolution": [width, height], "solver_used": False,
+    provenance = {
+        "topic": renderer.topic,
+        "renderer_registry_id": renderer.topic,
+        "asset_id": renderer_contract["asset_id"],
+        "asset_validation": renderer_contract["asset_validation"],
+        "calculated_results": renderer_contract.get("calculated_results"),
+        "asset_loaded_by_renderer": False,
+        "fps": 30,
+        "resolution": [width, height],
+        "renderers": (["manim"] + (["blender"] if uses_blender else [])),
+        "renderer_versions": runtime_versions or {},
+        "blender_render_sec": blender_sec,
+        "manim_render_sec": manim_sec,
+        "composition": "per-beat renderer selected by V9 manifest tool and shared V12 integer-frame timeline",
+        "solver_used": False,
         "manim_only": manim_only,
-        "evidence_boundary": "conceptual illustration; no contact force/friction solver"},
+        "selected_modes": sorted(selected),
+        "media_validation": "PENDING",
+        "output": final.name,
+        "evidence_types": sorted({beat.get("evidence_type", "conceptual_illustration")
+                                   for beat in manifest["beats"]}),
+        "evidence_boundary": "Renderer expresses lesson evidence; it does not create solver results.",
+    }
+    (run_dir / "renderer_provenance.json").write_text(json.dumps(provenance,
         ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     if (run_dir / "subtitles.ko.vtt").is_file():
         captioned = run_dir / "preview_captioned.mp4"
@@ -241,7 +324,8 @@ def render(manifest_path: Path, timeline_path: Path, run_dir: Path, mode: str, m
 def write_qa_reports(run_dir: Path, video: Path, cues: list[dict], *, audio_status: str,
                      production_report: dict, manifest_validated: bool = True,
                      timeline_validated: bool = True,
-                     evidence_types: list[str] | None = None) -> dict:
+                     evidence_types: list[str] | None = None,
+                     lesson_title: str = "Education lesson") -> dict:
     if audio_status not in AUDIO_QA_STATUSES:
         raise ValueError(f"invalid audio QA status: {audio_status}")
     probe = json.loads(subprocess.check_output(["ffprobe", "-v", "error", "-show_streams",
@@ -277,7 +361,7 @@ def write_qa_reports(run_dir: Path, video: Path, cues: list[dict], *, audio_stat
             timeline_validated=timeline_validated,
             evidence_types=evidence_types or ["conceptual_illustration"]),
         "learner_comprehension": "NOT_TESTED"}
-    md = ["# Bearing lesson QA", "", f"- Video: {video.name} — {video_qa['width']}×{video_qa['height']}, "
+    md = [f"# {lesson_title} QA", "", f"- Video: {video.name} — {video_qa['width']}×{video_qa['height']}, "
           f"{video_qa['fps']} fps, {video_qa['duration_sec']:.3f}s, {video_qa['codec']}",
           f"- Video decode: {video_qa['full_decode']}", f"- Audio: {audio_status}",
           f"- Subtitle cues: {len(cues)}; VTT/SRT and burn-in share caption_timing.json.",
@@ -321,9 +405,20 @@ def main() -> int:
     if errors:
         parser.error("invalid lesson spec: " + "; ".join(errors))
     LessonSpec.from_dict(raw)
-    planned = plan_lesson(raw)
+    try:
+        planned = plan_lesson(raw)
+        renderer = resolve_renderer(raw["topic"])
+    except (ValueError, OSError) as exc:
+        parser.error(str(exc))
     if not args.plan_only and planned["evidence"]["status"] in {"PLANNED", "BLOCKED"}:
         parser.error("lesson evidence route is not renderable: " + str(planned["evidence"].get("reason")))
+    runtime_versions = {}
+    if not args.plan_only:
+        try:
+            runtime_versions = renderer_runtime_preflight(
+                renderer, planned["renderer_contract"], manim_only=args.manim_only)
+        except (OSError, subprocess.SubprocessError, ValueError) as exc:
+            parser.error(str(exc))
     run_id = args.run_id or f"{raw['topic']}-{time.strftime('%Y%m%d-%H%M%S')}"
     run_dir = args.output_root.resolve() / run_id
     run_dir.mkdir(parents=True, exist_ok=False)
@@ -333,8 +428,16 @@ def main() -> int:
     manifest_path.write_text(json.dumps(planned["visual_manifest"], ensure_ascii=False, indent=2)+"\n", encoding="utf-8")
     timeline_path.write_text(json.dumps(planned["timeline"], ensure_ascii=False, indent=2)+"\n", encoding="utf-8")
     (run_dir / "visual_plan.json").write_text(json.dumps(planned["visual_plan"], ensure_ascii=False, indent=2)+"\n", encoding="utf-8")
+    (run_dir / "renderer_context.json").write_text(
+        json.dumps(planned["renderer_contract"], ensure_ascii=False, indent=2)+"\n", encoding="utf-8")
+    (run_dir / "renderer_resolution.json").write_text(
+        json.dumps({"status": "PASS", **planned["renderer_contract"]}, ensure_ascii=False, indent=2)+"\n",
+        encoding="utf-8")
     (run_dir / "evidence_report.json").write_text(json.dumps(planned["evidence"], ensure_ascii=False, indent=2)+"\n", encoding="utf-8")
     report = {"status": "PLANNED" if args.plan_only else "RUNNING", "solver_used": False,
+              "renderer_registry_id": planned["renderer_contract"]["registry_id"],
+              "asset_id": planned["renderer_contract"]["asset_id"],
+              "asset_validation": planned["renderer_contract"]["asset_validation"]["status"],
               "evidence_status": planned["evidence"], "manifest": str(manifest_path),
               "timeline": str(timeline_path), "audio_status": "NOT_REQUESTED",
               "output_dir": str(run_dir)}
@@ -355,7 +458,7 @@ def main() -> int:
                 if source.exists():
                     (run_dir / name).write_bytes(source.read_bytes())
         except Exception as exc:
-            write_audio_failure_reports(run_dir, report, exc)
+            write_audio_failure_reports(run_dir, report, exc, raw.get("title", raw["question"]))
             raise
     else:
         write_captions(planned["visual_manifest"], run_dir, planned["timeline"])
@@ -363,7 +466,9 @@ def main() -> int:
         report["status"] = "PLAN_VALIDATED"
     else:
         video, metrics = render(manifest_path, timeline_path, run_dir,
-                                "preview" if args.preview else "final", manim_only=args.manim_only)
+                                "preview" if args.preview else "final", manim_only=args.manim_only,
+                                renderer=renderer, renderer_contract=planned["renderer_contract"],
+                                runtime_versions=runtime_versions)
         validation = [sys.executable, str(ROOT / "scripts/validate_delivery.py"), str(video),
                       *delivery_resolution_args(args.preview),
                       "--fps", "30", "--full-decode", "--caption-timing", str(run_dir / "caption_timing.json")]
@@ -375,7 +480,7 @@ def main() -> int:
             subprocess.run(validation, cwd=ROOT, check=True)
         except Exception as exc:
             if args.with_tts:
-                write_audio_failure_reports(run_dir, report, exc)
+                write_audio_failure_reports(run_dir, report, exc, raw.get("title", raw["question"]))
             raise
         report.update(metrics)
         if args.with_tts:
@@ -392,10 +497,11 @@ def main() -> int:
                     "--caption-timing", str(run_dir / "caption_timing.json"), "--full-decode"]
                 subprocess.run(final_validation, cwd=ROOT, check=True)
             except Exception as exc:
-                write_audio_failure_reports(run_dir, report, exc)
+                write_audio_failure_reports(run_dir, report, exc, raw.get("title", raw["question"]))
                 raise
         rendered_manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
         rendered_timeline = json.loads(timeline_path.read_text(encoding="utf-8"))
+        frame_range = validate_media_frame_range(video, rendered_timeline)
         for beat, phase in zip(rendered_manifest["beats"], rendered_timeline["phases"]):
             beat["media"] = video.name
             beat["media_in"] = phase["presentation_start_sec"]
@@ -405,14 +511,25 @@ def main() -> int:
             str(ROOT / "core/robotics-ai-visual-director-skill/templates/validate_visual_manifest.py"),
             str(manifest_path), "--require-media"]
         subprocess.run(manifest_check, cwd=ROOT, check=True)
+        provenance_path = run_dir / "renderer_provenance.json"
+        provenance = json.loads(provenance_path.read_text(encoding="utf-8"))
+        provenance.update({"media_validation": "PASS", "video_sha256":
+                           __import__("hashlib").sha256(video.read_bytes()).hexdigest(),
+                           "timeline_sha256": rendered_timeline.get("timeline_sha256"),
+                           "frame_range": frame_range})
+        provenance_path.write_text(json.dumps(provenance, ensure_ascii=False, indent=2)+"\n", encoding="utf-8")
         report.update({"status": "NARRATED_COMPLETE" if args.with_tts else ("SILENT_PREVIEW" if args.preview else "SILENT_RENDER"),
-                       "video": str(video), "video_sha256": __import__("hashlib").sha256(video.read_bytes()).hexdigest()})
+                       "video": str(video), "video_sha256": __import__("hashlib").sha256(video.read_bytes()).hexdigest(),
+                       "renderers": provenance["renderers"], "renderer_versions": runtime_versions,
+                       "frame_range_validation": frame_range["status"],
+                       "observed_video_frames": frame_range["observed_frames"],
+                       "renderer_provenance": str(provenance_path)})
         cues = json.loads((run_dir / "caption_timing.json").read_text(encoding="utf-8"))
         evidence_types = planned["evidence"].get("beat_evidence", ["conceptual_illustration"])
         report.update(write_qa_reports(run_dir, video, cues,
             audio_status="PASS" if args.with_tts else "NOT_REQUESTED",
             production_report=report, manifest_validated=True, timeline_validated=True,
-            evidence_types=evidence_types))
+            evidence_types=evidence_types, lesson_title=raw.get("title", raw["question"])))
     (run_dir / "production_report.json").write_text(json.dumps(report, ensure_ascii=False, indent=2)+"\n", encoding="utf-8")
     print(json.dumps(report, ensure_ascii=False, indent=2))
     return 0

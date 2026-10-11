@@ -181,6 +181,15 @@ class EducationFirstTests(unittest.TestCase):
                     def fake_render(_manifest, _timeline, run_dir, mode, **_kwargs):
                         video = run_dir / ("preview.mp4" if mode == "preview" else "silent_final.mp4")
                         video.write_bytes(b"mock-video")
+                        renderer = _kwargs["renderer"]
+                        contract = _kwargs["renderer_contract"]
+                        (run_dir / "renderer_provenance.json").write_text(json.dumps({
+                            "topic": renderer.topic,
+                            "renderer_registry_id": renderer.topic,
+                            "asset_id": contract["asset_id"],
+                            "renderers": ["manim"],
+                            "media_validation": "PENDING",
+                        }), encoding="utf-8")
                         return video, {"blender_render_sec": 0, "manim_render_sec": 0}
 
                     def fake_mux(_video, _narration, output):
@@ -191,11 +200,17 @@ class EducationFirstTests(unittest.TestCase):
                              "format": {"duration": "1.0"}}
                     if with_tts:
                         probe["streams"].append({"codec_type": "audio", "codec_name": "aac"})
+
+                    def fake_probe(command, **kwargs):
+                        if "-select_streams" in command:
+                            return json.dumps({"streams": [{"nb_read_frames": "120", "r_frame_rate": "30/1"}]})
+                        return json.dumps(probe)
+
                     with patch.object(sys, "argv", args), \
                          patch("scripts.produce_lesson.subprocess.run", side_effect=fake_run) as run, \
                          patch("scripts.produce_lesson.render", side_effect=fake_render), \
                          patch("scripts.produce_lesson.mux_narration", side_effect=fake_mux), \
-                         patch("scripts.produce_lesson.subprocess.check_output", return_value=json.dumps(probe)), \
+                         patch("scripts.produce_lesson.subprocess.check_output", side_effect=fake_probe), \
                          redirect_stdout(StringIO()):
                         self.assertEqual(main(), 0)
 

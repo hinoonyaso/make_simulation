@@ -22,6 +22,7 @@ class LessonSpec:
     visualization: str
     computation_policy: str
     output_profile: str
+    asset_id: str | None = None
     solver: str | None = None
     trace: str | None = None
 
@@ -36,7 +37,7 @@ class LessonSpec:
                    modes=tuple(raw.get("modes", ["concept_visualization"])),
                    visualization=raw.get("visualization", "auto"),
                    computation_policy=raw.get("computation_policy", "only_when_needed"),
-                   output_profile=raw.get("output_profile", "youtube_education"),
+                   output_profile=raw.get("output_profile", "youtube_education"), asset_id=raw.get("asset_id"),
                    solver=raw.get("solver"), trace=raw.get("trace"))
 
     @classmethod
@@ -68,4 +69,6 @@ def validate_lesson_spec(raw: Any) -> list[str]:
         errors.append("computation_policy must be only_when_needed, always or never")
     if raw.get("evidence_type", "conceptual_illustration") not in EVIDENCE_TYPES:
         errors.append("evidence_type must be a supported evidence type")
+    if raw.get("asset_id") is not None and (not isinstance(raw["asset_id"], str) or not raw["asset_id"].strip()):
+        errors.append("asset_id must be a non-empty string when provided")
     return errors

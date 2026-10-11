@@ -1,18 +1,20 @@
 """Build V9-compatible manifest and V12 timeline without a solver dependency."""
 from __future__ import annotations
 
+from copy import deepcopy
 from typing import Any
 
-from core.education.blueprint_registry import get_blueprint
 from core.education.evidence_router import route_evidence
 from core.education.lesson_validator import validate_manifest
+from core.education.renderer_registry import resolve_lesson_contract
 from core.mechanism.timeline import build_timeline
 
 
 def plan_lesson(spec: dict[str, Any], *, fps: int = 30) -> dict[str, Any]:
-    beats = spec.get("beats")
-    if not isinstance(beats, list):
+    source_beats = spec.get("beats")
+    if not isinstance(source_beats, list):
         raise ValueError("lesson spec must contain beats; V9 manifest remains the single beat source")
+    beats = deepcopy(source_beats)
     target = spec.get("duration_target_sec")
     actual = sum(float(beat.get("sec", 0)) for beat in beats if isinstance(beat, dict))
     if target and abs(actual - target) / target > .20:
@@ -23,10 +25,7 @@ def plan_lesson(spec: dict[str, Any], *, fps: int = 30) -> dict[str, Any]:
     errors = validate_manifest(manifest)
     if errors:
         raise ValueError("invalid V9 visual manifest: " + "; ".join(errors))
-    for beat in beats:
-        blueprint = beat.get("blueprint")
-        if blueprint:
-            get_blueprint(blueprint)
+    renderer_contract = resolve_lesson_contract(spec)
     evidence = route_evidence(spec, beats)
     if evidence["status"] == "BLOCKED":
         raise ValueError(f"engineering solver route is blocked: {evidence.get('reason')}")
@@ -42,5 +41,8 @@ def plan_lesson(spec: dict[str, Any], *, fps: int = 30) -> dict[str, Any]:
     return {"visual_manifest": manifest, "timeline": timeline,
             "visual_plan": {"kind": "education", "topic": spec["topic"], "title": manifest["title"],
                             "blueprints": [beat.get("blueprint") for beat in beats],
-                            "beat_evidence": evidence.get("beat_evidence", [])},
+                            "beat_evidence": evidence.get("beat_evidence", []),
+                            "renderer_registry_id": renderer_contract["registry_id"],
+                            "asset_id": renderer_contract["asset_id"]},
+            "renderer_contract": renderer_contract,
             "evidence": evidence}
