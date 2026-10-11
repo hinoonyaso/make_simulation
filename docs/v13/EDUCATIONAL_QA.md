@@ -74,3 +74,9 @@ The script uses these as technical review sources, but the video is still an ill
 - Reduced the three area lights from 520/300/420 to 320/180/240 W, increased their size, and changed the race/ball materials to lower-metallic, higher-roughness satin finishes.
 - R4 preview: `pilots/v13_education/output/lessons/bearing-v13.5-silent-minimal-r4/preview.mp4`. The local still at 31 seconds shows the unboxed labels outside the bearing silhouette and softer highlights. Full R4 render and delivery decode passed: 84 seconds, 2,520 frames, 960×540, 30 fps, H.264, 20 caption cues, silent.
 - Still-based review only; normal-speed viewing and learner comprehension remain unreviewed.
+
+### R5 readable minimal labels
+
+- Increased the title from 0.15 to 0.19 scene units, the part rows from 0.105 to 0.14, and the emission strength to 1.5 with pure white text. Kept the text unboxed and outside the bearing silhouette.
+- R5 preview: `pilots/v13_education/output/lessons/bearing-v13.5-silent-readable-r5/preview.mp4`; 84 seconds, 2,520 frames, 960×540, 30 fps, H.264, silent. Full decode and 20-cue caption timing validation passed.
+- The 31-second rendered frame confirms larger, high-contrast text with no panel or model overlap. This remains a sampled-frame check, not full-motion or comprehension review.

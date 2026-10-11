@@ -45,7 +45,7 @@ def material(name, color, metallic, roughness):
     return mat
 
 
-def emissive_material(name, color):
+def emissive_material(name, color, strength=1.0):
     mat = bpy.data.materials.new(name)
     mat.diffuse_color = (*color, 1)
     mat.use_nodes = True
@@ -53,6 +53,7 @@ def emissive_material(name, color):
     nodes.clear()
     emission = nodes.new("ShaderNodeEmission")
     emission.inputs["Color"].default_value = (*color, 1)
+    emission.inputs["Strength"].default_value = strength
     output = nodes.new("ShaderNodeOutputMaterial")
     mat.node_tree.links.new(emission.outputs["Emission"], output.inputs["Surface"])
     return mat
@@ -154,7 +155,7 @@ def make_scene(manifest, timeline, output, width, height, fps, samples=16, still
     ground_mat = material("Stage", (.025, .04, .065), .16, .55)
     accent = material("Load path highlight", (1.0, .22, .12), .25, .33)
     white = material("Labels", (.83, .91, 1), .1, .5)
-    label_ink = emissive_material("Minimal overlay text", (.92, .96, 1.0))
+    label_ink = emissive_material("Minimal overlay text", (1.0, 1.0, 1.0), 1.5)
 
     from core.visual_primitives.blender.exploded_assembly import create_ring, create_roller_set
 
@@ -332,23 +333,23 @@ def make_scene(manifest, timeline, output, width, height, fps, samples=16, still
     korean_font = Path("C:/Windows/Fonts/malgun.ttf")
     if korean_font.is_file():
         font = bpy.data.fonts.load(str(korean_font))
-    title = text_overlay(camera, "깊은 홈 볼 베어링", "bearing_label_title",
-                         (2.18, 1.73, -1.95), label_ink, .15)
+    title = text_overlay(camera, "부품과 역할", "bearing_label_title",
+                         (2.18, 1.78, -1.95), label_ink, .19)
     if font is not None:
         title.data.font = font
     part_rows = [
         "내륜  ·  축과 함께 회전",
         "외륜  ·  하우징에 고정",
-        "볼     ·  궤도 사이에서 구름",
-        "케이지 ·  볼 간격 유지",
+        "볼  ·  궤도에서 구름",
+        "케이지  ·  볼 간격 유지",
     ]
     for index, body in enumerate(part_rows):
         label = text_overlay(camera, body, f"bearing_label_{index}",
-                             (2.18, 1.40-index*.30, -1.95), label_ink, .105)
+                             (2.18, 1.40-index*.37, -1.95), label_ink, .14)
         if font is not None:
             label.data.font = font
     caveat = text_overlay(camera, "교육용 개념 모델", "bearing_label_caveat",
-                          (2.18, .12, -1.95), label_ink, .095)
+                          (2.18, -.15, -1.95), label_ink, .11)
     if font is not None:
         caveat.data.font = font
 
