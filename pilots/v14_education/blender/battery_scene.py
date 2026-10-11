@@ -87,7 +87,9 @@ def setup_scene(scene, camera_target: Vector, width: int, height: int, fps: int,
     scene.render.resolution_percentage = 100
     scene.render.fps = fps
     scene.render.image_settings.color_mode = "RGB"
-    scene.render.image_settings.file_format = "FFMPEG"
+    # Blender 5.2 removed FFMPEG from ImageSettings.file_format. Video output
+    # is selected through media_type while codec options live on render.ffmpeg.
+    scene.render.image_settings.media_type = "VIDEO"
     scene.render.ffmpeg.format = "MPEG4"
     scene.render.ffmpeg.codec = "H264"
     scene.render.ffmpeg.constant_rate_factor = "HIGH"
