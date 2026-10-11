@@ -6,10 +6,10 @@
 | Blender result report reconciles rendered image counts and timeline | PASS | `test_blender_report_must_match_plan_and_total_rendered_images` |
 | Gap rejection, unsupported renderer/still capability, frame mapping | PASS | `test_gap_overlap_still_capability_and_unsupported_renderer_are_rejected` |
 | FFmpeg sparse composition fixture and exact final count | PASS | 6-frame synthetic fixture decodes and probes as 6 frames |
-| Plan-only battery lesson, default strategy | PASS | `produce_lesson.py --plan-only` reports `render_strategy: sparse` and validates the existing asset |
+| Sparse plan-only contract | PASS | `--plan-only` builds and validates the same sparse segments as rendering; valid plan writes `render_segments.json`; invalid `render_mode` exits before creating the run directory |
 | Python compile and `git diff --check` | PASS | Local V14.3 worktree |
-| Full repository regression suite | PASS | `uv run --locked python -m unittest discover -s tests -v`; 216 tests |
-| Python compile | PASS | `uv run --locked python -m compileall -q core scripts tests assets/education` |
+| Full repository regression suite | PASS | `uv run --locked python -m unittest discover -s tests -v`; 219 tests after V14.3 P2 regression coverage |
+| Python compile | PASS | `uv run --locked python -m compileall -q core scripts tests` |
 | Asset registry and education asset checks | PASS | 39 registry entries; 6 generated assets checked |
 | Real PyBaMM Solver output and result validation | PASS | Run `v143-local-validation`, 361 samples, 1800 s |
 | Actual PyBaMM early-cutoff event | PASS | Run `v143-final-early-cutoff`; voltage event at 3606.549306 s of 7200 s, 62 samples; result validation PASS |
@@ -35,4 +35,10 @@ The earlier sampled-frame review caught clipped heading text; the heading y-posi
 
 The first real sparse composition failed because the Manim input reported an undefined sample aspect ratio while the Blender/PNG inputs used 1:1. Composition now normalizes each segment with FFmpeg `setsar=1`; the sparse fixture test uses a 2:1 Manim input and asserts the final output is 1:1. The focused sparse test suite passes.
 
-The 24-second silent preview is rendered and delivery-validated. Keep the PR Draft pending full normal-speed motion review; narration is not part of this silent preview.
+The 24-second silent preview is rendered and delivery-validated. User full-length normal-speed motion review passed; the PR is Ready for Review and merge remains subject to explicit user approval. Narration is not part of this silent preview.
+
+## Sparse plan-only review fix
+
+PR #8 P2 review requested sparse segment validation before `PLAN_VALIDATED`. `build_validated_sparse_plan()` is now shared by plan-only preflight and actual rendering. Invalid sparse input such as `render_mode: "typo"` fails before output directory creation; valid sparse plan-only runs emit `render_segments.json` and identify it in `production_report.json`. After TTS changes the manifest/timeline, the same helper validates the final timeline again. `legacy_full` keeps its previous report shape and does not create a sparse segments file.
+
+Regression coverage includes CLI end-to-end valid/invalid plan-only cases and the existing still capability, renderer allow-list, timeline gap/overlap, and source-frame mapping checks. Full suite: 219 tests PASS. No Blender, Manim, Solver, or TTS process is invoked by plan-only.

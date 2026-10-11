@@ -318,6 +318,20 @@ def validate_blender_asset_load_report(report: dict, renderer_contract: dict) ->
         raise RuntimeError("Blender asset load report does not prove the registered asset was loaded and validated")
 
 
+def build_validated_sparse_plan(manifest: dict, timeline: dict, renderer: EducationRenderer) -> dict:
+    """Build the render segment contract and apply its shared validation."""
+    try:
+        plan = build_sparse_render_plan(
+            manifest, timeline, supported_renderers=renderer.supported_modes,
+            supports_stills=renderer.supports_sparse_stills)
+    except ValueError as exc:
+        raise RendererResolutionError(f"BLOCKED: invalid sparse render plan: {exc}") from exc
+    errors = validate_sparse_render_plan(plan, timeline)
+    if errors:
+        raise RendererResolutionError("BLOCKED: invalid sparse render plan: " + "; ".join(errors))
+    return plan
+
+
 def render(manifest_path: Path, timeline_path: Path, run_dir: Path, mode: str, manim_only: bool = False,
            *, renderer: EducationRenderer | None = None, renderer_contract: dict | None = None,
            runtime_versions: dict | None = None, render_strategy: str = "legacy_full"):
@@ -330,12 +344,7 @@ def render(manifest_path: Path, timeline_path: Path, run_dir: Path, mode: str, m
     if render_strategy == "sparse" and not manim_only:
         timeline = json.loads(timeline_path.read_text(encoding="utf-8"))
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-        sparse_plan = build_sparse_render_plan(
-            manifest, timeline, supported_renderers=renderer.supported_modes,
-            supports_stills=renderer.supports_sparse_stills)
-        plan_errors = validate_sparse_render_plan(sparse_plan, timeline)
-        if plan_errors:
-            raise RendererResolutionError("BLOCKED: invalid sparse render plan: " + "; ".join(plan_errors))
+        sparse_plan = build_validated_sparse_plan(manifest, timeline, renderer)
         (run_dir / "render_segments.json").write_text(
             json.dumps(sparse_plan, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     blender_sec = 0.0
@@ -605,6 +614,13 @@ def main() -> int:
     if render_strategy not in renderer.render_strategies:
         parser.error(f"renderer {renderer.topic!r} does not support render strategy {render_strategy!r}; "
                      f"supported: {', '.join(renderer.render_strategies)}")
+    sparse_plan = None
+    if render_strategy == "sparse":
+        try:
+            sparse_plan = build_validated_sparse_plan(
+                planned["visual_manifest"], planned["timeline"], renderer)
+        except RendererResolutionError as exc:
+            parser.error(str(exc))
     solver_files = None
     if not args.plan_only and planned["evidence"].get("execution_required"):
         if args.solver_result is None:
@@ -689,6 +705,8 @@ def main() -> int:
               "evidence_status": planned["evidence"], "manifest": str(manifest_path),
               "timeline": str(timeline_path), "audio_status": "NOT_REQUESTED",
               "output_dir": str(run_dir)}
+    if sparse_plan is not None:
+        report["render_segments"] = "render_segments.json"
     if args.with_tts:
         try:
             subprocess.run([sys.executable, str(ROOT / "core/narration/prepare_audio.py"), "tts", str(manifest_path)],
@@ -707,6 +725,11 @@ def main() -> int:
             planned["visual_manifest"].update({key: value for key, value in synced_manifest.items()
                                                if key not in {"beats", "format", "language"}})
             timeline_path.write_text(json.dumps(planned["timeline"], ensure_ascii=False, indent=2)+"\n", encoding="utf-8")
+            if render_strategy == "sparse":
+                sparse_plan = build_validated_sparse_plan(
+                    planned["visual_manifest"], planned["timeline"], renderer)
+                (run_dir / "render_segments.json").write_text(
+                    json.dumps(sparse_plan, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
             subprocess.run([sys.executable, str(ROOT / "core/narration/prepare_audio.py"), "captions", str(manifest_path)],
                            cwd=ROOT, check=True)
             audio_output = run_dir / "output"
@@ -719,6 +742,9 @@ def main() -> int:
             raise
     else:
         write_captions(planned["visual_manifest"], run_dir, planned["timeline"])
+    if args.plan_only and sparse_plan is not None:
+        (run_dir / "render_segments.json").write_text(
+            json.dumps(sparse_plan, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     if args.blender_still_frame is not None:
         if renderer.topic != "li_ion_battery" or solver_files is None:
             parser.error("--blender-still-frame currently requires a validated PyBaMM battery lesson")

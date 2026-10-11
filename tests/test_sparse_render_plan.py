@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 import shutil
 import subprocess
+import sys
 import tempfile
 import unittest
 
@@ -20,6 +21,55 @@ class SparseRenderPlanTests(unittest.TestCase):
         spec["beats"][0]["render_mode"] = "still"
         planned = plan_lesson(spec)
         self.manifest, self.timeline = planned["visual_manifest"], planned["timeline"]
+
+    def run_plan_only(self, root: Path, spec: dict, *, strategy: str | None = None):
+        spec_path = root / "lesson.json"
+        output_root = root / "output"
+        spec_path.write_text(json.dumps(spec), encoding="utf-8")
+        command = [sys.executable, str(ROOT / "scripts/produce_lesson.py"),
+                   "--spec", str(spec_path), "--plan-only", "--output-root", str(output_root),
+                   "--run-id", "plan-only-e2e"]
+        if strategy:
+            command.extend(["--render-strategy", strategy])
+        result = subprocess.run(command, cwd=ROOT, capture_output=True, text=True)
+        return result, output_root / "plan-only-e2e"
+
+    def test_plan_only_sparse_cli_writes_the_validated_render_segments(self):
+        spec = json.loads((ROOT / "examples/education/battery_spm_smoke.json").read_text())
+        spec["beats"][0]["render_mode"] = "still"
+        with tempfile.TemporaryDirectory() as directory:
+            result, run_dir = self.run_plan_only(Path(directory), spec)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            report = json.loads((run_dir / "production_report.json").read_text())
+            segments = json.loads((run_dir / "render_segments.json").read_text())
+            self.assertEqual(report["status"], "PLAN_VALIDATED")
+            self.assertEqual(report["render_strategy"], "sparse")
+            self.assertEqual(report["render_segments"], "render_segments.json")
+            self.assertEqual(segments["total_frames"], 720)
+            self.assertEqual(segments["segments"][0]["source_frame"], 1)
+            self.assertEqual(segments["segments"][2]["source_frame_start"], 361)
+            self.assertEqual(segments["segments"][2]["source_frame_end"], 540)
+
+    def test_plan_only_sparse_cli_rejects_invalid_render_mode_without_success_artifacts(self):
+        spec = json.loads((ROOT / "examples/education/battery_spm_smoke.json").read_text())
+        spec["beats"][0]["render_mode"] = "typo"
+        with tempfile.TemporaryDirectory() as directory:
+            result, run_dir = self.run_plan_only(Path(directory), spec)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("invalid sparse render plan", result.stderr)
+            self.assertIn("unsupported sparse render_mode 'typo'", result.stderr)
+            self.assertFalse(run_dir.exists())
+
+    def test_plan_only_legacy_full_keeps_existing_output_contract(self):
+        spec = json.loads((ROOT / "examples/education/battery_spm_smoke.json").read_text())
+        with tempfile.TemporaryDirectory() as directory:
+            result, run_dir = self.run_plan_only(Path(directory), spec, strategy="legacy_full")
+            self.assertEqual(result.returncode, 0, result.stderr)
+            report = json.loads((run_dir / "production_report.json").read_text())
+            self.assertEqual(report["status"], "PLAN_VALIDATED")
+            self.assertEqual(report["render_strategy"], "legacy_full")
+            self.assertNotIn("render_segments", report)
+            self.assertFalse((run_dir / "render_segments.json").exists())
 
     def test_battery_sparse_plan_uses_exact_0_based_to_blender_frame_mapping(self):
         plan = build_sparse_render_plan(self.manifest, self.timeline,
