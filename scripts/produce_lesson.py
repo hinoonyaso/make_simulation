@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -513,13 +514,14 @@ def main() -> int:
         subprocess.run(manifest_check, cwd=ROOT, check=True)
         provenance_path = run_dir / "renderer_provenance.json"
         provenance = json.loads(provenance_path.read_text(encoding="utf-8"))
-        provenance.update({"media_validation": "PASS", "video_sha256":
-                           __import__("hashlib").sha256(video.read_bytes()).hexdigest(),
+        video_sha256 = hashlib.sha256(video.read_bytes()).hexdigest()
+        provenance.update({"output": video.name, "media_validation": "PASS", "video_sha256":
+                           video_sha256,
                            "timeline_sha256": rendered_timeline.get("timeline_sha256"),
                            "frame_range": frame_range})
         provenance_path.write_text(json.dumps(provenance, ensure_ascii=False, indent=2)+"\n", encoding="utf-8")
         report.update({"status": "NARRATED_COMPLETE" if args.with_tts else ("SILENT_PREVIEW" if args.preview else "SILENT_RENDER"),
-                       "video": str(video), "video_sha256": __import__("hashlib").sha256(video.read_bytes()).hexdigest(),
+                       "video": str(video), "video_sha256": video_sha256,
                        "renderers": provenance["renderers"], "renderer_versions": runtime_versions,
                        "frame_range_validation": frame_range["status"],
                        "observed_video_frames": frame_range["observed_frames"],

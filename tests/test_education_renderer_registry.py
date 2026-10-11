@@ -173,6 +173,42 @@ class EducationRendererRegistryTests(unittest.TestCase):
         second = json.dumps(plan_lesson(spec), ensure_ascii=False, sort_keys=True)
         self.assertEqual(first, second)
 
+    def test_external_gear_pitch_point_and_no_slip_velocity_match(self):
+        from core.education.gear_kinematics import external_spur_gear_kinematics, vertical_velocity_direction
+        result = external_spur_gear_kinematics(20, 40, .002, 1.0)
+        self.assertEqual(result["pinion_pitch_radius_m"], .02)
+        self.assertEqual(result["gear_pitch_radius_m"], .04)
+        self.assertEqual(result["center_distance_m"], .06)
+        self.assertEqual(result["pinion_center_m"], (0.0, 0.0))
+        self.assertEqual(result["gear_center_m"], (.06, 0.0))
+        self.assertEqual(result["pitch_point_m"], (.02, 0.0))
+        self.assertAlmostEqual(abs(result["pitch_point_m"][0] - result["pinion_center_m"][0]),
+                               result["pinion_pitch_radius_m"])
+        self.assertAlmostEqual(abs(result["gear_center_m"][0] - result["pitch_point_m"][0]),
+                               result["gear_pitch_radius_m"])
+        self.assertLess(result["pinion_angular_velocity_rad_s"] * result["gear_angular_velocity_rad_s"], 0)
+        self.assertAlmostEqual(result["gear_angular_velocity_rad_s"], -.5)
+        self.assertEqual(result["pinion_pitch_velocity_m_s"], (0.0, .02))
+        self.assertEqual(result["gear_pitch_velocity_m_s"], (0.0, .02))
+        self.assertEqual(vertical_velocity_direction(result["pinion_pitch_velocity_m_s"]), 1)
+
+    def test_external_gear_reverse_input_reverses_both_common_tangent_velocities(self):
+        from core.education.gear_kinematics import external_spur_gear_kinematics, vertical_velocity_direction
+        result = external_spur_gear_kinematics(20, 40, .002, -1.0)
+        self.assertAlmostEqual(result["gear_angular_velocity_rad_s"], .5)
+        self.assertLess(result["pinion_angular_velocity_rad_s"] * result["gear_angular_velocity_rad_s"], 0)
+        self.assertEqual(result["pinion_pitch_velocity_m_s"], (0.0, -.02))
+        self.assertEqual(result["gear_pitch_velocity_m_s"], (0.0, -.02))
+        self.assertEqual(vertical_velocity_direction(result["pinion_pitch_velocity_m_s"]), -1)
+
+    def test_external_gear_zero_speed_has_no_tangent_velocity_direction(self):
+        from core.education.gear_kinematics import external_spur_gear_kinematics, vertical_velocity_direction
+        result = external_spur_gear_kinematics(20, 40, .002, 0.0)
+        self.assertEqual(result["gear_angular_velocity_rad_s"], 0.0)
+        self.assertEqual(result["pinion_pitch_velocity_m_s"], (0.0, 0.0))
+        self.assertEqual(result["gear_pitch_velocity_m_s"], (0.0, 0.0))
+        self.assertEqual(vertical_velocity_direction(result["pinion_pitch_velocity_m_s"]), 0)
+
     def test_planning_does_not_mutate_the_source_lesson_spec(self):
         spec = self.load("spur_gears.json")
         before = copy.deepcopy(spec)

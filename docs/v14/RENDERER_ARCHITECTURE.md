@@ -35,6 +35,13 @@ The V9 `visual_manifest.json` remains the only beat/narration/media list. `core/
 - `--manim-only` with any Blender-required beat: fail before creating output.
 - Plan-only: validate deterministic source contracts and assets, but never start a renderer, TTS service, or external command.
 - Renderer and media validation failures propagate. Provenance marks media validation `PASS` only after the CLI delivery gate succeeds.
+- After the final delivery gate, `renderer_provenance.json` stores the actual final media filename and SHA-256 together with the validated timeline hash and observed frame range. With TTS these all refer to `final.mp4`; a failed final delivery gate leaves provenance pending rather than claiming `PASS`.
+
+## Spur-gear ideal pitch-point illustration
+
+`core/education/gear_kinematics.py` derives pitch radii `rᵢ = mZᵢ/2`, the external center distance `r₁+r₂`, and the common pitch point. For angular velocities it applies `v = ω × r` at that common point. This gives `ω₂/ω₁ = -Z₁/Z₂`; both contact-point tangential velocity vectors are equal, including when the input rotates in reverse. A zero input returns zero velocity and no direction arrow.
+
+The Manim scene marks that ideal pitch point, pitch circles, signed angular directions, and equal tangent velocity. This is a kinematic teaching diagram: the polygon teeth are not involute profiles and the scene calculates no actual tooth contact, force, friction, or solver result.
 
 ## Solver boundary
 

@@ -27,6 +27,7 @@ To add a future Blender Scene, register its in-repository path and `blender` mod
 
 - `ball_bearing`: unchanged V13.5 Blender + Manim Scenes.
 - `spur_gears`: short Manim schematic, driven by the tracked 20T:40T asset's validated JSON sidecar. It derives `omega_2 / omega_1 = -Z_1/Z_2 = -0.5` and the 60 mm center distance. This is ideal kinematics, not a solver run.
+- In the `opposite_direction` beat, dashed pitch circles identify the ideal common pitch point `P`; signed angular arrows show opposite rotation, and the tangent arrow shows the equal common velocity `vₜ₁ = vₜ₂`. The direction and speed come from `core/education/gear_kinematics.py`, including reverse and zero-speed handling.
 - The gear `.blend` file is validated and mapped to the topic, but the Manim smoke does not import or animate that mesh. A Blender mesh render/animation is deferred to V14.1 and must not be claimed as completed.
-- The stylized Manim teeth are schematic, not involute geometry. No actual contact, efficiency, stress, deformation, friction, or backlash result is computed.
+- The pitch-point and tangential velocity marks express ideal external-gear rolling kinematics only. The stylized Manim teeth are schematic, not involute geometry; tooth contact location, contact force, friction, slip, efficiency, stress, deformation, and backlash are not solved.
 - Solver adapters are not implemented here. A future Solver must produce validated data; the renderer only presents the shared run/context.
