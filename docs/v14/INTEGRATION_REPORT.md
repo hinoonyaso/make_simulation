@@ -38,4 +38,10 @@ Local verification on the V14 branch:
 - `check_scene_style.py pilots/v14_education/manim/spur_gears_scene.py`: passed.
 - Workflow YAML syntax and `git diff --check`: passed.
 
-The local Manim run emitted its existing optional SoX-not-found warning; the silent render completed and decoded successfully. TTS, 1080p production, and Blender gear mesh rendering are outside this fix. GitHub Actions results for the follow-up commit must be recorded from the actual PR checks before calling the PR ready to merge. The generated MP4 is ignored by Git and exists only in the working environment.
+Hosted PR checks for commit `95dc1342f7d1423f141d9f7e792b9ab76f50a190`:
+
+- [Education Renderer Smoke, run 38112112952](https://github.com/hinoonyaso/make_simulation/actions/runs/38112112952): **success**. Full unittest, asset/plan validation, both Manim renders, media validation and artifact upload completed.
+- [AI Trace Reproducibility, run 38112113006](https://github.com/hinoonyaso/make_simulation/actions/runs/38112113006): **success**.
+- Education smoke artifact `education-renderer-38112112952-1` was uploaded and is available from the workflow run's Artifacts section.
+
+The local Manim run emitted its existing optional SoX-not-found warning; the silent render completed and decoded successfully. TTS, 1080p production, and Blender gear mesh rendering are outside this fix. The generated local MP4 is ignored by Git and is not a public repository link.
