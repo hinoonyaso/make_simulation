@@ -16,4 +16,4 @@ The result JSON records exact Python/PyBaMM/solver backend versions, execution t
 
 `estimated_soc` is computed as initial SOC minus the change in PyBaMM discharge capacity divided by the parameter set's nominal cell capacity. The method is explicitly named `coulomb_counting_from_model_output`; it is not a PyBaMM-measured SOC variable.
 
-CI status is pending until the branch workflow actually runs. The local WSL Blender invocation failed before Blender startup, so this record does not claim Blender asset loading or a mixed render.
+The dedicated [Battery Simulation Actions run 38119694050](https://github.com/hinoonyaso/make_simulation/actions/runs/38119694050) passed, including actual PyBaMM execution, saved-result validation, Manim rendering from that output, trace validation and full media decode. Education renderer, AI trace and Engineering simulation workflows also passed; links are listed in the [integration report](INTEGRATION_REPORT.md). The local WSL Blender invocation failed before Blender startup, so this record does not claim Blender asset loading or a mixed render.

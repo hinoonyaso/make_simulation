@@ -18,7 +18,10 @@
 - Complete unittest discovery: 204 tests PASS.
 - Compileall, asset registry, education-asset metadata validation, plan-only and `git diff --check`: PASS.
 - Battery Blender asset validation and 24-second mixed preview: NOT RUN because Windows executable interop failed with `UtilBindVsockAnyPort:309: socket failed 1`. See [Battery Educational QA](BATTERY_EDUCATIONAL_QA.md).
-- Dedicated GitHub Actions workflow: NOT RUN until this branch is pushed and its PR workflow starts.
+- Dedicated Battery Simulation Actions: PASS — [run 38119694050](https://github.com/hinoonyaso/make_simulation/actions/runs/38119694050) executed PyBaMM, validated the result, rendered Manim from solver output, and decoded the media.
+- Education renderer smoke: PASS — [run 38119694096](https://github.com/hinoonyaso/make_simulation/actions/runs/38119694096).
+- AI trace reproducibility: PASS — [run 38119694060](https://github.com/hinoonyaso/make_simulation/actions/runs/38119694060).
+- Engineering simulation: PASS — [run 38119694053](https://github.com/hinoonyaso/make_simulation/actions/runs/38119694053).
 
 ## Merge and release state
 
