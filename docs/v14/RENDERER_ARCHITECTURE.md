@@ -21,9 +21,9 @@ education-lesson-spec/v1
   → renderer provenance and production report
 ```
 
-`renderer_registry.py` owns topic aliases, scene/class allow-list, supported renderer modes, Blueprint capabilities, Asset IDs, and optional trusted context builders. `blueprint_registry.py` remains renderer-neutral and declares which backends can express each reusable visual concept. A Blueprint's existence is not enough: the selected topic must also declare a scene implementation for that backend.
+`renderer_registry.py` owns topic aliases, scene/class allow-list, supported renderer modes, Blueprint capabilities, Asset IDs, and optional trusted context builders. Blender-specific context and load-report requirements are declared per renderer (`blender_context_required`, `asset_load_report_required`), rather than inferred from topic in the shared CLI. Bearing keeps the legacy `--manifest`/`--timeline` interface; the gear scene opts into shared context and a strict asset-load report. `blueprint_registry.py` remains renderer-neutral and declares which backends can express each reusable visual concept. A Blueprint's existence is not enough: the selected topic must also declare a scene implementation for that backend.
 
-Asset resolution reads `assets/education/catalog.json`, confines paths to the repository, checks the asset and JSON sidecar, and verifies the sidecar's `source_sha256`. The resulting context includes the actual catalog metadata for the renderer. Provenance explicitly distinguishes a validated asset file from a mesh imported at render time.
+Asset resolution reads `assets/education/catalog.json`, confines paths to the repository, checks the asset and JSON sidecar, and verifies the sidecar's `source_sha256`. The resulting context includes the actual catalog metadata for renderers that request it. Provenance marks `asset_loaded_by_renderer` true only when a renderer requiring evidence produced a validated load report; a legacy renderer without that report is not credited with an observed import.
 
 The V9 `visual_manifest.json` remains the only beat/narration/media list. `core/mechanism/timeline.py` remains the frame-range source. Renderer outputs are cut using each beat's matching phase ID and half-open integer-frame range; the composition code does not build a second storyboard.
 
@@ -42,6 +42,8 @@ The V9 `visual_manifest.json` remains the only beat/narration/media list. `core/
 `core/education/gear_kinematics.py` derives pitch radii `rᵢ = mZᵢ/2`, the external center distance `r₁+r₂`, and the common pitch point. For angular velocities it applies `v = ω × r` at that common point. This gives `ω₂/ω₁ = -Z₁/Z₂`; both contact-point tangential velocity vectors are equal, including when the input rotates in reverse. A zero input returns zero velocity and no direction arrow.
 
 The Manim scene marks that ideal pitch point, pitch circles, signed angular directions, and equal tangent velocity. This is a kinematic teaching diagram: the polygon teeth are not involute profiles and the scene calculates no actual tooth contact, force, friction, or solver result.
+
+The ratio-only Manim scene uses ordinary text glyphs for ratio expressions and does not require a system LaTeX installation. `examples/education/gear_ratio_smoke.json` exercises a 5-second, 150-frame formula sequence in local and CI smoke rendering.
 
 ## Solver boundary
 
