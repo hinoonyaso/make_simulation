@@ -18,8 +18,6 @@ on:
       - 'scripts/produce_lesson.py'
       - 'scripts/run_battery_simulation.py'
       - 'scripts/validate_battery_result.py'
-  push:
-    branches: [v14.2-pybamm-battery-simulation]
   workflow_dispatch:
 
 permissions:
@@ -117,6 +115,7 @@ jobs:
             ${{ runner.temp }}/battery-render/
 
   battery-mixed-preview:
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
