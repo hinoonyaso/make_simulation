@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://make-simulation.local/schemas/battery-simulation-config-v1.json",
+  "title": "PyBaMM Battery Simulation Config V1",
+  "type": "object",
+  "required": ["schema", "solver", "model", "parameter_set", "initial_soc", "discharge_c_rate", "requested_duration_s", "sample_interval_s", "solver_options"],
+  "properties": {
+    "schema": {"const": "battery-simulation-config/v1"},
+    "solver": {"const": "pybamm"},
+    "model": {"const": "SPM"},
+    "parameter_set": {"const": "Chen2020"},
+    "initial_soc": {"type": "number", "exclusiveMinimum": 0, "maximum": 1},
+    "discharge_c_rate": {"type": "number", "exclusiveMinimum": 0},
+    "requested_duration_s": {"type": "integer", "minimum": 60, "maximum": 86400},
+    "sample_interval_s": {"type": "integer", "minimum": 1, "maximum": 60},
+    "solver_options": {
+      "type": "object", "required": ["rtol", "atol"], "additionalProperties": false,
+      "properties": {"rtol": {"type": "number", "exclusiveMinimum": 0}, "atol": {"type": "number", "exclusiveMinimum": 0}}
+    }
+  },
+  "additionalProperties": false
+}

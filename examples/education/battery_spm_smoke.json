@@ -1,0 +1,78 @@
+{
+  "schema": "education-lesson-spec/v1",
+  "topic": "li_ion_battery",
+  "asset_id": "edu.mechanical_primitives.v1",
+  "solver": "pybamm",
+  "solver_config": "examples/education/battery_spm_config.json",
+  "title": "리튬이온 전지는 방전 중 어떻게 달라질까?",
+  "question": "실제 SPM 계산에서 전압과 추정 충전 상태는 시간에 따라 어떻게 변할까?",
+  "audience": "beginner",
+  "language": "ko-KR",
+  "duration_target_sec": 24,
+  "learning_objectives": [
+    "PyBaMM SPM이 계산한 단자 전압 변화를 읽는다",
+    "방전 용량으로 계산한 추정 SOC의 의미와 한계를 구분한다"
+  ],
+  "modes": ["computed_engineering_demonstration"],
+  "visualization": "blender+manim",
+  "computation_policy": "always",
+  "output_profile": "technical_preview",
+  "beats": [
+    {
+      "id": "BAT01",
+      "phase_id": "cell_structure",
+      "sec": 6,
+      "text": "먼저 내부 구조는 교육용 18650 형상입니다. 실제 Chen2020 셀 형상과 같다는 뜻은 아닙니다.",
+      "caption": "내부 구조는 교육용 18650 형상입니다. Chen2020 셀의 실제 형상이라는 뜻은 아닙니다.",
+      "visual_caption": "교육용 18650 개념 형상",
+      "object": "교육용 원통형 셀과 단순화한 전극·분리막",
+      "state_change": "외장과 내부 개념 부품의 위치를 분리해 표시",
+      "focus": "재사용된 CC0 교육용 18650 에셋",
+      "tool": "B",
+      "blueprint": "layered_structure",
+      "evidence_type": "conceptual_illustration"
+    },
+    {
+      "id": "BAT02",
+      "phase_id": "voltage_curve",
+      "sec": 6,
+      "text": "그래프는 PyBaMM SPM이 계산한 단자 전압입니다. 점은 방전 시간에 맞춰 실제 계산 샘플을 따라갑니다.",
+      "caption": "그래프는 PyBaMM SPM이 계산한 단자 전압입니다. 점은 방전 시간에 맞춰 계산 샘플을 따라갑니다.",
+      "visual_caption": "PyBaMM SPM · 단자 전압 [V]",
+      "object": "고정 간격 Solver 전압 시계열과 현재 시점",
+      "state_change": "저장된 Solver 시계열을 시간에 따라 재생",
+      "focus": "실제 계산 샘플로 만든 전압 곡선과 이동 표식",
+      "tool": "M",
+      "blueprint": "signal_timing",
+      "evidence_type": "computed_result"
+    },
+    {
+      "id": "BAT03",
+      "phase_id": "discharge_state",
+      "sec": 6,
+      "text": "배터리 옆 막대는 Solver 용량으로 계산한 Coulomb Counting 추정 SOC를 표시합니다. 전극 안의 농도나 열 분포는 아닙니다.",
+      "caption": "막대는 Solver 용량으로 계산한 Coulomb Counting 추정 SOC입니다. 전극 내부 농도나 열 분포가 아닙니다.",
+      "visual_caption": "계산된 추정 SOC · 내부장 아님",
+      "object": "동일 Run의 방전 상태 막대",
+      "state_change": "저장된 estimated_soc 샘플에 맞춰 막대 높이 변경",
+      "focus": "같은 Solver Run ID의 추정 SOC",
+      "tool": "B",
+      "blueprint": "before_after",
+      "evidence_type": "computed_result"
+    },
+    {
+      "id": "BAT04",
+      "phase_id": "model_limits",
+      "sec": 6,
+      "text": "이 결과는 등온 SPM과 Chen2020 매개변수에 따른 계산입니다. 전해질 농도장과 발열, 실제 BMS SOC는 계산하지 않았습니다.",
+      "caption": "이 결과는 등온 SPM과 Chen2020 매개변수의 계산입니다. 전해질 농도장, 발열, 실제 BMS SOC는 계산하지 않았습니다.",
+      "visual_caption": "SPM 결과 · 열·전해질·실측 SOC 미포함",
+      "object": "Solver 실행 조건과 모델 한계",
+      "state_change": "실행된 Solver 설정과 계산 범위를 함께 표시",
+      "focus": "모델 가정과 결과의 경계",
+      "tool": "M",
+      "blueprint": "before_after",
+      "evidence_type": "computed_result"
+    }
+  ]
+}

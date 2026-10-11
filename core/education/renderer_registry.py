@@ -69,6 +69,43 @@ def _spur_gear_context(asset: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _battery_context(asset: dict[str, Any]) -> dict[str, Any]:
+    """Describe the registered cell meshes without implying solved spatial fields."""
+    required = {"Cell_18650_Can", "Cell_Cathode_Can", "Cell_Anode_Cap",
+                "Cathode_Electrode", "Separator", "Anode_Electrode"}
+    objects = set(asset.get("metadata", {}).get("objects", []))
+    if not required <= objects:
+        raise RendererResolutionError("BLOCKED: registered battery asset lacks its six declared cell objects")
+    if "18650" not in str(asset.get("metadata", {}).get("cell", "")):
+        raise RendererResolutionError("BLOCKED: registered battery asset sidecar does not identify a cell concept")
+    return {
+        "calculation_kind": "validated_external_solver_result",
+        "cell_object_names": sorted(required),
+        "cell_geometry": "educational 18650 envelope-inspired geometry; internal layers are simplified",
+        "solver_geometry_link": False,
+        "visual_mapping": "PyBaMM scalar terminal voltage and Coulomb-Counting estimated SOC only",
+        "source_asset_id": asset["id"],
+    }
+
+
+def validate_battery_asset_load_report(report: dict[str, Any], renderer_contract: dict[str, Any]) -> None:
+    """Check that Blender loaded the registered cell and used the same PyBaMM run."""
+    expected = renderer_contract.get("solver_result", {})
+    expected_objects = set(renderer_contract.get("calculated_results", {}).get("cell_object_names", []))
+    observed = set(report.get("battery_objects", []))
+    if (report.get("status") != "PASS"
+            or report.get("validation_contract") != "battery_education_asset"
+            or report.get("asset_id") != renderer_contract.get("asset_id")
+            or report.get("asset_sha256") != renderer_contract.get("asset_validation", {}).get("sha256")
+            or observed != expected_objects
+            or report.get("loaded_objects_present") is not True
+            or report.get("geometry_validation") != "PASS"
+            or report.get("solver_id") != expected.get("solver_id")
+            or report.get("solver_run_id") != expected.get("run_id")
+            or report.get("solver_result_sha256") != expected.get("result_sha256")):
+        raise RendererResolutionError("Blender battery report does not prove the registered cell and validated PyBaMM run")
+
+
 REGISTRY: dict[str, EducationRenderer] = {
     "ball_bearing": EducationRenderer(
         topic="ball_bearing", aliases=("ball_bearing_concept_smoke",),
@@ -90,6 +127,20 @@ REGISTRY: dict[str, EducationRenderer] = {
         blueprint_support=(("manim", ("before_after",)),
                            ("blender", ("before_after",))),
         context_builder=_spur_gear_context,
+        blender_context_required=True,
+        asset_load_report_required=True,
+    ),
+    "li_ion_battery": EducationRenderer(
+        topic="li_ion_battery", aliases=("battery_spm",),
+        blender_script="pilots/v14_education/blender/battery_scene.py",
+        manim_script="pilots/v14_education/manim/battery_scene.py",
+        manim_scene_class="BatteryLessonScene", asset_id="edu.mechanical_primitives.v1",
+        supported_modes=("blender", "manim"),
+        blueprint_support=(
+            ("blender", ("layered_structure", "before_after")),
+            ("manim", ("signal_timing", "before_after")),
+        ),
+        context_builder=_battery_context,
         blender_context_required=True,
         asset_load_report_required=True,
     ),

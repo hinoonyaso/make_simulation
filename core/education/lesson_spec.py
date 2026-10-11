@@ -24,6 +24,7 @@ class LessonSpec:
     output_profile: str
     asset_id: str | None = None
     solver: str | None = None
+    solver_config: str | None = None
     trace: str | None = None
 
     @classmethod
@@ -38,7 +39,7 @@ class LessonSpec:
                    visualization=raw.get("visualization", "auto"),
                    computation_policy=raw.get("computation_policy", "only_when_needed"),
                    output_profile=raw.get("output_profile", "youtube_education"), asset_id=raw.get("asset_id"),
-                   solver=raw.get("solver"), trace=raw.get("trace"))
+                   solver=raw.get("solver"), solver_config=raw.get("solver_config"), trace=raw.get("trace"))
 
     @classmethod
     def load(cls, path: str | Path) -> "LessonSpec":
@@ -71,4 +72,9 @@ def validate_lesson_spec(raw: Any) -> list[str]:
         errors.append("evidence_type must be a supported evidence type")
     if raw.get("asset_id") is not None and (not isinstance(raw["asset_id"], str) or not raw["asset_id"].strip()):
         errors.append("asset_id must be a non-empty string when provided")
+    if raw.get("solver") is not None and (not isinstance(raw["solver"], str) or not raw["solver"].strip()):
+        errors.append("solver must be a non-empty string or null")
+    if raw.get("solver_config") is not None and (
+            not isinstance(raw["solver_config"], str) or not raw["solver_config"].strip()):
+        errors.append("solver_config must be a non-empty repository-relative path when provided")
     return errors
