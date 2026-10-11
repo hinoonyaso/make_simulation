@@ -1,6 +1,6 @@
 # V14.2 PyBaMM Battery Simulation Integration
 
-V14.2 adds an optional, reproducible PyBaMM SPM discharge path to the education lesson pipeline. It keeps solver execution separate from planning and rendering.
+V14.2 adds an optional, reproducible PyBaMM SPM discharge path to the education lesson pipeline. Solver execution is separate from planning and rendering.
 
 ## Reproduce locally
 
@@ -17,21 +17,20 @@ uv run python scripts/produce_lesson.py \
   --run-id battery-spm-preview
 ```
 
-Planning alone uses `--plan-only` and never executes PyBaMM. Computed rendering requires a validated result directory. The dedicated workflow is [V14.2 Battery Simulation](../../.github/workflows/v14.2-battery.yml).
+Planning with `--plan-only` does not execute PyBaMM. Computed rendering requires a validated result directory. The workflow is [V14.2 Battery Simulation](../../.github/workflows/v14.2-battery.yml).
 
-## Current verification snapshot
+## Verified results
 
-- PyBaMM 26.10.0.0, CPU, SPM / Chen2020, 1C, initial SOC 1.0, requested 1800 s.
-- Local solver run: PASS; 361 samples at 5 s, terminal time 1800 s, IDAKLUSolver execution 0.1183 s. Result SHA-256: `e29e858dd80f48c969f8d4b51f6ef004c62241175f598c5b7bd965b65fb44b25`.
-- A real early-cutoff run now exercises the Chen2020 lower-voltage event: 7200 s requested, event at 3606.549305848152 s, 62 saved samples at 60 s plus the exact event endpoint. PyBaMM termination is `event: Minimum voltage [V]`; result validation and file hashes pass. The calculated SOC endpoint is retained as −0.00181925 rather than clamped.
-- Manim actual-solver-data smoke: PASS, 960×540, 30 fps, 180 frames, H.264, full decode. It is a 6-second Manim-only smoke, not the 24-second mixed preview.
-- Unit regression: 207 tests PASS; compileall, 39-entry asset registry, 6 education catalog models/generated asset files and lesson planning PASS.
-- Blender API selection now uses the engine identifiers exposed by the runtime and prefers `BLENDER_EEVEE` (the 5.2 API identifier), with `BLENDER_EEVEE_NEXT` fallback. The battery `produce_lesson.py --blender-still-frame 1` path writes the normal validated solver context, loads the registered Blender asset, and renders a still without requiring Manim. The pinned official Blender 5.2.1 Actions job then attempts the 24-second mixed preview.
-- Local Blender asset load and 24-second mixed render: BLOCKED. Blender 5.2.1 exists under `/mnt/c`, but this WSL session cannot launch either `cmd.exe` or Blender (`UtilBindVsockAnyPort:309: socket failed 1`). No Blender load/render success is claimed. The new CI job is intended to supply an independent Linux Blender runtime; until it completes, P1 remains unverified.
-- TTS, 1080p and a 60–90 second narrated lesson: not in scope.
+- Solver: PyBaMM 26.10.0.0, CPU, isothermal SPM / Chen2020, IDAKLUSolver. Normal discharge: 1C for 1800 s, 361 samples at 5 s, result SHA-256 `e29e858dd80f48c969f8d4b51f6ef004c62241175f598c5b7bd965b65fb44b25`.
+- Early cutoff: 7200 s requested; `Minimum voltage [V]` event at 3606.549305848152 s; 62 saved samples; validated result SHA-256 `f2631a1c28111bf4e19af646a6c82978990f36e9025480ee107235b22d43c66a`.
+- Battery workflow [run 38122266473](https://github.com/hinoonyaso/make_simulation/actions/runs/38122266473): both `battery-simulation-smoke` and `battery-mixed-preview` succeeded. The latter used Blender 5.2.1 LTS, loaded the registered asset and produced a silent 24 s, 960×540, H.264, 30 fps, 720-frame preview. CI video SHA-256: `61dd936667f7d56764519f52dfe4a2b1fbd32d8afc209cd02aa1a8da60972037`.
+- The CI artifact frame review found stale Manim chart objects in the later summary beat. `battery_scene.py` now fades Manim objects during Blender-owned beats and makes a fresh title per Manim beat. The corrected local re-composition uses the successful CI Blender output and a new Manim render; SHA-256 `05823bffa2d7a939731cc75ab152dace82cab107f4cc86910f185b67cb0f1af8`. It passes manifest validation, full decode and 720-frame delivery validation. A CI run on the corrected source is still required before calling that revision remotely verified.
+- Regression: 207 unit tests pass; Python `compileall`, the 39-entry asset registry, six catalog/generated asset checks, and both battery result validators pass.
+- Other workflows passed: [Education Renderer run 38122266490](https://github.com/hinoonyaso/make_simulation/actions/runs/38122266490), [AI Trace run 38122266514](https://github.com/hinoonyaso/make_simulation/actions/runs/38122266514), and [Engineering Simulation run 38122266495](https://github.com/hinoonyaso/make_simulation/actions/runs/38122266495).
+- Blender could not be launched from this WSL session, so local Blender rerendering was unavailable. The CI artifact is the evidence for the actual Blender 5.2.1 scene and asset load. TTS, 1080p and a narrated 60–90 second lesson are out of scope.
 
-The generated 6-second local preview is outside Git at `/tmp/v14.2-preview-final/battery-manim-final/preview.mp4`.
+The Blender time for the successful mixed CI run was 4965.80 s (about 82 min 46 s); Manim took 12.66 s. Workflow elapsed time was about 84 min 39 s. FFmpeg composition time was not separately recorded. Beat-aware sparse Blender rendering is a future optimization, not implemented here.
 
 ## Model boundary
 
-The CC0 18650 asset is an educational concept mesh and is not asserted to match the Chen2020 cell geometry. SPM output is a model calculation, not experimental data. Estimated SOC is Coulomb Counting over model discharge capacity, not a measured SOC or BMS estimate. See [integration](PYBAMM_INTEGRATION.md), [educational QA](BATTERY_EDUCATIONAL_QA.md), and [provenance](SOLVER_PROVENANCE.md).
+The CC0 18650 asset is an educational concept mesh, not Chen2020 cell geometry. SPM output is a model calculation, not experimental data. Displayed SOC is Coulomb Counting over model discharge capacity, not measured SOC or BMS state. See [integration](PYBAMM_INTEGRATION.md), [educational QA](BATTERY_EDUCATIONAL_QA.md), and [provenance](SOLVER_PROVENANCE.md).

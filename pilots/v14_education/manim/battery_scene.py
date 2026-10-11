@@ -52,15 +52,25 @@ class BatteryLessonScene(Scene):
         fps = int(timeline["fps"])
         phases = {row["phase_id"]: row for row in timeline["phases"]}
         apply_theme(self)
-        title = txt(manifest.get("title", "배터리 방전 Solver 결과"), 28, P.fg).to_edge(UP, buff=.28)
 
         for beat in manifest["beats"]:
             phase = phases[beat["phase_id"]]
             frames = phase["presentation_end_frame"] - phase["presentation_start_frame"]
             duration = frames / fps
             if beat.get("tool") == "B":
-                self.wait(duration)
+                # Blender owns this timeline slice in the final composition.
+                # Fade any Manim state here so it cannot leak into a later
+                # Manim slice, while preserving the shared phase duration.
+                fade_time = min(.25, duration) if self.mobjects else 0.0
+                if fade_time:
+                    self.play(*(FadeOut(mob) for mob in list(self.mobjects)), run_time=fade_time)
+                self.wait(duration - fade_time)
                 continue
+
+            # Create a fresh title for each Manim-owned phase. FadeOut mutates
+            # the previous phase's mobjects, so reusing its title can preserve
+            # a zero-opacity state after an intervening Blender phase.
+            title = txt(manifest.get("title", "배터리 방전 Solver 결과"), 28, P.fg).to_edge(UP, buff=.28)
 
             if beat["phase_id"] == "voltage_curve":
                 xmin, xmax = 0.0, float(data["time_s"][-1] / 60)
@@ -137,3 +147,9 @@ class BatteryLessonScene(Scene):
                 self.play(FadeIn(boundary1), FadeIn(boundary2), run_time=duration_per)
             else:
                 raise ValueError(f"unsupported battery Manim phase {beat['phase_id']!r}")
+
+        # Manim's movie writer can leave the terminal presentation frame black
+        # when the last animation ends exactly on the scene boundary. Hold the
+        # final state for one frame; the shared 720-frame timeline still crops
+        # the same 24-second presentation range.
+        self.wait(1 / fps)

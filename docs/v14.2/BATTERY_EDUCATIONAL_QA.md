@@ -4,30 +4,27 @@
 
 | Check | Result |
 |---|---|
-| Actual PyBaMM SPM run | PASS — PyBaMM 26.10.0.0, IDAKLUSolver, 0.1183 s local measured execution |
-| Output | PASS — 361 samples, 0–1800 s, 5 s requested interval |
-| Result validation | PASS — result SHA `e29e858dd80f48c969f8d4b51f6ef004c62241175f598c5b7bd965b65fb44b25` |
-| Actual PyBaMM cutoff event | PASS — request 7200 s; lower-voltage event at 3606.549305848152 s; 62 samples; result SHA `f2631a1c28111bf4e19af646a6c82978990f36e902548c5b7bd965b65fb44b25` |
-| Result metadata regression | PASS — row count, final time, interval, termination/event metadata, units and persisted hashes are checked; event endpoint is not extrapolated or clamped |
-| Blender engine compatibility logic | PASS — unit-tested engine discovery/fallback and minimum sample handling; not an actual Blender runtime test |
-| Manim using actual solver CSV | PASS — 960×540, H.264, 30 fps, 180 frames, 6 s, full decode |
-| V9 manifest trace contract | PASS — `battery_trace.json` revalidates result, config and CSV hashes |
+| Normal PyBaMM SPM run | PASS — PyBaMM 26.10.0.0, CPU IDAKLUSolver, 361 samples, 0–1800 s at 5 s interval |
+| Normal result validation | PASS — SHA-256 `e29e858dd80f48c969f8d4b51f6ef004c62241175f598c5b7bd965b65fb44b25` |
+| Early voltage cutoff | PASS — requested 7200 s; event at 3606.549305848152 s; 62 samples; result SHA-256 `f2631a1c28111bf4e19af646a6c82978990f36e9025480ee107235b22d43c66a` |
+| Result metadata regression | PASS — row count, final time, interval, termination/event metadata, units and persisted hashes are checked; no extrapolation or SOC clamping |
+| Blender 5.2.1 asset load | PASS in [Battery Actions run 38122266473](https://github.com/hinoonyaso/make_simulation/actions/runs/38122266473) — asset `edu.mechanical_primitives.v1`, actual required battery objects and same solver run recorded |
+| Battery still | PASS — artifact `battery_still.png` produced by the same run; inspected for camera framing and object visibility |
+| 6 s Manim solver smoke | PASS — 960×540, H.264, 30 fps, 180 frames, full decode |
+| 24 s mixed CI preview | PASS for source `02a1a57e01e927c6956aafc82eb30b48d2811f5c` — 960×540, H.264, 30 fps, 720 frames, silent, full decode |
+| Corrected Manim scene | PASS locally — removes Manim state during Blender beats and creates a fresh title per Manim beat; the recomposed 24 s candidate passes manifest, delivery and full-decode validation |
 | Unit regression | PASS — 207 tests |
 | Python compileall | PASS |
-| Asset registry / education asset metadata | PASS — 39 registry entries; 6 catalog models/generated files checked |
-| Lesson plan | PASS — 24 s / 720-frame mixed timeline, status `PLANNED` without solver side effects |
-| Blender battery asset load | BLOCKED locally — see environment limitation below; official 5.2.1 runtime CI added but not yet executed |
-| 24 s Blender + Manim composition | NOT RUN locally — CI job added; no mixed preview is complete until that job succeeds |
-| TTS / 1080p | NOT RUN — out of scope |
+| Asset registry/catalog validation | PASS — 39 registry entries; six catalog/generated assets |
+| Scene style and whitespace | PASS — both battery scene files; `git diff --check` |
+| TTS / 1080p | NOT RUN — outside this task's scope |
 
-Manim actual-solver preview path: `/tmp/v14.2-preview-final/battery-manim-final/preview.mp4` (local, untracked). One 2.5-second frame was inspected; chart tick labels do not overlap the Korean voltage-axis label. Full normal-speed audio review does not apply because the preview is silent.
+The original CI preview SHA-256 is `61dd936667f7d56764519f52dfe4a2b1fbd32d8afc209cd02aa1a8da60972037`. Frame review found that chart objects remained underneath the later summary text. The corrected local recomposition SHA-256 is `05823bffa2d7a939731cc75ab152dace82cab107f4cc86910f185b67cb0f1af8`. The corrected source has not yet had a remote CI run; keep PR #7 Draft until that run passes.
 
-## Blender limitation
+## Local Blender environment
 
-Blender 5.2.1 is present at `/mnt/c/Program Files/Blender Foundation/Blender 5.2/blender.exe`. Direct `--version` and `cmd.exe /c ver` both fail in this WSL session with `UtilBindVsockAnyPort:309: socket failed 1`. The Linux Python environment also does not provide `bpy`. Therefore the `.blend` was not opened, the Blender battery scene was not executed, and the mixed 24-second video was not rendered. A successful solver or Manim run is not evidence of Blender success.
-
-This confirms an interop failure before Blender startup in this session; it does not establish that the user's earlier Blender run did not work. The implementation now queries the running Blender's enum identifiers, validates Eevee sample support, and has a `produce_lesson.py --blender-still-frame` path that writes the regular solver-backed context before rendering a PNG. The first CI attempt was stopped by the existing guard against using `--manim-only` on Blender-required beats; the dedicated still-frame path corrected that. Blender 5.2 then exposed two output API details: video mode selects `media_type="VIDEO"` (where `FFMPEG` is the only file format), and PNG must be selected after switching back to `media_type="IMAGE"`. Both now match the runtime's supported enum state; another Actions run must confirm the scene and render.
+This WSL session cannot launch the installed Windows Blender or `cmd.exe` (`UtilBindVsockAnyPort:309: socket failed 1`), and its Linux Python does not provide `bpy`. Therefore no local Blender rerender is claimed. The remote artifact from run 38122266473 is direct evidence of Blender 5.2.1 asset loading, the still and mixed render on the pre-cleanup source. The corrected local composite reused the verified CI Blender segment and rerendered Manim only.
 
 ## Interpretation boundary
 
-The existing 18650 mesh is a CC0 educational concept asset. It is not a geometry-specific model of Chen2020. The displayed bar is estimated SOC calculated by Coulomb Counting from the model discharge-capacity output and nominal capacity; it is not measured state, BMS output, electrode concentration, temperature, electric field or current-density. The run is an engineering model computation, not experimental evidence.
+The 18650 mesh is a CC0 educational concept asset, not Chen2020 geometry. The displayed bar is estimated SOC from Coulomb Counting over model discharge capacity, not measured SOC or BMS output. The lesson does not show electrolyte concentration, temperature, electric fields or current density. This is a validated SPM model computation, not experimental evidence.
