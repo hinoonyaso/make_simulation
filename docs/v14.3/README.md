@@ -6,7 +6,8 @@ V14.3 adds a registry-selected sparse rendering strategy for the PyBaMM battery 
 
 - Implemented on `v14.3-local-sparse-rendering`, based on main merge commit `9c8987d`.
 - Sparse plan and FFmpeg composition fixture tests pass.
-- Real Blender preview is **BLOCKED** in the current WSL session. No Linux `blender` executable is on PATH; the installed Windows Blender 5.2 executable fails to start with `UtilBindVsockAnyPort:309: socket failed 1`. NVIDIA access is blocked by the OS. No full preview or performance claim is made.
+- Actual Blender 5.2.1 sparse preview **PASS**: 24 seconds, 960×540, 30 fps, 720 H.264 frames, silent, full decode PASS. Blender wrote 181 images (one still + 180 animation frames). Sandbox launch hit `UtilBindVsockAnyPort:309: socket failed 1`, while the approved out-of-sandbox local invocation succeeded. GPU access remains blocked/unverified.
+- Output: `/tmp/v14.3-sparse-actual/v143-blender-final/preview.mp4`. A full normal-speed motion review is still pending; reviewed boundary/key frames are recorded in the QA report.
 - GitHub Actions contains no Blender executable installation or Blender render job. PR validation retains solver, early-cutoff, sparse-plan, FFmpeg-fixture, and Manim smoke checks.
 
 See [sparse rendering design](SPARSE_RENDERING.md), [local rendering guide](LOCAL_RENDER_GUIDE.md), [performance report](PERFORMANCE_REPORT.md), and [QA report](QA_REPORT.md).

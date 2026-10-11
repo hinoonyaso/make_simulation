@@ -141,8 +141,9 @@ def add_soc_gauge(scene, camera):
     bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
     fill.data.materials.append(new_emission_material("SOC_Gauge_Fill_Material", (.12, .66, .92, 1), 1))
     fill["base_height_m"] = .074
-    create_text(camera, "18650 EDUCATION MODEL", -0.080, .052, size=.007)
-    create_text(camera, "MODEL SOC", .027, .052, size=.006)
+    # Keep the headings inside the 16:9 camera safe area at 540p and 1080p.
+    create_text(camera, "18650 EDUCATION MODEL", -0.080, .042, size=.007)
+    create_text(camera, "MODEL SOC", .027, .042, size=.006)
     return backing, fill
 
 

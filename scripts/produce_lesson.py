@@ -87,7 +87,9 @@ def compose_sparse_video(plan: dict, timeline: dict, segment_dir: Path,
             source_index = source_by_beat[segment["beat_id"]]
             trim = (f"trim=end_frame={segment['output_frames']}" if segment["mode"] == "still" else
                     f"trim=start_frame=0:end_frame={segment['output_frames']}")
-        filters.append(f"[{source_index}:v]{trim},setpts=PTS-STARTPTS,fps={timeline['fps']}[{label}]")
+        # PNG, Blender and Manim sources can carry undefined or different SARs;
+        # concat requires matching frame geometry including sample aspect ratio.
+        filters.append(f"[{source_index}:v]{trim},setpts=PTS-STARTPTS,fps={timeline['fps']},setsar=1[{label}]")
         labels.append(f"[{label}]")
     filters.append("".join(labels) + f"concat=n={len(labels)}:v=1:a=0[outv]")
     command.extend(["-filter_complex", ";".join(filters), "-map", "[outv]", "-an",

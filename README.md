@@ -272,7 +272,7 @@ V14 PR #5는 Merge Commit [`e6c1250`](https://github.com/hinoonyaso/make_simulat
 
 V14.2 PyBaMM 배터리 통합은 PR #7 Merge Commit [`9c8987d`](https://github.com/hinoonyaso/make_simulation/commit/9c8987dede01dd5cabd2d89edce67d0bdf7ee233)으로 main에 반영됐습니다. 후속 V14.3 local sparse-rendering 작업은 `v14.3-local-sparse-rendering` 브랜치와 Draft PR #8에서 검증 중이며 main에는 아직 포함되지 않았습니다. 구현·검증 상태는 [V14.3 문서](docs/v14.3/README.md)를 확인하세요. V14.3에서 실제 Blender 영상을 검증하기 전까지 sparse 제작 영상은 완료된 것으로 취급하지 않습니다.
 
-V14.3 검증 정책: GitHub Actions는 Solver·단위 테스트·Manim smoke를 수행하며 Blender 실행 파일 설치나 Blender 렌더를 수행하지 않습니다. 전체 sparse 배터리 렌더는 로컬 Ubuntu/WSL 환경에서 [로컬 가이드](docs/v14.3/LOCAL_RENDER_GUIDE.md)에 따라 실행합니다. 현재 WSL의 Windows Blender 프로세스 시작이 실패해 실제 sparse 렌더는 BLOCKED이며 완료된 영상이나 성능 향상으로 보고하지 않습니다.
+V14.3 검증 정책: GitHub Actions는 Solver·단위 테스트·Manim smoke를 수행하며 Blender 실행 파일 설치나 Blender 렌더를 수행하지 않습니다. 전체 sparse 배터리 렌더는 로컬 Ubuntu/WSL 환경에서 [로컬 가이드](docs/v14.3/LOCAL_RENDER_GUIDE.md)에 따라 실행합니다. 현재 검증에서는 sandbox 내 Windows Blender 시작은 WSL interop 오류로 실패했지만, 승인된 sandbox 외 실행으로 Blender 5.2.1을 구동해 실제 sparse preview를 렌더·검증했습니다. 출력 경로와 측정값은 [V14.3 QA 문서](docs/v14.3/QA_REPORT.md)와 [성능 보고서](docs/v14.3/PERFORMANCE_REPORT.md)에 기록했습니다.
 
 교육 workflow는 테스트와 Manim smoke를 실행하며 Python/Manim 패키지는 `uv.lock`의 `sim-render` group으로 설치합니다. 교육 asset 검증, 계획 검증, Manim-only smoke, 960×540·30 fps·H.264 metadata, VTT와 production report, FFmpeg 전체 디코드를 검사하고 로그·미디어·리포트를 Artifact로 보관합니다. Blender 렌더는 Linux CI 필수 항목이 아닙니다. 전체 회귀는 `ai-trace.yml`이 계속 담당합니다. V14.1 full lesson 계획 검증도 추가했으며, 실제 Blender 통합 검증은 [로컬 통합 보고서](docs/v14.1/INTEGRATION_REPORT.md)에 기록했습니다.
 
@@ -283,7 +283,7 @@ V14.3 검증 정책: GitHub Actions는 Solver·단위 테스트·Manim smoke를 
 | Asset registry / education asset validation | PASS | Registry 39 entries, 6 generated models |
 | Education plan | PASS | `education_smoke.json`, concept-only |
 | Manim smoke preview | PASS | [GitHub Actions main V13 run #3](https://github.com/hinoonyaso/make_simulation/actions/runs/38065253393), 960×540, 30 fps, silent, VTT/report present, full decode |
-| Blender render | PASS, V14.1 only | Windows Blender 5.2.1 from a prior elevated runner; V14.3 sparse battery render is BLOCKED in the current WSL session (see V14.3 QA report) |
+| Blender render | PASS, V14.1 and V14.3 preview | V14.1 gear integration and V14.3 24-second battery sparse preview were actually rendered with Blender 5.2.1; GPU access is not verified |
 | V14.1 80초 Gear mixed Preview | PASS, limited preview | 960×540 H.264, 30 fps, 2,400 frames; full decode PASS; full-length normal-speed review pending |
 | Narration/TTS | NOT TESTED | Smoke는 무음이며 외부 TTS를 호출하지 않음 |
 | 최종 1080p 영상 검증 | NOT TESTED | CI preview는 960×540 무음 smoke |

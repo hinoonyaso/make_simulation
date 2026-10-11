@@ -109,7 +109,7 @@ class SparseRenderPlanTests(unittest.TestCase):
                             "-pix_fmt", "yuv420p", str(dynamic)], check=True)
             subprocess.run(["ffmpeg", "-v", "error", "-y", "-f", "lavfi", "-i",
                             "color=c=green:s=64x64:r=30", "-frames:v", "6", "-c:v", "libx264",
-                            "-pix_fmt", "yuv420p", str(manim)], check=True)
+                            "-vf", "setsar=2/1", "-pix_fmt", "yuv420p", str(manim)], check=True)
             plan = {"segments": [
                 {"beat_id": "BAT01", "renderer": "blender", "mode": "still",
                  "timeline_start": 0, "timeline_end": 2, "output_frames": 2},
@@ -122,6 +122,10 @@ class SparseRenderPlanTests(unittest.TestCase):
             result = compose_sparse_video(plan, timeline, segments, manim, root / "final.mp4")
             self.assertEqual(result["status"], "PASS")
             self.assertEqual(result["frames"], 6)
+            probe = subprocess.check_output(["ffprobe", "-v", "error", "-select_streams", "v:0",
+                                             "-show_entries", "stream=sample_aspect_ratio", "-of", "json",
+                                             str(root / "final.mp4")], text=True)
+            self.assertEqual(json.loads(probe)["streams"][0]["sample_aspect_ratio"], "1:1")
 
 
 if __name__ == "__main__":

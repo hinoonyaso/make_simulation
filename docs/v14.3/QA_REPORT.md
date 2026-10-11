@@ -16,7 +16,15 @@
 | Manim-only battery preview | PASS | 960×540, 30 fps, 180 frames / 6 s, H.264, silent, full decode; `/tmp/v14.3-manim/manim-smoke/preview.mp4` |
 | Blender execution in GitHub Actions | PASS | `battery-mixed-preview` job, Blender installation, and Blender render commands removed from the battery workflow; other workflow `run` blocks contain no Blender execution |
 | GitHub Actions on `97ece1f` | PASS | [AI Trace #96](https://github.com/hinoonyaso/make_simulation/actions/runs/38138886385), [Education #40](https://github.com/hinoonyaso/make_simulation/actions/runs/38138886004), [Battery #21](https://github.com/hinoonyaso/make_simulation/actions/runs/38138886067) all succeeded; Battery run has only `battery-simulation-smoke` (no mixed Blender job) |
-| Actual Blender sparse preview, Eevee backend, rendered-frame count, final full decode | BLOCKED | Windows Blender launch fails in WSL with `UtilBindVsockAnyPort`; no Linux Blender executable is available |
+| Actual Blender sparse preview, Eevee backend, rendered-frame count, final full decode | PASS | Blender 5.2.1 LTS / `BLENDER_EEVEE`; one still + 180 source images; final 960×540 H.264, 30 fps, 720 frames / 24 s, full decode PASS; `/tmp/v14.3-sparse-actual/v143-blender-final/preview.mp4` |
 | GPU verification | BLOCKED | `nvidia-smi`: GPU access blocked by operating system |
 
-No 24-second Blender render or final video is claimed as completed. The branch should remain Draft until a real local preview is rendered and validated.
+## Actual frame review
+
+Reviewed Blender source frames 1, 361, 450, and 540 plus final-video boundary samples around 0, 12, 15, 18, and 20–23.5 s. This caught clipped Blender heading text; the heading y-position was moved into the camera safe area and the final preview was re-rendered. The BAT03 visual intentionally isolates the solver-linked SOC gauge. Full-length normal-speed motion review and narration review remain pending; the preview is silent.
+
+## Composition fix found by real render
+
+The first real sparse composition failed because the Manim input reported an undefined sample aspect ratio while the Blender/PNG inputs used 1:1. Composition now normalizes each segment with FFmpeg `setsar=1`; the sparse fixture test uses a 2:1 Manim input and asserts the final output is 1:1. The focused sparse test suite passes.
+
+The 24-second silent preview is rendered and delivery-validated. Keep the PR Draft pending full normal-speed motion review; narration is not part of this silent preview.
