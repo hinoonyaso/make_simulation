@@ -64,6 +64,13 @@ The script uses these as technical review sources, but the video is still an ill
 
 ### R3 component-card revision
 
-- Replaced the cropped, sharp-edged label plane with a compact rounded card, title hierarchy, component-color markers, and aligned names/roles for inner race, outer race, balls and cage. Kept the educational-model caveat in the card.
+- This intermediate revision replaced the cropped label plane with a rounded information card. User review found it still overlapped the bearing and did not match the requested simple style; R4 below supersedes it.
 - Full silent preview regenerated at `pilots/v13_education/output/lessons/bearing-v13.5-silent-card-r3/preview.mp4`: 84 seconds, 960×540, 30 fps, H.264; 2,520 frames and 20 sentence-caption cues. The production delivery validator, manifest media check, Blender/Manim scene-style checks and full decode passed.
-- A rendered frame at 31 seconds confirms the card and text fit in frame and remain separate from the bearing. This is a targeted still review; it does not replace full normal-speed motion or comprehension review.
+- This result was superseded after user review and is not the latest preview.
+
+### R4 minimal labels and softer lighting
+
+- Removed the information card completely. The title and four part/function labels sit in the upper-right negative space without a panel, border or swatches; the camera framing leaves separation from the bearing.
+- Reduced the three area lights from 520/300/420 to 320/180/240 W, increased their size, and changed the race/ball materials to lower-metallic, higher-roughness satin finishes.
+- R4 preview: `pilots/v13_education/output/lessons/bearing-v13.5-silent-minimal-r4/preview.mp4`. The local still at 31 seconds shows the unboxed labels outside the bearing silhouette and softer highlights. Full R4 render and delivery decode passed: 84 seconds, 2,520 frames, 960×540, 30 fps, H.264, 20 caption cues, silent.
+- Still-based review only; normal-speed viewing and learner comprehension remain unreviewed.
