@@ -8,10 +8,13 @@ on:
       - 'pyproject.toml'
       - 'uv.lock'
       - 'core/education/**'
+      - 'core/education/blender_compat.py'
       - 'core/simulation_engines/battery/**'
       - 'core/robotics-ai-visual-director-skill/templates/validate_visual_manifest.py'
       - 'examples/education/battery_*.json'
       - 'pilots/v14_education/manim/battery_scene.py'
+      - 'pilots/v14_education/blender/battery_scene.py'
+      - 'assets/education/generated/shaft_coupling_spring_fastener_battery.blend'
       - 'scripts/produce_lesson.py'
       - 'scripts/run_battery_simulation.py'
       - 'scripts/validate_battery_result.py'
@@ -46,6 +49,26 @@ jobs:
             --config examples/education/battery_spm_config.json \
             --output-dir "$RUNNER_TEMP/battery-solver" --run-id "ci-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
           uv run --locked --no-sync python scripts/validate_battery_result.py "$RUNNER_TEMP/battery-solver"
+      - name: Run real early-cutoff PyBaMM event case
+        run: |
+          uv run --locked --no-sync python scripts/run_battery_simulation.py \
+            --config examples/education/battery_spm_early_termination_config.json \
+            --output-dir "$RUNNER_TEMP/battery-solver-early" --run-id "event-ci-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          uv run --locked --no-sync python scripts/validate_battery_result.py "$RUNNER_TEMP/battery-solver-early"
+          uv run --locked --no-sync python - "$RUNNER_TEMP/battery-solver-early/result.json" <<'PY'
+          import json, sys
+          from pathlib import Path
+          result = json.loads(Path(sys.argv[1]).read_text())
+          if result["termination_reason"] == "final time":
+              raise SystemExit("expected the configured voltage cutoff event to end the run early")
+          if result["actual_end_time_s"] >= result["requested_duration_s"]:
+              raise SystemExit("early-cutoff run reached or exceeded its requested duration")
+          if result["event_time_s"] != result["actual_end_time_s"]:
+              raise SystemExit("saved PyBaMM event time differs from the final sample time")
+          print(f"PASS: {result['termination_reason']} at {result['event_time_s']:.6f} s")
+          PY
+      - name: Run battery contract regression tests
+        run: uv run --locked --no-sync python -m unittest discover -s tests -p test_battery_simulation.py -v
       - name: Validate PyBaMM lesson plan without solver execution
         run: |
           uv run --locked --no-sync python scripts/produce_lesson.py \
@@ -90,4 +113,138 @@ jobs:
           if-no-files-found: error
           path: |
             ${{ runner.temp }}/battery-solver/
+            ${{ runner.temp }}/battery-solver-early/
             ${{ runner.temp }}/battery-render/
+
+  battery-mixed-preview:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7
+        with:
+          version: '0.12.3'
+          enable-cache: true
+      - name: Install Blender system libraries and Manim requirements
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg fonts-nanum pkg-config libcairo2-dev libpango1.0-dev \
+            libxi6 libxrender1 libxkbcommon0 libsm6 libgl1 libegl1
+      - name: Cache official Blender 5.2.1 runtime
+        id: blender-cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/blender-5.2.1-linux-x64
+          key: blender-5.2.1-linux-x64
+      - name: Download official Blender 5.2.1
+        if: steps.blender-cache.outputs.cache-hit != 'true'
+        run: |
+          curl --fail --location --retry 3 \
+            https://download.blender.org/release/Blender5.2/blender-5.2.1-linux-x64.tar.xz \
+            --output "$RUNNER_TEMP/blender-5.2.1-linux-x64.tar.xz"
+          curl --fail --location --retry 3 \
+            https://download.blender.org/release/Blender5.2/blender-5.2.1.sha256 \
+            --output "$RUNNER_TEMP/blender-5.2.1.sha256"
+          expected="$(grep 'blender-5.2.1-linux-x64.tar.xz' "$RUNNER_TEMP/blender-5.2.1.sha256" | grep -Eo '[a-fA-F0-9]{64}' | head -1)"
+          test -n "$expected"
+          printf '%s  %s\n' "$expected" "$RUNNER_TEMP/blender-5.2.1-linux-x64.tar.xz" | sha256sum --check
+          tar -xJf "$RUNNER_TEMP/blender-5.2.1-linux-x64.tar.xz" -C "$RUNNER_TEMP"
+      - name: Install locked PyBaMM and render dependencies
+        run: uv sync --locked --group sim-battery --group sim-render --no-install-project
+      - name: Build validated solver context and test a Blender still frame first
+        env:
+          BLENDER_BIN: ${{ runner.temp }}/blender-5.2.1-linux-x64/blender
+          V11_MANIM_BIN: manim
+        run: |
+          set -euo pipefail
+          uv run --locked --no-sync python scripts/run_battery_simulation.py \
+            --config examples/education/battery_spm_config.json \
+            --output-dir "$RUNNER_TEMP/battery-still-solver" --run-id "still-ci-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          uv run --locked --no-sync python scripts/produce_lesson.py \
+            --spec examples/education/battery_spm_smoke.json \
+            --solver-result "$RUNNER_TEMP/battery-still-solver" --preview --manim-only \
+            --output-root "$RUNNER_TEMP/battery-still" --run-id "battery-still-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          run_dir="$RUNNER_TEMP/battery-still/battery-still-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          "$BLENDER_BIN" --background --factory-startup --python-exit-code 1 \
+            --python pilots/v14_education/blender/battery_scene.py -- \
+            --manifest "$run_dir/visual_manifest.json" --timeline "$run_dir/timeline.json" \
+            --context "$run_dir/renderer_context.json" --output "$run_dir/battery_still.mp4" \
+            --width 960 --height 540 --fps 30 --samples 16 --still-frame 1
+          test -s "$run_dir/battery_still.png"
+          uv run --locked --no-sync python - "$run_dir/asset_load_report.json" "$run_dir/renderer_context.json" <<'PY'
+          import json, sys
+          from pathlib import Path
+          report = json.loads(Path(sys.argv[1]).read_text())
+          context = json.loads(Path(sys.argv[2]).read_text())
+          solver = context["solver_result"]
+          if report.get("blender_version", "").split(".")[0] != "5":
+              raise SystemExit("single-frame render did not use Blender major version 5")
+          if report.get("selected_render_engine") != "BLENDER_EEVEE":
+              raise SystemExit("Blender 5.2 did not select its supported BLENDER_EEVEE engine")
+          if report.get("solver_run_id") != solver["run_id"] or report.get("solver_result_sha256") != solver["result_sha256"]:
+              raise SystemExit("still-frame asset report is detached from the validated solver run")
+          if report.get("still_frame") != 1:
+              raise SystemExit("single-frame renderer did not report the requested frame")
+          print("PASS: Blender 5.2 asset load and solver-backed still frame")
+          PY
+      - name: Render and validate actual PyBaMM Blender plus Manim preview
+        env:
+          BLENDER_BIN: ${{ runner.temp }}/blender-5.2.1-linux-x64/blender
+          V11_MANIM_BIN: manim
+        run: |
+          set -euo pipefail
+          uv run --locked --no-sync python scripts/run_battery_simulation.py \
+            --config examples/education/battery_spm_config.json \
+            --output-dir "$RUNNER_TEMP/battery-mixed-solver" --run-id "mixed-ci-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          uv run --locked --no-sync python scripts/produce_lesson.py \
+            --spec examples/education/battery_spm_smoke.json \
+            --solver-result "$RUNNER_TEMP/battery-mixed-solver" --preview \
+            --output-root "$RUNNER_TEMP/battery-mixed" --run-id "battery-mixed-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          run_dir="$RUNNER_TEMP/battery-mixed/battery-mixed-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          "$BLENDER_BIN" --version | head -1
+          test -s "$run_dir/preview.mp4"
+          test -s "$run_dir/li_ion_battery_blender.mp4"
+          test -s "$run_dir/asset_load_report.json"
+          test -s "$run_dir/subtitles.ko.vtt"
+          test -s "$run_dir/subtitles.ko.srt"
+          uv run --locked --no-sync python core/robotics-ai-visual-director-skill/templates/validate_visual_manifest.py \
+            "$run_dir/visual_manifest.json" --require-media
+          uv run --locked --no-sync python scripts/validate_delivery.py "$run_dir/preview.mp4" \
+            --min-width 960 --min-height 540 --fps 30 --timeline "$run_dir/timeline.json" \
+            --caption-timing "$run_dir/caption_timing.json" --full-decode
+          uv run --locked --no-sync python - "$run_dir" <<'PY'
+          import hashlib, json, sys
+          from pathlib import Path
+          run = Path(sys.argv[1])
+          read = lambda name: json.loads((run / name).read_text())
+          result, context = read("result.json"), read("renderer_context.json")
+          asset, provenance, manifest, timeline = (read("asset_load_report.json"), read("renderer_provenance.json"),
+                                                    read("visual_manifest.json"), read("timeline.json"))
+          if timeline["total_frames"] != 720 or timeline["fps"] != 30:
+              raise SystemExit("mixed lesson timeline is not 720 frames at 30 fps")
+          solver = context["solver_result"]
+          if solver["run_id"] != result["solver_execution"]["run_id"] or solver["result_sha256"] != result["result_sha256"]:
+              raise SystemExit("renderer context does not reference the actual saved PyBaMM run")
+          if asset["solver_run_id"] != solver["run_id"] or asset["solver_result_sha256"] != solver["result_sha256"]:
+              raise SystemExit("Blender asset report does not reference the same PyBaMM result")
+          if provenance["solver_provenance"]["run_id"] != solver["run_id"]:
+              raise SystemExit("final renderer provenance Run ID mismatch")
+          if hashlib.sha256((run / "preview.mp4").read_bytes()).hexdigest() != provenance["video_sha256"]:
+              raise SystemExit("final media SHA-256 differs from renderer provenance")
+          if {beat.get("tool") for beat in manifest["beats"]} != {"B", "M"}:
+              raise SystemExit("mixed lesson manifest did not execute both renderer types")
+          print("PASS: shared PyBaMM provenance, Blender asset load, 720-frame mixed output")
+          PY
+      - name: Upload mixed Blender and Manim evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: battery-mixed-preview-${{ github.run_id }}-${{ github.run_attempt }}
+          if-no-files-found: warn
+          path: |
+            ${{ runner.temp }}/battery-mixed-solver/
+            ${{ runner.temp }}/battery-mixed/
+            ${{ runner.temp }}/battery-still/
+            ${{ runner.temp }}/battery-still-solver/

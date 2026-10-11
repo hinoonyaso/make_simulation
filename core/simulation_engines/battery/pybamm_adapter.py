@@ -51,12 +51,23 @@ def execute_config(config_path: str | Path, output_dir: str | Path, run_id: str 
     solution = simulation.solve(t_eval=t_eval)
     execution_seconds = time.perf_counter() - started
 
-    # IDAKLU may retain adaptive internal solver points. Evaluate the saved
-    # solution at the declared fixed output clock for stable renderer sampling.
-    time_s = t_eval
-    voltage = np.asarray(solution["Voltage [V]"](t_eval), dtype=float).reshape(-1)
-    current = np.asarray(solution["Current [A]"](t_eval), dtype=float).reshape(-1)
-    capacity = np.asarray(solution["Discharge capacity [A.h]"](t_eval), dtype=float).reshape(-1)
+    # Sample only inside the interval PyBaMM actually solved. Preserve the
+    # event endpoint even when it falls between regular output-clock samples.
+    actual_end_time = float(solution.t[-1])
+    if not np.isfinite(actual_end_time) or actual_end_time <= 0:
+        raise RuntimeError("PyBaMM returned an invalid final solution time")
+    time_s = np.arange(0, actual_end_time, interval, dtype=float)
+    if len(time_s) == 0 or not np.isclose(time_s[0], 0.0):
+        time_s = np.insert(time_s, 0, 0.0)
+    if np.isclose(time_s[-1], actual_end_time, rtol=0, atol=1e-8):
+        time_s[-1] = actual_end_time
+    else:
+        time_s = np.append(time_s, actual_end_time)
+    if time_s[-1] > float(solution.t[-1]) + 1e-8:
+        raise RuntimeError("requested output clock extends beyond PyBaMM's solved interval")
+    voltage = np.asarray(solution["Voltage [V]"](time_s), dtype=float).reshape(-1)
+    current = np.asarray(solution["Current [A]"](time_s), dtype=float).reshape(-1)
+    capacity = np.asarray(solution["Discharge capacity [A.h]"](time_s), dtype=float).reshape(-1)
     arrays = (time_s, voltage, current, capacity)
     if any(len(array) != len(time_s) for array in arrays):
         raise RuntimeError("PyBaMM returned inconsistent output array lengths")
@@ -76,6 +87,16 @@ def execute_config(config_path: str | Path, output_dir: str | Path, run_id: str 
         "Current function [A]",
     )
     relevant_parameters = {key: float(parameter_values[key]) for key in parameter_keys}
+    termination_reason = str(solution.termination)
+    event_time_s = None
+    if termination_reason.startswith("event:"):
+        event_times = np.asarray(solution.t_event, dtype=float).reshape(-1)
+        finite_events = event_times[np.isfinite(event_times)]
+        if len(finite_events) == 0:
+            raise RuntimeError("PyBaMM reported event termination without a finite event time")
+        event_time_s = float(finite_events[-1])
+        if not np.isclose(event_time_s, actual_end_time, rtol=0, atol=1e-6):
+            raise RuntimeError("PyBaMM event time does not match the final solved time")
     result = {
         "schema": RESULT_SCHEMA,
         "status": "PENDING_VALIDATION",
@@ -101,10 +122,11 @@ def execute_config(config_path: str | Path, output_dir: str | Path, run_id: str 
         "discharge_c_rate": float(config["discharge_c_rate"]),
         "nominal_capacity_ah": nominal_capacity,
         "requested_duration_s": duration,
-        "actual_end_time_s": float(time_s[-1]),
-        "termination_reason": str(solution.termination),
+        "actual_end_time_s": actual_end_time,
+        "termination_reason": termination_reason,
+        "event_time_s": event_time_s,
         "sample_interval_s": interval,
-        "result_sampling": "PyBaMM Solution evaluation at fixed sample times; no renderer interpolation or extrapolation.",
+        "result_sampling": "PyBaMM Solution evaluated at regular sample times within its solved interval plus the exact final solver time; no extrapolation.",
         "sample_count": len(rows),
         "voltage_cutoff_lower_v": relevant_parameters["Lower voltage cut-off [V]"],
         "voltage_cutoff_upper_v": relevant_parameters["Upper voltage cut-off [V]"],
@@ -131,8 +153,10 @@ def execute_config(config_path: str | Path, output_dir: str | Path, run_id: str 
     result["status"] = "PASS"
     result["validation"] = {
         "status": "PASS",
-        "checks": ["finite monotonic timestamps", "equal output lengths", "finite voltage/current/capacity/SOC",
-                   "discharge sign", "capacity-current integral consistency", "SOC coulomb-counting consistency",
+        "checks": ["finite monotonic timestamps", "CSV row/sample_count agreement", "actual end and event time agreement",
+                   "requested duration and sample interval agreement", "equal output lengths",
+                   "finite voltage/current/capacity/SOC", "discharge sign",
+                   "capacity-current integral consistency", "SOC coulomb-counting consistency",
                    "voltage bounds", "config and result SHA-256"],
     }
     (root / "result.json").write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")

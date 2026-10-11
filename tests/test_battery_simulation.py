@@ -5,8 +5,10 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
+from unittest import mock
 
 from core.education.education_planner import plan_lesson
+from core.education.blender_compat import configure_eevee
 from core.education.renderer_registry import RendererResolutionError, validate_battery_asset_load_report
 from core.simulation_engines.battery.result_validator import load_validated_result
 from core.simulation_engines.battery.trace import TRACE_SCHEMA, validate_trace
@@ -16,6 +18,44 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class BatteryContractTests(unittest.TestCase):
+    def test_result_metadata_matches_rows_and_event_endpoint(self):
+        from core.simulation_engines.battery.result_validator import validate_timeseries
+
+        rows = [
+            {"time_s": 0, "terminal_voltage_v": 4.1, "current_a": 5,
+             "discharge_capacity_ah": 0, "estimated_soc": 1.0},
+            {"time_s": 60, "terminal_voltage_v": 3.9, "current_a": 5,
+             "discharge_capacity_ah": 60 * 5 / 3600, "estimated_soc": 1 - 60 / 3600},
+            {"time_s": 90, "terminal_voltage_v": 3.8, "current_a": 5,
+             "discharge_capacity_ah": 90 * 5 / 3600, "estimated_soc": 1 - 90 / 3600},
+        ]
+        metadata = {"sample_count": 3, "sample_interval_s": 60, "actual_end_time_s": 90,
+                    "requested_duration_s": 7200, "termination_reason": "event: Minimum voltage [V]",
+                    "event_time_s": 90, "voltage_cutoff_lower_v": 2.5, "voltage_cutoff_upper_v": 4.5,
+                    "initial_soc": 1.0, "nominal_capacity_ah": 5.0}
+        self.assertEqual(validate_timeseries(rows, metadata), [])
+        invalid = dict(metadata, sample_count=4)
+        self.assertTrue(any("sample_count" in error for error in validate_timeseries(rows, invalid)))
+        invalid = dict(metadata, event_time_s=100)
+        self.assertTrue(any("event_time_s" in error for error in validate_timeseries(rows, invalid)))
+
+    def test_blender_eevee_compat_selects_engine_exposed_by_runtime(self):
+        from types import SimpleNamespace
+
+        def scene_with(*identifiers):
+            enum_items = [SimpleNamespace(identifier=value) for value in identifiers]
+            render = SimpleNamespace(bl_rna=SimpleNamespace(properties={
+                "engine": SimpleNamespace(enum_items=enum_items)}), engine="")
+            return SimpleNamespace(render=render, eevee=SimpleNamespace(taa_render_samples=0))
+
+        blender_52 = scene_with("BLENDER_EEVEE", "BLENDER_WORKBENCH")
+        self.assertEqual(configure_eevee(blender_52, 4), "BLENDER_EEVEE")
+        self.assertEqual(blender_52.eevee.taa_render_samples, 8)
+        prior_build = scene_with("BLENDER_EEVEE_NEXT")
+        self.assertEqual(configure_eevee(prior_build, 16), "BLENDER_EEVEE_NEXT")
+        with self.assertRaisesRegex(RuntimeError, "Eevee renderer unavailable"):
+            configure_eevee(scene_with("BLENDER_WORKBENCH"), 16)
+
     def test_config_and_plan_are_valid_without_executing_solver(self):
         config = json.loads((ROOT / "examples/education/battery_spm_config.json").read_text())
         self.assertEqual(validate_config(config), [])
@@ -44,8 +84,8 @@ class BatteryContractTests(unittest.TestCase):
                      "config_file": "simulation_config.json", "timeseries_file": "battery_timeseries.csv"}
             path = root / "battery_trace.json"
             path.write_text(json.dumps(trace))
-            with unittest.mock.patch("core.simulation_engines.battery.trace.load_validated_result",
-                                     side_effect=ValueError("hash mismatch")):
+            with mock.patch("core.simulation_engines.battery.trace.load_validated_result",
+                            side_effect=ValueError("hash mismatch")):
                 errors = validate_trace(path)
             self.assertTrue(any("hash mismatch" in error for error in errors))
 

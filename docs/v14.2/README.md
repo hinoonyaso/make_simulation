@@ -23,12 +23,14 @@ Planning alone uses `--plan-only` and never executes PyBaMM. Computed rendering 
 
 - PyBaMM 26.10.0.0, CPU, SPM / Chen2020, 1C, initial SOC 1.0, requested 1800 s.
 - Local solver run: PASS; 361 samples at 5 s, terminal time 1800 s, IDAKLUSolver execution 0.1183 s. Result SHA-256: `e29e858dd80f48c969f8d4b51f6ef004c62241175f598c5b7bd965b65fb44b25`.
+- A real early-cutoff run now exercises the Chen2020 lower-voltage event: 7200 s requested, event at 3606.549305848152 s, 62 saved samples at 60 s plus the exact event endpoint. PyBaMM termination is `event: Minimum voltage [V]`; result validation and file hashes pass. The calculated SOC endpoint is retained as −0.00181925 rather than clamped.
 - Manim actual-solver-data smoke: PASS, 960×540, 30 fps, 180 frames, H.264, full decode. It is a 6-second Manim-only smoke, not the 24-second mixed preview.
-- Unit regression: 204 tests PASS; compileall, asset registries and lesson planning PASS.
-- Blender asset load and 24-second mixed render: NOT RUN. Blender 5.2.1 exists under `/mnt/c`, but this WSL session cannot launch Windows executables (`UtilBindVsockAnyPort:309: socket failed 1`). No Blender load/render success is claimed.
+- Unit regression: 206 tests PASS; compileall, 39-entry asset registry, 6 education catalog models/generated asset files and lesson planning PASS.
+- Blender API selection now uses the engine identifiers exposed by the runtime and prefers `BLENDER_EEVEE` (the 5.2 API identifier), with `BLENDER_EEVEE_NEXT` fallback. A battery `--still-frame` path and a pinned official Blender 5.2.1 mixed-preview GitHub Actions job were added; both await execution after push.
+- Local Blender asset load and 24-second mixed render: BLOCKED. Blender 5.2.1 exists under `/mnt/c`, but this WSL session cannot launch either `cmd.exe` or Blender (`UtilBindVsockAnyPort:309: socket failed 1`). No Blender load/render success is claimed. The new CI job is intended to supply an independent Linux Blender runtime; until it completes, P1 remains unverified.
 - TTS, 1080p and a 60–90 second narrated lesson: not in scope.
 
-The generated 6-second local preview is outside Git at `/tmp/v14.2-preview/battery-manim-verified/preview.mp4`.
+The generated 6-second local preview is outside Git at `/tmp/v14.2-preview-final/battery-manim-final/preview.mp4`.
 
 ## Model boundary
 

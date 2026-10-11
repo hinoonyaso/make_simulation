@@ -19,6 +19,7 @@ BLENDER_KIT = ROOT / "core/blender-robotics-simulation-skill/templates"
 if str(BLENDER_KIT) not in sys.path:
     sys.path.insert(0, str(BLENDER_KIT))
 from studio_utils import set_interpolation
+from core.education.blender_compat import configure_eevee
 from core.education.renderer_registry import resolve_asset
 
 ASSET_ID = "edu.mechanical_primitives.v1"
@@ -36,6 +37,7 @@ def args_from_blender() -> argparse.Namespace:
     parser.add_argument("--height", type=int, default=540)
     parser.add_argument("--fps", type=int, default=30)
     parser.add_argument("--samples", type=int, default=16)
+    parser.add_argument("--still-frame", type=int, default=None)
     argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
     return parser.parse_args(argv)
 
@@ -79,7 +81,7 @@ def new_emission_material(name: str, color: tuple[float, float, float, float], s
 
 
 def setup_scene(scene, camera_target: Vector, width: int, height: int, fps: int, samples: int):
-    scene.render.engine = "BLENDER_EEVEE_NEXT"
+    configure_eevee(scene, samples)
     scene.render.resolution_x = width
     scene.render.resolution_y = height
     scene.render.resolution_percentage = 100
@@ -95,7 +97,6 @@ def setup_scene(scene, camera_target: Vector, width: int, height: int, fps: int,
     scene.view_settings.view_transform = "AgX"
     scene.view_settings.look = "AgX - Medium High Contrast"
     scene.render.image_settings.file_format = "FFMPEG"
-    scene.eevee.taa_render_samples = max(8, samples)
     scene.world.color = (.018, .027, .043)
     scene.frame_start = 1
     bpy.ops.object.camera_add(location=camera_target + Vector((.15, -.42, .19)))
@@ -225,14 +226,33 @@ def render_lesson(args: argparse.Namespace):
         "solver_result_sha256": context["solver_result"]["result_sha256"],
         "visual_mapping": "estimated_soc only; no electrode concentration, temperature, electric field, or current-density field",
         "fixed_center_validation": {"status": "NOT_APPLICABLE"},
+        "blender_version": bpy.app.version_string,
+        "selected_render_engine": scene.render.engine,
+        "solver_actual_end_time_s": float(result["actual_end_time_s"]),
     }
-    (args.output.parent / "asset_load_report.json").write_text(
-        json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    report_path = args.output.parent / "asset_load_report.json"
     scene.frame_set(1)
+    if args.still_frame is not None:
+        if args.still_frame < 1 or args.still_frame > scene.frame_end:
+            raise ValueError(f"still frame must be between 1 and {scene.frame_end}")
+        scene.render.image_settings.file_format = "PNG"
+        scene.render.image_settings.media_type = "IMAGE"
+        still_path = args.output.with_suffix(".png").resolve()
+        scene.render.filepath = str(still_path)
+        scene.frame_set(args.still_frame)
+        bpy.ops.render.render(write_still=True)
+        report["still_frame"] = args.still_frame
+        report["still_output"] = str(still_path)
+        report_path.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        if not still_path.is_file() or still_path.stat().st_size == 0:
+            raise RuntimeError(f"Blender did not produce its expected still frame: {still_path}")
+        return
+    scene.render.filepath = str(args.output.resolve())
     bpy.ops.render.render(animation=True)
     encoded = args.output.with_suffix(".mp4")
     if not encoded.is_file() or encoded.stat().st_size == 0:
         raise RuntimeError(f"Blender did not produce its expected MP4: {encoded}")
+    report_path.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
 if __name__ == "__main__":

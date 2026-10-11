@@ -38,14 +38,44 @@ def validate_timeseries(rows: list[dict[str, Any]], metadata: dict[str, Any]) ->
     if errors:
         return errors
     time_s = values["time_s"]
-    if time_s[0] != 0 or any(right <= left for left, right in zip(time_s, time_s[1:])):
+    if not math.isclose(time_s[0], 0.0, rel_tol=0, abs_tol=1e-8) or any(
+            right <= left for left, right in zip(time_s, time_s[1:])):
         errors.append("time_s must start at zero and increase strictly")
     end_time = metadata.get("actual_end_time_s")
     requested = metadata.get("requested_duration_s")
-    if not isinstance(end_time, (int, float)) or not math.isclose(time_s[-1], end_time, abs_tol=1e-7):
+    if type(metadata.get("sample_count")) is not int or metadata["sample_count"] != len(rows):
+        errors.append("sample_count does not match the number of CSV data rows")
+    interval = metadata.get("sample_interval_s")
+    if type(interval) not in (int, float) or not math.isfinite(interval) or interval <= 0:
+        errors.append("sample_interval_s must be finite and positive")
+    else:
+        deltas = [right - left for left, right in zip(time_s, time_s[1:])]
+        if any(not math.isclose(delta, interval, rel_tol=0, abs_tol=1e-7) for delta in deltas[:-1]):
+            errors.append("timeseries samples do not follow the declared regular interval")
+        if deltas and deltas[-1] > interval + 1e-7:
+            errors.append("final timeseries interval exceeds the declared sample interval")
+    if (type(end_time) not in (int, float) or not math.isfinite(end_time)
+            or not math.isclose(time_s[-1], end_time, abs_tol=1e-7)):
         errors.append("last timeseries timestamp does not match actual_end_time_s")
-    if isinstance(requested, (int, float)) and time_s[-1] > requested + 1e-7:
+    if type(requested) not in (int, float) or not math.isfinite(requested) or requested <= 0:
+        errors.append("requested_duration_s must be finite and positive")
+    elif time_s[-1] > requested + 1e-7:
         errors.append("actual simulation time exceeds requested duration")
+    termination = metadata.get("termination_reason")
+    event_time = metadata.get("event_time_s")
+    if termination == "final time":
+        if type(requested) in (int, float) and math.isfinite(requested) and not math.isclose(
+                time_s[-1], requested, rel_tol=0, abs_tol=1e-7):
+            errors.append("final-time termination does not end at requested_duration_s")
+        if event_time is not None:
+            errors.append("final-time termination must not report an event_time_s")
+    elif isinstance(termination, str) and termination.startswith("event:"):
+        if type(event_time) not in (int, float) or not math.isfinite(event_time):
+            errors.append("event termination requires a finite event_time_s")
+        elif not math.isclose(event_time, time_s[-1], rel_tol=0, abs_tol=1e-6):
+            errors.append("event_time_s does not match the last saved sample")
+    else:
+        errors.append("termination_reason must be 'final time' or a PyBaMM event reason")
     lower = metadata.get("voltage_cutoff_lower_v")
     upper = metadata.get("voltage_cutoff_upper_v")
     voltage = values["terminal_voltage_v"]
@@ -76,8 +106,15 @@ def validate_timeseries(rows: list[dict[str, Any]], metadata: dict[str, Any]) ->
         expected_soc = [initial - (q - capacity[0]) / nominal_capacity for q in capacity]
         if any(abs(a - b) > 1e-7 for a, b in zip(soc, expected_soc)):
             errors.append("estimated_soc does not match Coulomb Counting from model discharge capacity")
-        if any(value < -1e-6 or value > initial + 1e-6 for value in soc):
-            errors.append("estimated_soc lies outside the physical run bounds")
+        if any(value > initial + 1e-6 for value in soc):
+            errors.append("estimated_soc exceeds the configured initial SOC")
+        # At a cutoff event PyBaMM may report the exact event state after its
+        # Coulomb-counted capacity has crossed nominal capacity slightly. Keep
+        # that calculated value intact; never clamp the result to zero.
+        if (not (isinstance(metadata.get("termination_reason"), str)
+                 and metadata["termination_reason"].startswith("event:"))
+                and any(value < -1e-6 for value in soc)):
+            errors.append("estimated_soc is negative before an event termination")
     return errors
 
 
@@ -112,6 +149,8 @@ def load_validated_result(directory: str | Path) -> dict[str, Any]:
             raise ValueError(f"battery result {result_key} does not match its simulation config")
     if not result.get("termination_reason"):
         raise ValueError("battery result is missing the solver termination reason")
+    if provenance.get("solver_options") != config.get("solver_options"):
+        raise ValueError("battery solver options do not match the simulation config")
     config_hash = sha256_file(config_path)
     if result.get("config_sha256") != config_hash:
         raise ValueError("battery simulation config SHA-256 mismatch")
