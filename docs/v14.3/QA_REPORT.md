@@ -15,7 +15,7 @@
 | Actual PyBaMM early-cutoff event | PASS | Run `v143-final-early-cutoff`; voltage event at 3606.549306 s of 7200 s, 62 samples; result validation PASS |
 | Manim-only battery preview | PASS | 960×540, 30 fps, 180 frames / 6 s, H.264, silent, full decode; `/tmp/v14.3-manim/manim-smoke/preview.mp4` |
 | Blender execution in GitHub Actions | PASS | `battery-mixed-preview` job, Blender installation, and Blender render commands removed from the battery workflow; other workflow `run` blocks contain no Blender execution |
-| GitHub Actions on `97ece1f` | PASS | [AI Trace #96](https://github.com/hinoonyaso/make_simulation/actions/runs/38138886385), [Education #40](https://github.com/hinoonyaso/make_simulation/actions/runs/38138886004), [Battery #21](https://github.com/hinoonyaso/make_simulation/actions/runs/38138886067) all succeeded; Battery run has only `battery-simulation-smoke` (no mixed Blender job) |
+| GitHub Actions on `0dac8ef` | PASS | [Education #42](https://github.com/hinoonyaso/make_simulation/actions/runs/38139882362) and [Battery #23](https://github.com/hinoonyaso/make_simulation/actions/runs/38139882382) succeeded; Battery run has only `battery-simulation-smoke` (no mixed Blender job) |
 | Actual Blender sparse preview, Eevee backend, rendered-frame count, final full decode | PASS | Blender 5.2.1 LTS / `BLENDER_EEVEE`; one still + 180 source images; final 960×540 H.264, 30 fps, 720 frames / 24 s, full decode PASS; `/tmp/v14.3-sparse-actual/v143-blender-final/preview.mp4` |
 | GPU verification | BLOCKED | `nvidia-smi`: GPU access blocked by operating system |
 
