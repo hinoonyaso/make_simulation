@@ -16,6 +16,7 @@ V14 PR #5 (`2dcfafbd5c95a2b38ce609c5933f5dbfb1192a96`) was verified with success
 ## Local mixed-renderer validation
 
 - V14 PR base CI: both runs listed above succeeded before V14.1 changes.
+- Updated PR CI: [AI trace reproducibility run 38115491923](https://github.com/hinoonyaso/make_simulation/actions/runs/38115491923) and [Education renderer smoke run 38115491945](https://github.com/hinoonyaso/make_simulation/actions/runs/38115491945): PASS. Both jobs completed successfully for commit `fefd763`.
 - Actual mixed render: `pilots/v14_education/output/gear-v14.1-final-fixed/preview.mp4`, rendered on 2026-10-11 with Blender 5.2.1 LTS, Manim Community 0.21.0, and FFmpeg. The sandboxed command runner could not see WSL interop sockets, while the approved elevated runner could; `cmd.exe /c ver` and Windows Blender both ran. The earlier socket failure was a sandbox visibility issue, not an unavailable Blender installation. The complete 11 MB run directory is saved in the shared checkout and is ignored by Git.
 - Delivery validation: PASS — H.264, 960×540, 30/1 fps, 2,400 frames, 80.0 seconds, 16 caption cues, full decode. Video SHA-256: `559c54ced14f973614ba6ef529446d5f8e79ca177c62509b76ec846311390cad`.
 - Blender asset report: PASS — actual `.blend` loaded; all four registered mesh objects present; source asset hash matched; temporary pivots were checked over 18 sampled frames; maximum mesh-centroid error was `3.06e-8 m` against `0.001 m` tolerance; centers remained fixed; source `.blend` was not modified.
