@@ -65,6 +65,31 @@ jobs:
               raise SystemExit("saved PyBaMM event time differs from the final sample time")
           print(f"PASS: {result['termination_reason']} at {result['event_time_s']:.6f} s")
           PY
+      - name: Validate Manim loader against actual early-cutoff result
+        run: |
+          uv run --locked --no-sync python - "$RUNNER_TEMP/battery-solver-early" <<'PY'
+          import sys
+          from pathlib import Path
+          from core.simulation_engines.battery.result_validator import load_validated_result
+          from pilots.v14_education.manim.battery_scene import load_samples
+
+          result_dir = Path(sys.argv[1])
+          loaded = load_validated_result(result_dir)
+          result = loaded["result"]
+          if not result["termination_reason"].startswith("event:"):
+              raise SystemExit("expected a real PyBaMM event-terminated result")
+          context = {"solver_result": {
+              "solver_id": result["solver_execution"]["solver_id"],
+              "timeseries_file": "battery_timeseries.csv",
+              "result_sha256": result["result_sha256"],
+              "actual_end_time_s": result["actual_end_time_s"],
+              "sample_count": result["sample_count"],
+          }}
+          samples = load_samples(context, result_dir / "renderer_context.json")
+          if len(samples["time_s"]) != result["sample_count"]:
+              raise SystemExit("Manim loaded a different number of samples than the validated PyBaMM result")
+          print(f"PASS: Manim loaded {len(samples['time_s'])} event-result samples through {samples['time_s'][-1]:.12g} s")
+          PY
       - name: Run battery contract regression tests
         run: uv run --locked --no-sync python -m unittest discover -s tests -p test_battery_simulation.py -v
       - name: Validate PyBaMM lesson plan without solver execution

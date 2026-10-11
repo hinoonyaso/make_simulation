@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import copy
+import csv
+import hashlib
 import json
 from pathlib import Path
 import tempfile
@@ -102,6 +104,101 @@ class BatteryContractTests(unittest.TestCase):
                             side_effect=ValueError("hash mismatch")):
                 errors = validate_trace(path)
             self.assertTrue(any("hash mismatch" in error for error in errors))
+
+    def test_manim_loader_accepts_normal_and_rounded_event_end_times(self):
+        from pilots.v14_education.manim.battery_scene import load_samples
+
+        cases = ((1800.0, 1800.0), (3606.54930585, 3606.549305848102))
+        for csv_end, metadata_end in cases:
+            with self.subTest(csv_end=csv_end), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                timeseries = root / "battery_timeseries.csv"
+                with timeseries.open("w", newline="", encoding="utf-8") as stream:
+                    writer = csv.writer(stream)
+                    writer.writerow(("time_s", "terminal_voltage_v", "current_a",
+                                     "discharge_capacity_ah", "estimated_soc"))
+                    writer.writerow((0, 4.1, 5.0, 0.0, 1.0))
+                    writer.writerow((csv_end, 3.0, 5.0, csv_end * 5 / 3600, .8))
+                context = {"solver_result": {
+                    "solver_id": "pybamm",
+                    "timeseries_file": timeseries.name,
+                    "result_sha256": hashlib.sha256(timeseries.read_bytes()).hexdigest(),
+                    "actual_end_time_s": metadata_end,
+                    "sample_count": 2,
+                }}
+
+                samples = load_samples(context, root / "renderer_context.json")
+                self.assertEqual(len(samples["time_s"]), 2)
+                self.assertEqual(samples["time_s"][-1], csv_end)
+
+    def test_manim_loader_rejects_material_end_time_mismatch(self):
+        from pilots.v14_education.manim.battery_scene import load_samples
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            timeseries = root / "battery_timeseries.csv"
+            with timeseries.open("w", newline="", encoding="utf-8") as stream:
+                writer = csv.writer(stream)
+                writer.writerow(("time_s", "terminal_voltage_v", "current_a",
+                                 "discharge_capacity_ah", "estimated_soc"))
+                writer.writerow((0, 4.1, 5.0, 0.0, 1.0))
+                writer.writerow((3606.55, 3.0, 5.0, 5.0, .8))
+            context = {"solver_result": {
+                "solver_id": "pybamm", "timeseries_file": timeseries.name,
+                "result_sha256": hashlib.sha256(timeseries.read_bytes()).hexdigest(),
+                "actual_end_time_s": 3606.549305848102, "sample_count": 2,
+            }}
+
+            with self.assertRaisesRegex(ValueError, "does not match solver provenance"):
+                load_samples(context, root / "renderer_context.json")
+
+    def test_manim_loader_rejects_non_finite_samples_and_metadata(self):
+        from pilots.v14_education.manim.battery_scene import load_samples
+
+        for csv_end, metadata_end in ((float("nan"), 1.0), (float("inf"), 1.0), (1.0, float("nan")),
+                                      (1.0, float("inf"))):
+            with self.subTest(csv_end=csv_end, metadata_end=metadata_end), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                timeseries = root / "battery_timeseries.csv"
+                with timeseries.open("w", newline="", encoding="utf-8") as stream:
+                    writer = csv.writer(stream)
+                    writer.writerow(("time_s", "terminal_voltage_v", "current_a",
+                                     "discharge_capacity_ah", "estimated_soc"))
+                    writer.writerow((0, 4.1, 5.0, 0.0, 1.0))
+                    writer.writerow((csv_end, 3.0, 5.0, 1.0, .8))
+                context = {"solver_result": {
+                    "solver_id": "pybamm", "timeseries_file": timeseries.name,
+                    "result_sha256": hashlib.sha256(timeseries.read_bytes()).hexdigest(),
+                    "actual_end_time_s": metadata_end, "sample_count": 2,
+                }}
+
+                with self.assertRaisesRegex(ValueError, "finite"):
+                    load_samples(context, root / "renderer_context.json")
+
+    def test_manim_loader_keeps_hash_and_sample_count_checks(self):
+        from pilots.v14_education.manim.battery_scene import load_samples
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            timeseries = root / "battery_timeseries.csv"
+            with timeseries.open("w", newline="", encoding="utf-8") as stream:
+                writer = csv.writer(stream)
+                writer.writerow(("time_s", "terminal_voltage_v", "current_a",
+                                 "discharge_capacity_ah", "estimated_soc"))
+                writer.writerow((0, 4.1, 5.0, 0.0, 1.0))
+                writer.writerow((1800, 3.0, 5.0, 2.5, .8))
+            digest = hashlib.sha256(timeseries.read_bytes()).hexdigest()
+            context = {"solver_result": {
+                "solver_id": "pybamm", "timeseries_file": timeseries.name,
+                "result_sha256": digest, "actual_end_time_s": 1800.0, "sample_count": 3,
+            }}
+            with self.assertRaisesRegex(ValueError, "sample count"):
+                load_samples(context, root / "renderer_context.json")
+
+            context["solver_result"]["sample_count"] = 2
+            context["solver_result"]["result_sha256"] = "wrong-digest"
+            with self.assertRaisesRegex(ValueError, "SHA-256"):
+                load_samples(context, root / "renderer_context.json")
 
     def test_blender_report_must_match_same_solver_run_and_cell_asset(self):
         spec = json.loads((ROOT / "examples/education/battery_spm_smoke.json").read_text())
