@@ -20,7 +20,7 @@ The adapter samples the regular output clock only through `solution.t[-1]`, then
 
 ## Observed local output
 
-The normal run ended at 1800 s with 361 samples and `termination_reason = "final time"`. A second actual run requested 7200 s and terminated on `event: Minimum voltage [V]` at 3606.549305848152 s; it contains 61 regular 60-second samples through 3600 s plus the event endpoint, for 62 rows. Both results passed persisted CSV/config/hash validation. Normal-run result SHA-256: `e29e858dd80f48c969f8d4b51f6ef004c62241175f598c5b7bd965b65fb44b25`; CI early-event result SHA-256: `f2631a1c28111bf4e19af646a6c82978990f36e9025480ee107235b22d43c66a`. See [the QA report](BATTERY_EDUCATIONAL_QA.md) for renderer and environment evidence.
+The normal run ended at 1800 s with 361 samples and `termination_reason = "final time"`. A second actual run requested 7200 s and terminated on `event: Minimum voltage [V]` at 3606.549305848102 s; it contains 61 regular 60-second samples through 3600 s plus the event endpoint, for 62 rows. Both results passed persisted CSV/config/hash validation. Normal-run result SHA-256: `e29e858dd80f48c969f8d4b51f6ef004c62241175f598c5b7bd965b65fb44b25`; CI early-event result SHA-256: `23ca1050317fe899e43ce0c5ebbdf42dab3c5438d1d3e7dd1cb8676bffcb5b3e`. See [the QA report](BATTERY_EDUCATIONAL_QA.md) for renderer and environment evidence.
 
 ## References
 
