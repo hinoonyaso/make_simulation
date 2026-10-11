@@ -106,7 +106,7 @@ class BatteryContractTests(unittest.TestCase):
             self.assertTrue(any("hash mismatch" in error for error in errors))
 
     def test_manim_loader_accepts_normal_and_rounded_event_end_times(self):
-        from pilots.v14_education.manim.battery_scene import load_samples
+        from core.simulation_engines.battery.manim_data import load_samples
 
         cases = ((1800.0, 1800.0), (3606.54930585, 3606.549305848102))
         for csv_end, metadata_end in cases:
@@ -132,7 +132,7 @@ class BatteryContractTests(unittest.TestCase):
                 self.assertEqual(samples["time_s"][-1], csv_end)
 
     def test_manim_loader_rejects_material_end_time_mismatch(self):
-        from pilots.v14_education.manim.battery_scene import load_samples
+        from core.simulation_engines.battery.manim_data import load_samples
 
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -153,7 +153,7 @@ class BatteryContractTests(unittest.TestCase):
                 load_samples(context, root / "renderer_context.json")
 
     def test_manim_loader_rejects_non_finite_samples_and_metadata(self):
-        from pilots.v14_education.manim.battery_scene import load_samples
+        from core.simulation_engines.battery.manim_data import load_samples
 
         for csv_end, metadata_end in ((float("nan"), 1.0), (float("inf"), 1.0), (1.0, float("nan")),
                                       (1.0, float("inf"))):
@@ -176,7 +176,7 @@ class BatteryContractTests(unittest.TestCase):
                     load_samples(context, root / "renderer_context.json")
 
     def test_manim_loader_keeps_hash_and_sample_count_checks(self):
-        from pilots.v14_education.manim.battery_scene import load_samples
+        from core.simulation_engines.battery.manim_data import load_samples
 
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

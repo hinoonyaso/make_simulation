@@ -71,7 +71,7 @@ jobs:
           import sys
           from pathlib import Path
           from core.simulation_engines.battery.result_validator import load_validated_result
-          from pilots.v14_education.manim.battery_scene import load_samples
+          from core.simulation_engines.battery.manim_data import load_samples
 
           result_dir = Path(sys.argv[1])
           loaded = load_validated_result(result_dir)
