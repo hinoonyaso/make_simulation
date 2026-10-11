@@ -30,6 +30,13 @@ For full narrated explainers, validate the hardest inference in a cheap moving e
 
 For this user’s robotics episodes where physical motion/contact is relevant, retain the discovery explanation and use an actual capable physics engine for Blender setup/consequence. Share the same run with Manim; keep reference plans distinct from physical response. Do not relabel old trace playback or prescribed robot poses as physical simulation. Verify run provenance and physical checks separately from schema/media validation.
 
+## Blender on WSL and sandboxed execution
+
+- A Windows Blender launch failure inside a WSL sandbox is not evidence that Blender is missing or unusable. In particular, `<3>WSL ... UtilBindVsockAnyPort:309: socket failed 1` was reproduced when launching the installed Windows Blender 5.2.1 from the sandbox, while the same executable started successfully outside that sandbox. Treat this signature as a WSL/sandbox interop boundary until checked otherwise.
+- Diagnose in order: check `command -v blender`, the configured `BLENDER_BIN`, and the expected Windows executable path. If the executable exists but sandbox launch reports the interop error, do not repeat the same launch or report Blender/render as blocked. Use an environment-approved unsandboxed execution or the configured Blender/MCP runtime for a minimal version probe; honor the permission model and never bypass it.
+- If the version probe succeeds, continue with the requested actual Blender load/render using that executable (set `BLENDER_BIN` explicitly if needed), then validate the resulting media. Keep generated files in the task's established output location.
+- Report Blender unavailable or blocked only after checking the available Linux and Windows/runtime paths and their actual results. Separate executable discovery, launch permission/interoperability, scene load, render, and media validation; success at one stage does not prove later stages. Do not infer GPU availability from a successful CPU/background launch.
+
 ## V11 mechanism runs
 
 - Use `scripts/produce_video.py` only after checking the Mechanism Registry. Ready topics support `--mode executable`; validated traces can use `--mode replay --trace <path>` where the registry schema matches.
