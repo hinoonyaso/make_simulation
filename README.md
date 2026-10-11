@@ -58,6 +58,7 @@ uv run python scripts/produce_lesson.py \
 | 주제 | 자료 | 표현 |
 |---|---|---|
 | 베어링 6204 | [PNG](assets/education/generated/bearing_6204.png) · [spec](examples/education/bearing.json) | Blender asset 및 lesson |
+| 평기어 20T:40T | [PNG](assets/education/generated/spur_gears_20_40.png) · [spec](examples/education/spur_gears.json) | 교육용 자산과 Manim smoke lesson; 이상적 속도 비만 계산 |
 | BLDC 모터 개념 모델 | [PNG](assets/education/generated/bldc_motor_concept.png) | 교육용 3D 자산 미리보기 |
 | 적층 PCB | [PNG](assets/education/generated/pcb_layered.png) | 교육용 3D 자산 미리보기 |
 | RAG | [trace](pilots/v10_rag_poc/data/ai_trace.json) | trace 기반 예시, 제한은 [pilot 문서](pilots/v10_rag_poc/README.md) 참조 |
@@ -139,12 +140,18 @@ uv run python scripts/produce_lesson.py --spec examples/education/bearing.json -
 # 960x540, 30 fps 미리보기
 uv run python scripts/produce_lesson.py --spec examples/education/bearing.json --preview
 
+# 등록된 두 번째 주제: 기어 20T:40T Manim smoke
+uv run python scripts/produce_lesson.py \
+  --spec examples/education/spur_gears.json --preview --manim-only
+
 # Manim만 사용해 무음 preview
 uv run python scripts/produce_lesson.py \
   --spec examples/education/education_smoke.json --preview --manim-only
 ```
 
 `--preview`는 저해상도 검토 경로입니다. 기본 출력 root는 `pilots/v13_education/output/lessons`; `--output-root`로 변경할 수 있습니다. `--run-id`를 지정하면 해당 ID로 run 디렉터리를 만듭니다. 같은 경로를 재사용할 때는 기존 파일 덮어쓰기 여부를 먼저 확인하세요.
+
+교육 Lesson은 allow-list인 `core/education/renderer_registry.py`에서 topic을 Renderer Scene과 Asset ID에 연결합니다. 등록되지 않은 topic, scene/class 누락, 자산 hash 오류, 지원되지 않는 Blueprint/renderer 조합은 렌더 전에 차단됩니다. `--manim-only`는 선택한 beat가 모두 Manim을 사용할 때만 허용됩니다. 새 topic 등록 절차와 V14 제한은 [`docs/v14/README.md`](docs/v14/README.md)를 참조하세요.
 
 ### Narration
 

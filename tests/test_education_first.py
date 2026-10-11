@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import hashlib
 import sys
 from contextlib import redirect_stderr, redirect_stdout
 from io import StringIO
@@ -181,6 +182,15 @@ class EducationFirstTests(unittest.TestCase):
                     def fake_render(_manifest, _timeline, run_dir, mode, **_kwargs):
                         video = run_dir / ("preview.mp4" if mode == "preview" else "silent_final.mp4")
                         video.write_bytes(b"mock-video")
+                        renderer = _kwargs["renderer"]
+                        contract = _kwargs["renderer_contract"]
+                        (run_dir / "renderer_provenance.json").write_text(json.dumps({
+                            "topic": renderer.topic,
+                            "renderer_registry_id": renderer.topic,
+                            "asset_id": contract["asset_id"],
+                            "renderers": ["manim"],
+                            "media_validation": "PENDING",
+                        }), encoding="utf-8")
                         return video, {"blender_render_sec": 0, "manim_render_sec": 0}
 
                     def fake_mux(_video, _narration, output):
@@ -191,11 +201,17 @@ class EducationFirstTests(unittest.TestCase):
                              "format": {"duration": "1.0"}}
                     if with_tts:
                         probe["streams"].append({"codec_type": "audio", "codec_name": "aac"})
+
+                    def fake_probe(command, **kwargs):
+                        if "-select_streams" in command:
+                            return json.dumps({"streams": [{"nb_read_frames": "120", "r_frame_rate": "30/1"}]})
+                        return json.dumps(probe)
+
                     with patch.object(sys, "argv", args), \
                          patch("scripts.produce_lesson.subprocess.run", side_effect=fake_run) as run, \
                          patch("scripts.produce_lesson.render", side_effect=fake_render), \
                          patch("scripts.produce_lesson.mux_narration", side_effect=fake_mux), \
-                         patch("scripts.produce_lesson.subprocess.check_output", return_value=json.dumps(probe)), \
+                         patch("scripts.produce_lesson.subprocess.check_output", side_effect=fake_probe), \
                          redirect_stdout(StringIO()):
                         self.assertEqual(main(), 0)
 
@@ -212,6 +228,80 @@ class EducationFirstTests(unittest.TestCase):
                     production = json.loads((output_root / run_id / "production_report.json").read_text())
                     expected_audio_status = "PASS" if with_tts else "NOT_REQUESTED"
                     self.assertEqual(production["audio_status"], expected_audio_status)
+                    run_dir = output_root / run_id
+                    provenance = json.loads((run_dir / "renderer_provenance.json").read_text())
+                    expected_name = "final.mp4" if with_tts else ("preview.mp4" if preview else "silent_final.mp4")
+                    expected_video = run_dir / expected_name
+                    digest = hashlib.sha256(expected_video.read_bytes()).hexdigest()
+                    timeline = json.loads((run_dir / "timeline.json").read_text())
+                    self.assertTrue(expected_video.is_file())
+                    self.assertEqual(provenance["output"], expected_video.name)
+                    self.assertEqual(provenance["video_sha256"], digest)
+                    self.assertEqual(provenance["media_validation"], "PASS")
+                    self.assertEqual(provenance["frame_range"]["observed_frames"], 120)
+                    self.assertEqual(provenance["timeline_sha256"], timeline["timeline_sha256"])
+                    self.assertEqual(production["video"], str(expected_video))
+                    self.assertEqual(production["video_sha256"], digest)
+                    self.assertEqual(production["video_qa"]["width"], 960 if preview else 1920)
+                    self.assertEqual(production["video_qa"]["height"], 540 if preview else 1080)
+
+    def test_delivery_validation_failure_keeps_provenance_pending(self):
+        from scripts.produce_lesson import main
+        import subprocess
+        with TemporaryDirectory() as directory:
+            output_root = Path(directory)
+            run_id = "failed-validation"
+            args = ["produce_lesson.py", "--spec", str(ROOT / "examples/education/education_smoke.json"),
+                    "--preview", "--with-tts", "--output-root", str(output_root), "--run-id", run_id]
+
+            def fake_render(_manifest, _timeline, run_dir, _mode, **kwargs):
+                video = run_dir / "preview.mp4"
+                video.write_bytes(b"mock-video")
+                (run_dir / "renderer_provenance.json").write_text(json.dumps({
+                    "output": video.name, "video_sha256": None, "media_validation": "PENDING",
+                }), encoding="utf-8")
+                return video, {"blender_render_sec": 0, "manim_render_sec": 0}
+
+            validation_calls = []
+
+            def fail_final_delivery(command, **_kwargs):
+                if any("prepare_audio.py" in str(part) for part in command):
+                    mode = command[-2]
+                    manifest_path = Path(command[-1])
+                    audio_output = manifest_path.parent / "output"
+                    audio_output.mkdir(exist_ok=True)
+                    if mode == "tts":
+                        (audio_output / "narration.wav").write_bytes(b"mock-narration")
+                        audio_manifest = manifest_path.parent / "assets/audio/manifest.json"
+                        audio_manifest.parent.mkdir(parents=True, exist_ok=True)
+                        audio_manifest.write_text("[]", encoding="utf-8")
+                    else:
+                        (audio_output / "caption_timing.json").write_text(
+                            json.dumps([{"start": 0, "end": 1, "caption": "mock"}]), encoding="utf-8")
+                        (audio_output / "subtitles.ko.vtt").write_text("WEBVTT\n", encoding="utf-8")
+                        (audio_output / "subtitles.ko.srt").write_text("", encoding="utf-8")
+                    return SimpleNamespace(returncode=0)
+                if any("validate_delivery.py" in str(part) for part in command):
+                    validation_calls.append(command)
+                    if len(validation_calls) == 2:
+                        raise subprocess.CalledProcessError(1, command)
+                return SimpleNamespace(returncode=0)
+
+            def fake_mux(_video, _narration, output):
+                output.write_bytes(b"mock-final-video")
+
+            with patch.object(sys, "argv", args), \
+                 patch("scripts.produce_lesson.subprocess.run", side_effect=fail_final_delivery), \
+                 patch("scripts.produce_lesson.render", side_effect=fake_render), \
+                 patch("scripts.produce_lesson.mux_narration", side_effect=fake_mux), \
+                 redirect_stdout(StringIO()):
+                with self.assertRaises(subprocess.CalledProcessError):
+                    main()
+            run_dir = output_root / run_id
+            provenance = json.loads((run_dir / "renderer_provenance.json").read_text())
+            self.assertTrue((run_dir / "final.mp4").is_file())
+            self.assertEqual(provenance["output"], "preview.mp4")
+            self.assertNotEqual(provenance["media_validation"], "PASS")
 
     def test_audio_and_engineering_qa_states_are_explicit_and_consistent(self):
         from scripts.produce_lesson import write_qa_reports
