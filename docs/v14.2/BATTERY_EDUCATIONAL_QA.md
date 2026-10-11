@@ -12,7 +12,7 @@
 | Blender engine compatibility logic | PASS — unit-tested engine discovery/fallback and minimum sample handling; not an actual Blender runtime test |
 | Manim using actual solver CSV | PASS — 960×540, H.264, 30 fps, 180 frames, 6 s, full decode |
 | V9 manifest trace contract | PASS — `battery_trace.json` revalidates result, config and CSV hashes |
-| Unit regression | PASS — 206 tests |
+| Unit regression | PASS — 207 tests |
 | Python compileall | PASS |
 | Asset registry / education asset metadata | PASS — 39 registry entries; 6 catalog models/generated files checked |
 | Lesson plan | PASS — 24 s / 720-frame mixed timeline, status `PLANNED` without solver side effects |
@@ -26,7 +26,7 @@ Manim actual-solver preview path: `/tmp/v14.2-preview-final/battery-manim-final/
 
 Blender 5.2.1 is present at `/mnt/c/Program Files/Blender Foundation/Blender 5.2/blender.exe`. Direct `--version` and `cmd.exe /c ver` both fail in this WSL session with `UtilBindVsockAnyPort:309: socket failed 1`. The Linux Python environment also does not provide `bpy`. Therefore the `.blend` was not opened, the Blender battery scene was not executed, and the mixed 24-second video was not rendered. A successful solver or Manim run is not evidence of Blender success.
 
-This confirms an interop failure before Blender startup in this session; it does not establish that the user's earlier Blender run did not work. The implementation now queries the running Blender's enum identifiers, validates Eevee sample support, and has a `--still-frame` PNG path. These changes have not yet been exercised by Blender locally. A separate job downloads the official Blender 5.2.1 Linux archive and attempts the real asset + solver still-to-mixed rendering path.
+This confirms an interop failure before Blender startup in this session; it does not establish that the user's earlier Blender run did not work. The implementation now queries the running Blender's enum identifiers, validates Eevee sample support, and has a `produce_lesson.py --blender-still-frame` path that writes the regular solver-backed context before rendering a PNG. The first CI attempt reached lesson setup but was stopped by the existing guard against using `--manim-only` on Blender-required beats; the test workflow now uses the dedicated still-frame path. The new run must pass before Blender success is claimed.
 
 ## Interpretation boundary
 

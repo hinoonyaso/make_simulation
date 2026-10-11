@@ -156,22 +156,16 @@ jobs:
       - name: Build validated solver context and test a Blender still frame first
         env:
           BLENDER_BIN: ${{ runner.temp }}/blender-5.2.1-linux-x64/blender
-          V11_MANIM_BIN: manim
         run: |
           set -euo pipefail
           uv run --locked --no-sync python scripts/run_battery_simulation.py \
             --config examples/education/battery_spm_config.json \
-            --output-dir "$RUNNER_TEMP/battery-still-solver" --run-id "still-ci-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+            --output-dir "$RUNNER_TEMP/battery-mixed-solver" --run-id "mixed-ci-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
           uv run --locked --no-sync python scripts/produce_lesson.py \
             --spec examples/education/battery_spm_smoke.json \
-            --solver-result "$RUNNER_TEMP/battery-still-solver" --preview --manim-only \
+            --solver-result "$RUNNER_TEMP/battery-mixed-solver" --preview --blender-still-frame 1 \
             --output-root "$RUNNER_TEMP/battery-still" --run-id "battery-still-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
           run_dir="$RUNNER_TEMP/battery-still/battery-still-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
-          "$BLENDER_BIN" --background --factory-startup --python-exit-code 1 \
-            --python pilots/v14_education/blender/battery_scene.py -- \
-            --manifest "$run_dir/visual_manifest.json" --timeline "$run_dir/timeline.json" \
-            --context "$run_dir/renderer_context.json" --output "$run_dir/battery_still.mp4" \
-            --width 960 --height 540 --fps 30 --samples 16 --still-frame 1
           test -s "$run_dir/battery_still.png"
           uv run --locked --no-sync python - "$run_dir/asset_load_report.json" "$run_dir/renderer_context.json" <<'PY'
           import json, sys
@@ -195,9 +189,6 @@ jobs:
           V11_MANIM_BIN: manim
         run: |
           set -euo pipefail
-          uv run --locked --no-sync python scripts/run_battery_simulation.py \
-            --config examples/education/battery_spm_config.json \
-            --output-dir "$RUNNER_TEMP/battery-mixed-solver" --run-id "mixed-ci-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
           uv run --locked --no-sync python scripts/produce_lesson.py \
             --spec examples/education/battery_spm_smoke.json \
             --solver-result "$RUNNER_TEMP/battery-mixed-solver" --preview \
@@ -247,4 +238,3 @@ jobs:
             ${{ runner.temp }}/battery-mixed-solver/
             ${{ runner.temp }}/battery-mixed/
             ${{ runner.temp }}/battery-still/
-            ${{ runner.temp }}/battery-still-solver/

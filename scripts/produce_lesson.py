@@ -194,19 +194,17 @@ def burn_captions(video: Path, cues: list[dict], output: Path) -> None:
                     "-movflags", "+faststart", str(output)], check=True)
 
 
-def renderer_runtime_preflight(renderer: EducationRenderer, contract: dict, *, manim_only: bool = False) -> dict:
+def renderer_runtime_preflight(renderer: EducationRenderer, contract: dict, *, manim_only: bool = False,
+                              blender_only: bool = False) -> dict:
     """Probe only the backends required by the beats; never downgrade B beats to Manim."""
     from core.mechanism.renderer import _blender_binary
     selected = set(contract["selected_modes"])
+    if blender_only and "blender" not in selected:
+        raise RendererResolutionError("BLOCKED: this lesson has no Blender renderer to still-render")
     if manim_only and "blender" in selected:
         raise RendererResolutionError(
             "BLOCKED: --manim-only cannot render Blender-required beats as a valid lesson; "
             "no renderer fallback was applied")
-    command = shlex.split(os.environ.get("V11_MANIM_BIN", "uv run manim"))
-    if not command:
-        raise RendererResolutionError("BLOCKED: V11_MANIM_BIN does not name a Manim executable")
-    manim_check = subprocess.run([*command, "--version"], cwd=ROOT, capture_output=True,
-                                 text=True, check=True)
     def version_line(completed, prefix: str) -> str:
         output = "\n".join(filter(None, (getattr(completed, "stdout", None),
                                              getattr(completed, "stderr", None))))
@@ -214,7 +212,14 @@ def renderer_runtime_preflight(renderer: EducationRenderer, contract: dict, *, m
         return next((line for line in candidates if line.startswith(prefix)),
                     candidates[-1] if candidates else "version unavailable")
 
-    result = {"manim": version_line(manim_check, "Manim Community v")}
+    result = {}
+    if not blender_only:
+        command = shlex.split(os.environ.get("V11_MANIM_BIN", "uv run manim"))
+        if not command:
+            raise RendererResolutionError("BLOCKED: V11_MANIM_BIN does not name a Manim executable")
+        manim_check = subprocess.run([*command, "--version"], cwd=ROOT, capture_output=True,
+                                     text=True, check=True)
+        result["manim"] = version_line(manim_check, "Manim Community v")
     if "blender" in selected and not manim_only:
         blender = _blender_binary()
         blender_check = subprocess.run([blender, "--version"], cwd=ROOT, capture_output=True,
@@ -440,6 +445,8 @@ def main() -> int:
     parser.add_argument("--plan-only", action="store_true", help="validate and write plan artifacts without rendering")
     parser.add_argument("--with-tts", action="store_true", help="send manifest narration to configured Edge TTS voice")
     parser.add_argument("--manim-only", action="store_true", help="render with Manim only (for lightweight CI smoke preview)")
+    parser.add_argument("--blender-still-frame", type=int,
+                        help="render one solver-backed Blender battery frame after writing shared lesson context")
     parser.add_argument("--solver-result", type=Path,
                         help="validated solver output directory; required for computed-result rendering")
     parser.add_argument("--output-root", type=Path, default=ROOT / "pilots/v13_education/output/lessons")
@@ -449,6 +456,10 @@ def main() -> int:
         parser.error("--plan-only cannot be combined with --with-tts; planning never generates audio")
     if args.plan_only and args.solver_result:
         parser.error("--plan-only cannot be combined with --solver-result; planning never consumes solver output")
+    if args.blender_still_frame is not None and (args.plan_only or args.with_tts or args.manim_only):
+        parser.error("--blender-still-frame requires a computed, silent Blender render path")
+    if args.blender_still_frame is not None and args.blender_still_frame < 1:
+        parser.error("--blender-still-frame must be a positive Blender frame number")
     raw = json.loads(args.spec.read_text(encoding="utf-8"))
     errors = validate_lesson_spec(raw)
     if errors:
@@ -494,7 +505,8 @@ def main() -> int:
     if not args.plan_only:
         try:
             runtime_versions = renderer_runtime_preflight(
-                renderer, planned["renderer_contract"], manim_only=args.manim_only)
+                renderer, planned["renderer_contract"], manim_only=args.manim_only,
+                blender_only=args.blender_still_frame is not None)
         except (OSError, subprocess.SubprocessError, ValueError) as exc:
             parser.error(str(exc))
     run_id = args.run_id or f"{raw['topic']}-{time.strftime('%Y%m%d-%H%M%S')}"
@@ -571,6 +583,35 @@ def main() -> int:
             raise
     else:
         write_captions(planned["visual_manifest"], run_dir, planned["timeline"])
+    if args.blender_still_frame is not None:
+        if renderer.topic != "li_ion_battery" or solver_files is None:
+            parser.error("--blender-still-frame currently requires a validated PyBaMM battery lesson")
+        if args.blender_still_frame > int(planned["timeline"]["total_frames"]):
+            parser.error("--blender-still-frame exceeds this lesson's total frame count")
+        from core.mechanism.renderer import _blender_binary
+        blender = _blender_binary()
+        still_base = run_dir / "battery_still.mp4"
+        blender_script = ROOT / renderer.blender_script
+        command = [blender, "--background", "--factory-startup", "--python-exit-code", "1", "--python",
+                   blender_path_arg(blender_script, blender), "--", "--manifest",
+                   blender_path_arg(manifest_path, blender), "--timeline", blender_path_arg(timeline_path, blender),
+                   "--context", blender_path_arg(run_dir / "renderer_context.json", blender), "--output",
+                   blender_path_arg(still_base, blender), "--width", "960" if args.preview else "1920",
+                   "--height", "540" if args.preview else "1080", "--fps", "30", "--samples", "16",
+                   "--still-frame", str(args.blender_still_frame)]
+        subprocess.run(command, cwd=ROOT, check=True)
+        still_path = still_base.with_suffix(".png")
+        if not still_path.is_file() or still_path.stat().st_size == 0:
+            raise RuntimeError(f"Blender exited without producing its still frame: {still_path}")
+        asset_report = json.loads((run_dir / "asset_load_report.json").read_text(encoding="utf-8"))
+        validate_blender_asset_load_report(asset_report, planned["renderer_contract"])
+        report.update({"status": "BLENDER_STILL_COMPLETE", "blender_still_frame": args.blender_still_frame,
+                       "blender_still": str(still_path), "asset_load_report": str(run_dir / "asset_load_report.json"),
+                       "renderer_versions": runtime_versions})
+        (run_dir / "production_report.json").write_text(
+            json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+        return 0
     if args.plan_only:
         report["status"] = "PLAN_VALIDATED"
     else:

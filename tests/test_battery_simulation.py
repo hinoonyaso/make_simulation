@@ -56,6 +56,20 @@ class BatteryContractTests(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, "Eevee renderer unavailable"):
             configure_eevee(scene_with("BLENDER_WORKBENCH"), 16)
 
+    def test_blender_still_preflight_does_not_require_manim(self):
+        from subprocess import CompletedProcess
+        from scripts.produce_lesson import renderer_runtime_preflight
+
+        contract = {"selected_modes": ["blender", "manim"]}
+        with mock.patch("core.mechanism.renderer._blender_binary", return_value="/tmp/blender"), \
+             mock.patch("scripts.produce_lesson.subprocess.run",
+                        return_value=CompletedProcess(args=["/tmp/blender"], returncode=0,
+                                                      stdout="Blender 5.2.1\n", stderr="")) as run:
+            versions = renderer_runtime_preflight(None, contract, blender_only=True)
+        self.assertEqual(versions, {"blender": "Blender 5.2.1"})
+        run.assert_called_once_with(["/tmp/blender", "--version"], cwd=ROOT,
+                                    capture_output=True, text=True, check=True)
+
     def test_config_and_plan_are_valid_without_executing_solver(self):
         config = json.loads((ROOT / "examples/education/battery_spm_config.json").read_text())
         self.assertEqual(validate_config(config), [])
