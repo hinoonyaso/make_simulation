@@ -59,14 +59,48 @@ def text_overlay(camera, body, name, location, mat, size=.17):
     return obj
 
 
-def overlay_panel(camera, mat):
-    bpy.ops.mesh.primitive_plane_add(size=2)
-    panel = bpy.context.object
-    panel.name = "part_label_panel"
+def overlay_panel(camera, mat, accent):
+    """Create a compact rounded camera-space card with a restrained accent edge."""
+    left, right, bottom, top, radius, depth = 1.48, 3.62, -.14, 2.06, .10, -2.05
+    curve = bpy.data.curves.new("part_label_card_shape", "CURVE")
+    curve.dimensions = "2D"
+    curve.fill_mode = "BOTH"
+    spline = curve.splines.new("POLY")
+    corners = [
+        (right-radius, top-radius, 0, 90),
+        (left+radius, top-radius, 90, 180),
+        (left+radius, bottom+radius, 180, 270),
+        (right-radius, bottom+radius, 270, 360),
+    ]
+    points = []
+    for cx, cy, start, end in corners:
+        for step in range(7):
+            angle = math.radians(start + (end-start)*step/6)
+            points.append((cx + radius*math.cos(angle), cy + radius*math.sin(angle)))
+    spline.points.add(len(points)-1)
+    for point, (x, y) in zip(spline.points, points):
+        point.co = (x, y, 0, 1)
+    spline.use_cyclic_u = True
+    panel = bpy.data.objects.new("part_label_card", curve)
+    bpy.context.scene.collection.objects.link(panel)
     panel.parent = camera
-    panel.location = (2.95, 1.40, -2.05)
-    panel.scale = (.85, .94, 1)
+    panel.location = (0, 0, depth)
     panel.data.materials.append(mat)
+
+    # Short accent stroke in the header gives the card a clear visual anchor
+    # without adding the heavy border of the previous full-size rectangle.
+    stroke_data = bpy.data.curves.new("part_label_card_accent", "CURVE")
+    stroke_data.dimensions = "3D"
+    stroke_data.bevel_depth = .018
+    stroke_data.bevel_resolution = 2
+    stroke = stroke_data.splines.new("POLY")
+    stroke.points.add(1)
+    stroke.points[0].co = (1.68, 1.76, depth-.025, 1)
+    stroke.points[1].co = (1.98, 1.76, depth-.025, 1)
+    accent_obj = bpy.data.objects.new("part_label_card_header_accent", stroke_data)
+    bpy.context.scene.collection.objects.link(accent_obj)
+    accent_obj.parent = camera
+    accent_obj.data.materials.append(accent)
     return panel
 
 
@@ -326,22 +360,52 @@ def make_scene(manifest, timeline, output, width, height, fps, samples=16, still
         obj.keyframe_insert(data_path="hide_render", frame=min(scene.frame_end, load_range[1]+1))
 
     # Labels and evidence boundary are camera-attached and keyed to the relevant beats.
-    overlay_panel(camera, panel_mat)
+    overlay_panel(camera, panel_mat, accent)
     font = None
     korean_font = Path("C:/Windows/Fonts/malgun.ttf")
     if korean_font.is_file():
         font = bpy.data.fonts.load(str(korean_font))
-    labels = [
-        ("단열 깊은 홈 볼 베어링", (2.20, 1.86, -1.95)),
-        ("내륜 / 축과 함께 회전", (2.20, 1.53, -1.95)),
-        ("볼 / 궤도 사이에서 구름", (2.20, 1.20, -1.95)),
-        ("케이지 / 볼 간격 유지", (2.20, .87, -1.95)),
-        ("개념 동작 - 접촉 해석 아님", (2.20, .54, -1.95)),
+    title = text_overlay(camera, "깊은 홈 볼 베어링", "bearing_card_title",
+                         (2.08, 1.68, -1.95), white, .17)
+    if font is not None:
+        title.data.font = font
+    separator_data = bpy.data.curves.new("bearing_card_header_rule", "CURVE")
+    separator_data.dimensions = "3D"
+    separator_data.bevel_depth = .004
+    separator = separator_data.splines.new("POLY")
+    separator.points.add(1)
+    separator.points[0].co = (1.68, 1.52, -1.97, 1)
+    separator.points[1].co = (3.40, 1.52, -1.97, 1)
+    separator_obj = bpy.data.objects.new("bearing_card_header_rule", separator_data)
+    scene.collection.objects.link(separator_obj)
+    separator_obj.parent = camera
+    separator_obj.data.materials.append(white)
+
+    part_rows = [
+        ("내륜", "축과 함께 회전", blue_steel),
+        ("외륜", "하우징에 고정", steel),
+        ("볼", "궤도 사이에서 구름", ceramic),
+        ("케이지", "볼 간격을 유지", cage_mat),
     ]
-    for body, location in labels:
-        label = text_overlay(camera, body, "label_"+body[:8].replace(" ", "_"), location, white, .16)
+    for index, (part, role, swatch_mat) in enumerate(part_rows):
+        y = 1.25 - index*.31
+        bpy.ops.mesh.primitive_circle_add(vertices=24, radius=.045, fill_type="NGON")
+        swatch = bpy.context.object
+        swatch.name = f"bearing_card_swatch_{index}"
+        swatch.parent = camera
+        swatch.location = (1.72, y+.045, -1.97)
+        swatch.data.materials.append(swatch_mat)
+        part_label = text_overlay(camera, part, f"bearing_card_part_{index}",
+                                  (1.84, y, -1.95), white, .135)
+        role_label = text_overlay(camera, role, f"bearing_card_role_{index}",
+                                  (2.43, y, -1.95), white, .11)
         if font is not None:
-            label.data.font = font
+            part_label.data.font = font
+            role_label.data.font = font
+    caveat = text_overlay(camera, "교육용 개념 모델 · 해석 결과 아님",
+                          "bearing_card_caveat", (1.68, -.045, -1.95), white, .095)
+    if font is not None:
+        caveat.data.font = font
 
     scene.render.filepath = str(output)
     scene.frame_set(max(1, min(scene.frame_end, still_frame or 1)))

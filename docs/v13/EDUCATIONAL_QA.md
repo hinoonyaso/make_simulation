@@ -61,3 +61,9 @@ The script uses these as technical review sources, but the video is still an ill
 - The captions are sentence-level. `caption_timing.json` is the single timing source for VTT/SRT and burn-in; ASS represents the same cue boundaries rounded to centiseconds while VTT/SRT retain millisecond timestamps. Unit tests check that the burn-in consumes the saved cue list and that the audio mux path does not use `-shortest`.
 - The bearing remains a conceptual illustration. No contact, friction, deformation, or load-distribution solver was run; the load arrow is an explanatory overlay, not a computed force result.
 - The generated video and reports are ignored local artifacts and are not present in a clean clone. CI was not run for this local review; remote Actions status is recorded separately by the PR.
+
+### R3 component-card revision
+
+- Replaced the cropped, sharp-edged label plane with a compact rounded card, title hierarchy, component-color markers, and aligned names/roles for inner race, outer race, balls and cage. Kept the educational-model caveat in the card.
+- Full silent preview regenerated at `pilots/v13_education/output/lessons/bearing-v13.5-silent-card-r3/preview.mp4`: 84 seconds, 960×540, 30 fps, H.264; 2,520 frames and 20 sentence-caption cues. The production delivery validator, manifest media check, Blender/Manim scene-style checks and full decode passed.
+- A rendered frame at 31 seconds confirms the card and text fit in frame and remain separate from the bearing. This is a targeted still review; it does not replace full normal-speed motion or comprehension review.
