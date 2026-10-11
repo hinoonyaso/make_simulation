@@ -14,6 +14,11 @@ if str(REPO_ROOT) not in sys.path:
 import bpy
 from mathutils import Vector
 
+BLENDER_KIT = REPO_ROOT / "core/blender-robotics-simulation-skill/templates"
+if str(BLENDER_KIT) not in sys.path:
+    sys.path.insert(0, str(BLENDER_KIT))
+from studio_utils import set_interpolation
+
 
 def args_after_separator():
     parser = argparse.ArgumentParser()
@@ -40,6 +45,20 @@ def material(name, color, metallic, roughness):
     return mat
 
 
+def emissive_material(name, color, strength=1.0):
+    mat = bpy.data.materials.new(name)
+    mat.diffuse_color = (*color, 1)
+    mat.use_nodes = True
+    nodes = mat.node_tree.nodes
+    nodes.clear()
+    emission = nodes.new("ShaderNodeEmission")
+    emission.inputs["Color"].default_value = (*color, 1)
+    emission.inputs["Strength"].default_value = strength
+    output = nodes.new("ShaderNodeOutputMaterial")
+    mat.node_tree.links.new(emission.outputs["Emission"], output.inputs["Surface"])
+    return mat
+
+
 def text_overlay(camera, body, name, location, mat, size=.17):
     bpy.ops.object.text_add()
     obj = bpy.context.object
@@ -54,15 +73,49 @@ def text_overlay(camera, body, name, location, mat, size=.17):
     return obj
 
 
-def overlay_panel(camera, mat):
-    bpy.ops.mesh.primitive_plane_add(size=2)
-    panel = bpy.context.object
-    panel.name = "part_label_panel"
-    panel.parent = camera
-    panel.location = (3.1, 1.40, -2.05)
-    panel.scale = (2.35, .94, 1)
-    panel.data.materials.append(mat)
-    return panel
+def camera_rotation_indicator(camera, accent, white, phase, frame_end):
+    """Camera-space counter-clockwise cue for the positive local-Z shaft rotation."""
+    cx, cy, radius, z = -3.05, 1.34, .31, -2.15
+    curve_data = bpy.data.curves.new("inner_race_rotation_arc", "CURVE")
+    curve_data.dimensions = "3D"
+    curve_data.resolution_u = 2
+    curve_data.bevel_depth = .022
+    curve_data.bevel_resolution = 3
+    spline = curve_data.splines.new("POLY")
+    points = 36
+    spline.points.add(points - 1)
+    start, stop = math.radians(-135), math.radians(105)
+    for i, point in enumerate(spline.points):
+        angle = start + (stop - start) * i / (points - 1)
+        point.co = (cx + radius * math.cos(angle), cy + radius * math.sin(angle), z, 1)
+    arc = bpy.data.objects.new("inner_race_rotation_direction_ccw", curve_data)
+    bpy.context.scene.collection.objects.link(arc)
+    arc.parent = camera
+    arc.data.materials.append(accent)
+
+    angle = stop
+    tip = Vector((cx + radius * math.cos(angle), cy + radius * math.sin(angle), z))
+    tangent = Vector((-math.sin(angle), math.cos(angle), 0)).normalized()
+    normal = Vector((-tangent.y, tangent.x, 0))
+    vertices = [tip, tip - tangent * .19 + normal * .11, tip - tangent * .19 - normal * .11]
+    mesh = bpy.data.meshes.new("rotation_arrowhead_mesh")
+    mesh.from_pydata(vertices, [], [(0, 1, 2)])
+    head = bpy.data.objects.new("rotation_arrowhead_ccw", mesh)
+    bpy.context.scene.collection.objects.link(head)
+    head.parent = camera
+    head.data.materials.append(accent)
+
+    label = text_overlay(camera, "내륜 회전 방향", "inner_race_rotation_label",
+                         (-2.62, 1.27, z), white, .13)
+    for obj in (arc, head, label):
+        for frame, hidden in ((1, True), (max(1, phase["presentation_start_frame"] - 1), True),
+                              (phase["presentation_start_frame"], False),
+                              (phase["presentation_end_frame"] - 1, False),
+                              (min(frame_end, phase["presentation_end_frame"]), True),
+                              (frame_end, True)):
+            obj.hide_render = hidden
+            obj.keyframe_insert(data_path="hide_render", frame=frame)
+        set_interpolation(obj, "CONSTANT", paths=["hide_render"])
 
 
 def key_visibility(obj, frames, visible):
@@ -95,14 +148,14 @@ def make_scene(manifest, timeline, output, width, height, fps, samples=16, still
     scene.view_settings.view_transform = "AgX"
     scene.render.image_settings.color_mode = "RGB"
 
-    steel = material("Satin chromium steel", (.33, .49, .66), .82, .24)
-    blue_steel = material("Inner race blue steel", (.08, .37, .68), .78, .22)
-    ceramic = material("Rolling elements", (.77, .84, .9), .55, .16)
-    cage_mat = material("Cage polymer brass", (.91, .43, .12), .55, .28)
+    steel = material("Satin chromium steel", (.33, .49, .66), .40, .50)
+    blue_steel = material("Inner race blue steel", (.08, .37, .68), .38, .48)
+    ceramic = material("Rolling elements", (.77, .84, .9), .18, .42)
+    cage_mat = material("Cage polymer brass", (.91, .43, .12), .24, .46)
     ground_mat = material("Stage", (.025, .04, .065), .16, .55)
     accent = material("Load path highlight", (1.0, .22, .12), .25, .33)
     white = material("Labels", (.83, .91, 1), .1, .5)
-    panel_mat = material("Label panel", (.014, .025, .045), .05, .8)
+    label_ink = emissive_material("Minimal overlay text", (1.0, 1.0, 1.0), 1.5)
 
     from core.visual_primitives.blender.exploded_assembly import create_ring, create_roller_set
 
@@ -153,6 +206,13 @@ def make_scene(manifest, timeline, output, width, height, fps, samples=16, still
     shaft_pointer.location = (0, -.66, 0)
     shaft_pointer.rotation_euler[0] = math.pi/2
     shaft_pointer.data.materials.append(accent)
+    bpy.ops.mesh.primitive_uv_sphere_add(segments=24, ring_count=12, radius=.105,
+                                         location=(0, 0, 0))
+    shaft_face_marker = bpy.context.object
+    shaft_face_marker.name = "rotating_shaft_face_marker"
+    shaft_face_marker.parent = shaft
+    shaft_face_marker.location = (.38, 0, 1.035)
+    shaft_face_marker.data.materials.append(accent)
     bpy.ops.mesh.primitive_torus_add(major_segments=96, minor_segments=16, major_radius=2.08,
                                     minor_radius=.12, location=(0, 0, 0))
     housing = bpy.context.object
@@ -192,10 +252,10 @@ def make_scene(manifest, timeline, output, width, height, fps, samples=16, still
     direction = Vector((.5, 0, 0)) - camera.location
     camera.rotation_euler = direction.to_track_quat("-Z", "Y").to_euler()
     camera_data.type = "ORTHO"
-    camera_data.ortho_scale = 7.7
+    camera_data.ortho_scale = 8.25
     scene.camera = camera
 
-    for loc, energy, size in [((2,-4,6), 1200, 5), ((-4,-1,2), 750, 4), ((1,4,4), 1300, 3)]:
+    for loc, energy, size in [((2,-4,6), 320, 7), ((-4,-1,2), 180, 6), ((1,4,4), 240, 5)]:
         light_data = bpy.data.lights.new("studio_softbox", "AREA")
         light_data.energy = energy
         light_data.shape = "DISK"
@@ -208,6 +268,9 @@ def make_scene(manifest, timeline, output, width, height, fps, samples=16, still
     # The exploded assembly state is controlled by the same manifest phase intervals.
     phases = {phase["phase_id"]: phase for phase in timeline["phases"]}
     beats = {beat["phase_id"]: beat for beat in manifest["beats"]}
+    rotation_phase = phases.get("rotation")
+    if rotation_phase:
+        camera_rotation_indicator(camera, accent, white, rotation_phase, scene.frame_end)
     exploded_phase = phases.get("exploded")
     reassemble_phase = phases.get("parts_reassemble")
     if exploded_phase and reassemble_phase:
@@ -266,22 +329,29 @@ def make_scene(manifest, timeline, output, width, height, fps, samples=16, still
         obj.keyframe_insert(data_path="hide_render", frame=min(scene.frame_end, load_range[1]+1))
 
     # Labels and evidence boundary are camera-attached and keyed to the relevant beats.
-    overlay_panel(camera, panel_mat)
     font = None
     korean_font = Path("C:/Windows/Fonts/malgun.ttf")
     if korean_font.is_file():
         font = bpy.data.fonts.load(str(korean_font))
-    labels = [
-        ("단열 깊은 홈 볼 베어링", (.83, 1.86, -1.95)),
-        ("내륜 / 축과 함께 회전", (.83, 1.53, -1.95)),
-        ("볼 / 궤도 사이에서 구름", (.83, 1.20, -1.95)),
-        ("케이지 / 볼 간격 유지", (.83, .87, -1.95)),
-        ("개념 동작 - 접촉 해석 아님", (.83, .54, -1.95)),
+    title = text_overlay(camera, "부품과 역할", "bearing_label_title",
+                         (2.18, 1.78, -1.95), label_ink, .19)
+    if font is not None:
+        title.data.font = font
+    part_rows = [
+        "내륜  ·  축과 함께 회전",
+        "외륜  ·  하우징에 고정",
+        "볼  ·  궤도에서 구름",
+        "케이지  ·  볼 간격 유지",
     ]
-    for body, location in labels:
-        label = text_overlay(camera, body, "label_"+body[:8].replace(" ", "_"), location, white, .16)
+    for index, body in enumerate(part_rows):
+        label = text_overlay(camera, body, f"bearing_label_{index}",
+                             (2.18, 1.40-index*.37, -1.95), label_ink, .14)
         if font is not None:
             label.data.font = font
+    caveat = text_overlay(camera, "교육용 개념 모델", "bearing_label_caveat",
+                          (2.18, -.15, -1.95), label_ink, .11)
+    if font is not None:
+        caveat.data.font = font
 
     scene.render.filepath = str(output)
     scene.frame_set(max(1, min(scene.frame_end, still_frame or 1)))
