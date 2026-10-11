@@ -26,6 +26,7 @@ from core.education.evidence_router import route_evidence
 from core.education.solver_registry import load_solver_config
 from core.simulation_engines.battery.result_validator import load_validated_result
 from core.simulation_engines.battery.trace import TRACE_SCHEMA
+from core.education.sparse_render_plan import build_sparse_render_plan, validate_sparse_render_plan
 
 
 AUDIO_QA_STATUSES = {"NOT_REQUESTED", "BLOCKED", "PASS", "FAIL"}
@@ -57,6 +58,74 @@ def validate_media_frame_range(video: Path, timeline: dict) -> dict:
     return {"status": "PASS", "start_inclusive": 0, "end_exclusive": expected,
             "expected_frames": expected, "observed_frames": observed,
             "frame_rate": stream.get("r_frame_rate")}
+
+
+def compose_sparse_video(plan: dict, timeline: dict, segment_dir: Path,
+                         manim_video: Path, output: Path) -> dict:
+    """Compose rendered still/animation segments and Manim ranges with exact frames."""
+    command = ["ffmpeg", "-v", "error", "-y"]
+    source_by_beat: dict[str, int] = {}
+    for segment in plan["segments"]:
+        if segment["renderer"] != "blender":
+            continue
+        source = (segment_dir / f"battery_{segment['beat_id']}.png" if segment["mode"] == "still"
+                  else segment_dir / f"battery_{segment['beat_id']}.mp4")
+        if segment["mode"] == "still":
+            command.extend(["-loop", "1", "-framerate", str(timeline["fps"]), "-i", str(source)])
+        else:
+            command.extend(["-i", str(source)])
+        source_by_beat[segment["beat_id"]] = len(source_by_beat)
+    command.extend(["-i", str(manim_video)])
+    manim_index = len(source_by_beat)
+    filters, labels = [], []
+    for index, segment in enumerate(plan["segments"]):
+        label = f"v{index}"
+        if segment["renderer"] == "manim":
+            source_index = manim_index
+            trim = f"trim=start_frame={segment['timeline_start']}:end_frame={segment['timeline_end']}"
+        else:
+            source_index = source_by_beat[segment["beat_id"]]
+            trim = (f"trim=end_frame={segment['output_frames']}" if segment["mode"] == "still" else
+                    f"trim=start_frame=0:end_frame={segment['output_frames']}")
+        filters.append(f"[{source_index}:v]{trim},setpts=PTS-STARTPTS,fps={timeline['fps']}[{label}]")
+        labels.append(f"[{label}]")
+    filters.append("".join(labels) + f"concat=n={len(labels)}:v=1:a=0[outv]")
+    command.extend(["-filter_complex", ";".join(filters), "-map", "[outv]", "-an",
+                    "-r", str(timeline["fps"]), "-c:v", "libx264", "-pix_fmt", "yuv420p",
+                    "-movflags", "+faststart", str(output)])
+    subprocess.run(command, cwd=ROOT, check=True)
+    if not output.is_file() or output.stat().st_size == 0:
+        raise RuntimeError(f"FFmpeg did not produce sparse composition: {output}")
+    validation = validate_media_frame_range(output, timeline)
+    return {"status": "PASS", "frames": validation["observed_frames"],
+            "fps": timeline["fps"], "command": command}
+
+
+def validate_sparse_blender_report(report: dict, plan: dict) -> None:
+    """Ensure Blender produced exactly the stills and source ranges in the plan."""
+    observed = report.get("sparse_render", {})
+    if observed.get("timeline_sha256") != plan.get("timeline_sha256"):
+        raise RuntimeError("Blender sparse report references a different timeline")
+    rows = {row.get("beat_id"): row for row in observed.get("segments", [])}
+    expected = [segment for segment in plan["segments"] if segment["renderer"] == "blender"]
+    if len(rows) != len(expected):
+        raise RuntimeError("Blender sparse report has missing or duplicate segments")
+    for segment in expected:
+        row = rows.get(segment["beat_id"])
+        if row is None or row.get("mode") != segment["mode"] or row.get("output_frames") != segment["output_frames"]:
+            raise RuntimeError(f"Blender sparse report does not match beat {segment['beat_id']}")
+        if segment["mode"] == "still":
+            if (row.get("source_frame") != segment["source_frame"]
+                    or row.get("blender_rendered_images") != 1):
+                raise RuntimeError(f"Blender still report is invalid for {segment['beat_id']}")
+        elif (row.get("source_frame_start") != segment["source_frame_start"]
+              or row.get("source_frame_end") != segment["source_frame_end"]
+              or row.get("blender_rendered_images") != segment["source_frames"]):
+            raise RuntimeError(f"Blender animation report is invalid for {segment['beat_id']}")
+    rendered_images = sum(segment["blender_rendered_images"] for segment in observed["segments"])
+    expected_images = plan["blender_still_count"] + plan["blender_animation_frames"]
+    if observed.get("blender_rendered_images") != expected_images or rendered_images != expected_images:
+        raise RuntimeError(f"Blender rendered {rendered_images} images; sparse plan expects {expected_images}")
 
 
 def engineering_qa(*, manifest_validated: bool, timeline_validated: bool,
@@ -249,15 +318,29 @@ def validate_blender_asset_load_report(report: dict, renderer_contract: dict) ->
 
 def render(manifest_path: Path, timeline_path: Path, run_dir: Path, mode: str, manim_only: bool = False,
            *, renderer: EducationRenderer | None = None, renderer_contract: dict | None = None,
-           runtime_versions: dict | None = None):
+           runtime_versions: dict | None = None, render_strategy: str = "legacy_full"):
     if renderer is None or renderer_contract is None:
         raise ValueError("generic education render requires an allow-listed renderer and resolved contract")
     from core.mechanism.renderer import _blender_binary
     width, height, manim_quality = (960, 540, "-ql") if mode == "preview" else (1920, 1080, "-qh")
+    timeline = manifest = None
+    sparse_plan = None
+    if render_strategy == "sparse" and not manim_only:
+        timeline = json.loads(timeline_path.read_text(encoding="utf-8"))
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        sparse_plan = build_sparse_render_plan(
+            manifest, timeline, supported_renderers=renderer.supported_modes,
+            supports_stills=renderer.supports_sparse_stills)
+        plan_errors = validate_sparse_render_plan(sparse_plan, timeline)
+        if plan_errors:
+            raise RendererResolutionError("BLOCKED: invalid sparse render plan: " + "; ".join(plan_errors))
+        (run_dir / "render_segments.json").write_text(
+            json.dumps(sparse_plan, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     blender_sec = 0.0
     blender_output = None
     blender = None
     asset_load_report = None
+    sparse_encode_sec = 0.0
     selected = set(renderer_contract["selected_modes"])
     uses_blender = "blender" in selected and not manim_only
     if uses_blender:
@@ -266,6 +349,7 @@ def render(manifest_path: Path, timeline_path: Path, run_dir: Path, mode: str, m
         blender = _blender_binary()
         blender_script = ROOT / renderer.blender_script
         blender_output = run_dir / f"{renderer.topic}_blender.mp4"
+        segment_dir = run_dir / "blender_segments"
         blender_args = [blender, "--background", "--factory-startup", "--python-exit-code", "1", "--python",
             blender_path_arg(blender_script, blender), "--", "--manifest", blender_path_arg(manifest_path, blender),
             "--timeline", blender_path_arg(timeline_path, blender)]
@@ -275,10 +359,13 @@ def render(manifest_path: Path, timeline_path: Path, run_dir: Path, mode: str, m
             "--output", blender_path_arg(blender_output, blender),
             "--width", str(width), "--height", str(height), "--fps", "30"])
         blender_args.extend(["--samples", "16" if mode == "preview" else "32"])
+        if sparse_plan is not None:
+            blender_args.extend(["--sparse-plan", blender_path_arg(run_dir / "render_segments.json", blender),
+                                 "--segments-dir", blender_path_arg(segment_dir, blender)])
         started = time.perf_counter()
         subprocess.run(blender_args, cwd=ROOT, check=True)
         blender_sec = time.perf_counter() - started
-        if not blender_output.is_file() or blender_output.stat().st_size == 0:
+        if sparse_plan is None and (not blender_output.is_file() or blender_output.stat().st_size == 0):
             raise RuntimeError(f"Blender exited without producing its expected video: {blender_output}")
         asset_report_path = run_dir / "asset_load_report.json"
         if renderer.asset_load_report_required:
@@ -287,6 +374,27 @@ def render(manifest_path: Path, timeline_path: Path, run_dir: Path, mode: str, m
                     f"Blender renderer {renderer.topic!r} requires asset_load_report.json, but none was produced")
             asset_load_report = json.loads(asset_report_path.read_text(encoding="utf-8"))
             validate_blender_asset_load_report(asset_load_report, renderer_contract)
+        if sparse_plan is not None:
+            for segment in sparse_plan["segments"]:
+                if segment["renderer"] != "blender":
+                    continue
+                if segment["mode"] == "still":
+                    image_path = segment_dir / f"battery_{segment['beat_id']}.png"
+                    if not image_path.is_file() or image_path.stat().st_size == 0:
+                        raise RuntimeError(f"Blender did not produce expected sparse still: {image_path}")
+                else:
+                    animation = segment_dir / f"battery_{segment['beat_id']}.mp4"
+                    sequence = segment_dir / f"battery_{segment['beat_id']}_%04d.png"
+                    segment_encode_started = time.perf_counter()
+                    subprocess.run(["ffmpeg", "-v", "error", "-y", "-framerate", str(timeline["fps"]),
+                                    "-start_number", str(segment["source_frame_start"]), "-i", str(sequence),
+                                    "-frames:v", str(segment["output_frames"]), "-an", "-r", str(timeline["fps"]),
+                                    "-c:v", "libx264", "-pix_fmt", "yuv420p", "-movflags", "+faststart",
+                                    str(animation)], cwd=ROOT, check=True)
+                    sparse_encode_sec += time.perf_counter() - segment_encode_started
+                    if not animation.is_file() or animation.stat().st_size == 0:
+                        raise RuntimeError(f"FFmpeg did not encode sparse segment: {animation}")
+            validate_sparse_blender_report(asset_load_report or {}, sparse_plan)
 
     scene = ROOT / renderer.manim_script
     manim_dir = run_dir / f"{renderer.topic}_manim"
@@ -307,25 +415,33 @@ def render(manifest_path: Path, timeline_path: Path, run_dir: Path, mode: str, m
     if len(manim_files) != 1:
         raise FileNotFoundError(f"expected exactly one Manim render, found {len(manim_files)}")
     manim_video = manim_files[0]
+    if timeline is None or manifest is None:
+        timeline = json.loads(timeline_path.read_text(encoding="utf-8"))
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     final = run_dir / ("preview.mp4" if mode == "preview" else "silent_final.mp4")
-    timeline = json.loads(timeline_path.read_text(encoding="utf-8"))
-    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-    filters, inputs = [], []
-    concat_labels = []
-    for index, (beat, phase) in enumerate(zip(manifest["beats"], timeline["phases"])):
-        source = (1 if uses_blender else 0) if beat.get("tool") == "M" else 0
-        label = f"v{index}"
-        filters.append(f"[{source}:v]trim=start_frame={phase['presentation_start_frame']}:"
-                       f"end_frame={phase['presentation_end_frame']},setpts=PTS-STARTPTS[{label}]")
-        concat_labels.append(f"[{label}]")
-    filters.append("".join(concat_labels) + f"concat=n={len(concat_labels)}:v=1:a=0[outv]")
-    ffmpeg_inputs = ["ffmpeg", "-v", "error", "-y"]
-    if uses_blender:
-        ffmpeg_inputs.extend(["-i", str(blender_output)])
-    ffmpeg_inputs.extend(["-i", str(manim_video), "-filter_complex", ";".join(filters),
-                          "-map", "[outv]", "-an", "-r", "30", "-c:v", "libx264",
-                          "-pix_fmt", "yuv420p", "-movflags", "+faststart", str(final)])
-    subprocess.run(ffmpeg_inputs, cwd=ROOT, check=True)
+    composition_started = time.perf_counter()
+    if sparse_plan is not None:
+        composition_report = compose_sparse_video(
+            sparse_plan, timeline, run_dir / "blender_segments", manim_video, final)
+    else:
+        filters, concat_labels = [], []
+        ffmpeg_inputs = ["ffmpeg", "-v", "error", "-y"]
+        if uses_blender:
+            ffmpeg_inputs.extend(["-i", str(blender_output)])
+        ffmpeg_inputs.extend(["-i", str(manim_video)])
+        for index, (beat, phase) in enumerate(zip(manifest["beats"], timeline["phases"])):
+            source = (1 if uses_blender else 0) if beat.get("tool") == "M" else 0
+            label = f"v{index}"
+            filters.append(f"[{source}:v]trim=start_frame={phase['presentation_start_frame']}:"
+                           f"end_frame={phase['presentation_end_frame']},setpts=PTS-STARTPTS[{label}]")
+            concat_labels.append(f"[{label}]")
+        filters.append("".join(concat_labels) + f"concat=n={len(concat_labels)}:v=1:a=0[outv]")
+        ffmpeg_inputs.extend(["-filter_complex", ";".join(filters),
+                              "-map", "[outv]", "-an", "-r", "30", "-c:v", "libx264",
+                              "-pix_fmt", "yuv420p", "-movflags", "+faststart", str(final)])
+        subprocess.run(ffmpeg_inputs, cwd=ROOT, check=True)
+        composition_report = {"status": "FRAME_RANGE_VALIDATED_BY_DELIVERY_GATE"}
+    composition_sec = time.perf_counter() - composition_started
     provenance = {
         "topic": renderer.topic,
         "renderer_registry_id": renderer.topic,
@@ -340,7 +456,17 @@ def render(manifest_path: Path, timeline_path: Path, run_dir: Path, mode: str, m
         "renderer_versions": runtime_versions or {},
         "blender_render_sec": blender_sec,
         "manim_render_sec": manim_sec,
-        "composition": "per-beat renderer selected by V9 manifest tool and shared V12 integer-frame timeline",
+        "composition": ("sparse Blender still/segment and Manim video on shared V12 integer-frame timeline"
+                         if sparse_plan is not None else
+                         "per-beat renderer selected by V9 manifest tool and shared V12 integer-frame timeline"),
+        "render_strategy": "sparse" if sparse_plan is not None else render_strategy,
+        "render_segments": "render_segments.json" if sparse_plan is not None else None,
+        "blender_still_images": sparse_plan["blender_still_count"] if sparse_plan is not None else None,
+        "blender_animation_frames": sparse_plan["blender_animation_frames"] if sparse_plan is not None else None,
+        "sparse_segment_encode_sec": sparse_encode_sec,
+        "composition_sec": composition_sec,
+        "composition_validation": {key: value for key, value in composition_report.items()
+                                   if key != "command"},
         "solver_used": renderer_contract.get("solver_result") is not None,
         "solver_result": renderer_contract.get("solver_result"),
         "manim_only": manim_only,
@@ -366,7 +492,8 @@ def render(manifest_path: Path, timeline_path: Path, run_dir: Path, mode: str, m
             "font": "NanumGothic", "burned_in": True, "sidecar": "subtitles.ko.vtt",
             "timestamp_rounding": "ASS centiseconds; VTT/SRT milliseconds"}, ensure_ascii=False, indent=2)+"\n",
             encoding="utf-8")
-    return final, {"blender_render_sec": blender_sec, "manim_render_sec": manim_sec}
+    return final, {"blender_render_sec": blender_sec, "manim_render_sec": manim_sec,
+                   "composition_sec": composition_sec, "sparse_segment_encode_sec": sparse_encode_sec}
 
 
 def write_qa_reports(run_dir: Path, video: Path, cues: list[dict], *, audio_status: str,
@@ -447,6 +574,8 @@ def main() -> int:
     parser.add_argument("--manim-only", action="store_true", help="render with Manim only (for lightweight CI smoke preview)")
     parser.add_argument("--blender-still-frame", type=int,
                         help="render one solver-backed Blender battery frame after writing shared lesson context")
+    parser.add_argument("--render-strategy", choices=("legacy_full", "sparse"), default=None,
+                        help="select renderer strategy; otherwise use the registered renderer default")
     parser.add_argument("--solver-result", type=Path,
                         help="validated solver output directory; required for computed-result rendering")
     parser.add_argument("--output-root", type=Path, default=ROOT / "pilots/v13_education/output/lessons")
@@ -470,6 +599,10 @@ def main() -> int:
         renderer = resolve_renderer(raw["topic"])
     except (ValueError, OSError) as exc:
         parser.error(str(exc))
+    render_strategy = args.render_strategy or renderer.default_render_strategy
+    if render_strategy not in renderer.render_strategies:
+        parser.error(f"renderer {renderer.topic!r} does not support render strategy {render_strategy!r}; "
+                     f"supported: {', '.join(renderer.render_strategies)}")
     solver_files = None
     if not args.plan_only and planned["evidence"].get("execution_required"):
         if args.solver_result is None:
@@ -547,6 +680,7 @@ def main() -> int:
         encoding="utf-8")
     (run_dir / "evidence_report.json").write_text(json.dumps(planned["evidence"], ensure_ascii=False, indent=2)+"\n", encoding="utf-8")
     report = {"status": "PLANNED" if args.plan_only else "RUNNING", "solver_used": solver_files is not None,
+              "render_strategy": render_strategy,
               "renderer_registry_id": planned["renderer_contract"]["registry_id"],
               "asset_id": planned["renderer_contract"]["asset_id"],
               "asset_validation": planned["renderer_contract"]["asset_validation"]["status"],
@@ -618,7 +752,7 @@ def main() -> int:
         video, metrics = render(manifest_path, timeline_path, run_dir,
                                 "preview" if args.preview else "final", manim_only=args.manim_only,
                                 renderer=renderer, renderer_contract=planned["renderer_contract"],
-                                runtime_versions=runtime_versions)
+                                runtime_versions=runtime_versions, render_strategy=render_strategy)
         validation = [sys.executable, str(ROOT / "scripts/validate_delivery.py"), str(video),
                       *delivery_resolution_args(args.preview),
                       "--fps", "30", "--full-decode", "--caption-timing", str(run_dir / "caption_timing.json")]

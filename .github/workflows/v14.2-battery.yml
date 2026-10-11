@@ -18,6 +18,7 @@ on:
       - 'scripts/produce_lesson.py'
       - 'scripts/run_battery_simulation.py'
       - 'scripts/validate_battery_result.py'
+      - 'tests/test_sparse_render_plan.py'
   workflow_dispatch:
 
 permissions:
@@ -92,6 +93,8 @@ jobs:
           PY
       - name: Run battery contract regression tests
         run: uv run --locked --no-sync python -m unittest discover -s tests -p test_battery_simulation.py -v
+      - name: Validate sparse render plan and FFmpeg composition fixtures
+        run: uv run --locked --no-sync python -m unittest discover -s tests -p test_sparse_render_plan.py -v
       - name: Validate PyBaMM lesson plan without solver execution
         run: |
           uv run --locked --no-sync python scripts/produce_lesson.py \

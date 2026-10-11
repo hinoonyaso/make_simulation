@@ -270,6 +270,8 @@ Manim smoke preview는 Quick Start 명령으로 실제 미디어를 생성하고
 
 V14 PR #5는 Merge Commit [`e6c1250`](https://github.com/hinoonyaso/make_simulation/commit/e6c12505f5bd052c9b14bb7f92a0b2ab0bbb9529)으로 main에 통합됐습니다. 이 병합 커밋 자체에 연결된 Actions run은 현재 없습니다. V14.1의 80초 Blender+Manim 혼합 Preview는 Blender 5.2.1에서 실제 렌더하고 자산·피벗·자막·MP4 디코드를 검증했습니다. 출력은 [통합 보고서](docs/v14.1/INTEGRATION_REPORT.md)에 기록했습니다.
 
+V14.2 PyBaMM 배터리 통합은 PR #7 Merge Commit [`9c8987d`](https://github.com/hinoonyaso/make_simulation/commit/9c8987dede01dd5cabd2d89edce67d0bdf7ee233)으로 main에 반영됐습니다. 후속 V14.3 local sparse-rendering 작업은 `v14.3-local-sparse-rendering` 브랜치에서 검증 중이며 main에는 아직 포함되지 않았습니다. 구현·검증 상태는 [V14.3 문서](docs/v14.3/README.md)를 확인하세요. V14.3에서 실제 Blender 영상을 검증하기 전까지 sparse 제작 영상은 완료된 것으로 취급하지 않습니다.
+
 교육 workflow는 테스트와 Manim smoke를 실행하며 Python/Manim 패키지는 `uv.lock`의 `sim-render` group으로 설치합니다. 교육 asset 검증, 계획 검증, Manim-only smoke, 960×540·30 fps·H.264 metadata, VTT와 production report, FFmpeg 전체 디코드를 검사하고 로그·미디어·리포트를 Artifact로 보관합니다. Blender 렌더는 Linux CI 필수 항목이 아닙니다. 전체 회귀는 `ai-trace.yml`이 계속 담당합니다. V14.1 full lesson 계획 검증도 추가했으며, 실제 Blender 통합 검증은 [로컬 통합 보고서](docs/v14.1/INTEGRATION_REPORT.md)에 기록했습니다.
 
 | 검증 | 상태 | 범위 |
@@ -314,6 +316,7 @@ V14 PR #5는 Merge Commit [`e6c1250`](https://github.com/hinoonyaso/make_simulat
 - [V13 education pipeline](docs/v13/README.md)
 - [V14 generic renderer](docs/v14/README.md)
 - [V14.1 gear production](docs/v14.1/README.md)
+- [V14.3 local sparse rendering](docs/v14.3/README.md)
 - [Asset index](assets/README.md)
 - [Education asset library](assets/education/README.md)
 - [Asset source/license matrix](docs/assets/SOURCE_LICENSE_MATRIX.md)
