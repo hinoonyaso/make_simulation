@@ -264,9 +264,9 @@ Manim smoke preview는 Quick Start 명령으로 실제 미디어를 생성하고
 
 **CI 기록:** 아래 run들은 `main` `0a2979b`에서 2026-10-11에 성공한 기존 검증입니다. [AI trace run #35](https://github.com/hinoonyaso/make_simulation/actions/runs/38065253356), [V13 Education run #3](https://github.com/hinoonyaso/make_simulation/actions/runs/38065253393), [V12 Engineering run #10](https://github.com/hinoonyaso/make_simulation/actions/runs/38065253366)이 모두 성공했습니다. run #35에서 전체 155개 unittest를 통과했고, Education run은 실제 Manim smoke 미디어를 렌더·검증했습니다. V12 Engineering run은 physics, CAN, motor FOC, timeline 테스트와 세 편의 렌더·전체 디코드를 통과했습니다. V12.1 PR의 [run #7](https://github.com/hinoonyaso/make_simulation/actions/runs/38033443003)도 7개 check 모두 성공해 Merge Commit `d0e868c`로 main에 반영됐습니다. run #28의 Vendor CAD 오류는 9a43b20에서 수정되어, CAD가 없는 clone에서도 catalog·license·재배포 정책·Git 미추적 검사는 유지되고 로컬 파일 검사는 파일이 있을 때만 실행됩니다.
 
-V14 PR #5는 Merge Commit [`e6c1250`](https://github.com/hinoonyaso/make_simulation/commit/e6c12505f5bd052c9b14bb7f92a0b2ab0bbb9529)으로 main에 통합됐습니다. 이 병합 커밋 자체에 연결된 Actions run은 현재 없습니다. V14.1의 80초 기어 혼합 Preview는 아직 Blender 통합·최종 MP4 검증 전입니다.
+V14 PR #5는 Merge Commit [`e6c1250`](https://github.com/hinoonyaso/make_simulation/commit/e6c12505f5bd052c9b14bb7f92a0b2ab0bbb9529)으로 main에 통합됐습니다. 이 병합 커밋 자체에 연결된 Actions run은 현재 없습니다. V14.1의 80초 Blender+Manim 혼합 Preview는 Blender 5.2.1에서 실제 렌더하고 자산·피벗·자막·MP4 디코드를 검증했습니다. 출력은 [통합 보고서](docs/v14.1/INTEGRATION_REPORT.md)에 기록했습니다.
 
-교육 workflow는 테스트와 Manim smoke를 실행하며 Python/Manim 패키지는 `uv.lock`의 `sim-render` group으로 설치합니다. 교육 asset 검증, 계획 검증, Manim-only smoke, 960×540·30 fps·H.264 metadata, VTT와 production report, FFmpeg 전체 디코드를 검사하고 로그·미디어·리포트를 Artifact로 보관합니다. Blender 렌더는 Linux CI 필수 항목이 아닙니다. 전체 회귀는 `ai-trace.yml`이 계속 담당합니다. V14.1 full lesson 계획 검증도 추가했으며, 실제 Blender 통합 검증은 별도로 수행해야 합니다.
+교육 workflow는 테스트와 Manim smoke를 실행하며 Python/Manim 패키지는 `uv.lock`의 `sim-render` group으로 설치합니다. 교육 asset 검증, 계획 검증, Manim-only smoke, 960×540·30 fps·H.264 metadata, VTT와 production report, FFmpeg 전체 디코드를 검사하고 로그·미디어·리포트를 Artifact로 보관합니다. Blender 렌더는 Linux CI 필수 항목이 아닙니다. 전체 회귀는 `ai-trace.yml`이 계속 담당합니다. V14.1 full lesson 계획 검증도 추가했으며, 실제 Blender 통합 검증은 [로컬 통합 보고서](docs/v14.1/INTEGRATION_REPORT.md)에 기록했습니다.
 
 | 검증 | 상태 | 범위 |
 |---|---|---|
@@ -275,18 +275,18 @@ V14 PR #5는 Merge Commit [`e6c1250`](https://github.com/hinoonyaso/make_simulat
 | Asset registry / education asset validation | PASS | Registry 39 entries, 6 generated models |
 | Education plan | PASS | `education_smoke.json`, concept-only |
 | Manim smoke preview | PASS | [GitHub Actions main V13 run #3](https://github.com/hinoonyaso/make_simulation/actions/runs/38065253393), 960×540, 30 fps, silent, VTT/report present, full decode |
-| Blender render | PASS (기록된 R6 bearing 검증) | Windows Blender 5.2.1 from WSL; 이번 V14.1 gear render는 별도 미검증 |
-| V14.1 80초 Gear mixed Preview | PLAN PASS / Blender render BLOCKED in this WSL session | Plan: 2,400 frames, 30 fps; Windows 실행 파일은 찾았으나 interop launch에서 vsock 오류 |
+| Blender render | PASS | Windows Blender 5.2.1 from WSL elevated runner; V14.1 gear asset load and pivot report PASS |
+| V14.1 80초 Gear mixed Preview | PASS, limited preview | 960×540 H.264, 30 fps, 2,400 frames; full decode PASS; full-length normal-speed review pending |
 | Narration/TTS | NOT TESTED | Smoke는 무음이며 외부 TTS를 호출하지 않음 |
 | 최종 1080p 영상 검증 | NOT TESTED | CI preview는 960×540 무음 smoke |
 
 ## Current Capabilities & Limitations
 
 - V13 lesson pipeline은 실험적이며, 주제별 출력과 renderer 지원이 다릅니다.
-- V14.1 기어 lesson은 80초 Blender+Manim 혼합 Preview 대상으로 개발 중입니다. Plan-only 성공은 Blender 렌더·자막·최종 MP4 검증을 의미하지 않습니다.
+- V14.1 기어 lesson의 80초 Blender+Manim silent Preview는 로컬에서 렌더·검증했습니다. 이는 TTS가 포함된 최종 영상이나 1080p master 검증을 의미하지 않습니다.
 - 로컬에서 검증한 무음 smoke preview는 960×540, 30 fps입니다. 이는 1080p 완성 영상 검증이 아닙니다.
 - TTS는 별도 선택이며, Edge TTS 서버로 대본 텍스트가 전송됩니다.
-- Blender 렌더는 Blender 실행 파일과 환경 연동이 필요합니다. 현재 개발 환경에서 Windows Blender 5.2.1을 확인했지만 모든 WSL 설정에서 실행된다는 뜻은 아닙니다.
+- Blender 렌더는 Blender 실행 파일과 환경 연동이 필요합니다. 이 검증에서는 elevated runner에서 Windows Blender 5.2.1을 실행했습니다. 일반 sandbox runner는 WSL interop socket을 보지 못할 수 있습니다.
 - Registry에는 clone에 없는 로컬 vendor 파일이 있을 수 있습니다. 자산별 README와 validation 결과를 확인하세요.
 - 전문 해석기 미통합 상태를 플러그인 설치만으로 해결할 수 없습니다. 향후 통합 계획은 [TODO](assets/TODO.md)와 주제 문서를 확인하세요.
 - 저장소 최상위에는 공통 `LICENSE`가 없습니다. 파일별·asset별 권리를 확인해야 합니다.

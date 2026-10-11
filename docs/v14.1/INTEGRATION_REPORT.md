@@ -13,12 +13,17 @@ V14 PR #5 (`2dcfafbd5c95a2b38ce609c5933f5dbfb1192a96`) was verified with success
 - Updated generic composition to pass the shared renderer context to Blender and reject a missing or mismatched asset report before asserting the Blender asset was loaded.
 - Extended CI plan validation for the full lesson; Blender is not installed or runnable in the current Linux CI workflow, so this does not replace local Blender integration evidence.
 
-## Validation evidence and blockers
+## Local mixed-renderer validation
 
 - V14 PR base CI: both runs listed above succeeded before V14.1 changes.
-- V14.1 plan-only for the full spec: PASS locally; 80 seconds, 30 fps, 2,400 frames, Blender+Manim modes, asset hash PASS, ideal ratio −0.5.
-- Focused education renderer registry/keyframe tests: run locally; see final task report for exact count.
-- Actual Windows Blender executable found at `/mnt/c/Program Files/Blender Foundation/Blender 5.2/blender.exe`, but launch from this WSL session fails with `UtilBindVsockAnyPort:309: socket failed 1`. Blender runtime version, asset load, Blender render, mixed composition, 80-second MP4, subtitles on the MP4, and full decode are therefore not yet verified in this session.
-- TTS/Whisper and 1080p output are intentionally out of scope.
+- Actual mixed render: `pilots/v14_education/output/gear-v14.1-final-fixed/preview.mp4`, rendered on 2026-10-11 with Blender 5.2.1 LTS, Manim Community 0.21.0, and FFmpeg. The sandboxed command runner could not see WSL interop sockets, while the approved elevated runner could; `cmd.exe /c ver` and Windows Blender both ran. The earlier socket failure was a sandbox visibility issue, not an unavailable Blender installation. The complete 11 MB run directory is saved in the shared checkout and is ignored by Git.
+- Delivery validation: PASS — H.264, 960×540, 30/1 fps, 2,400 frames, 80.0 seconds, 16 caption cues, full decode. Video SHA-256: `559c54ced14f973614ba6ef529446d5f8e79ca177c62509b76ec846311390cad`.
+- Blender asset report: PASS — actual `.blend` loaded; all four registered mesh objects present; source asset hash matched; temporary pivots were checked over 18 sampled frames; maximum mesh-centroid error was `3.06e-8 m` against `0.001 m` tolerance; centers remained fixed; source `.blend` was not modified.
+- Mixed visual review: Blender frames and the Manim pitch-point transition were inspected from the rendered MP4. The Manim navy background is intentional, not a black-video interval. Automated black/freeze review and uninterrupted full-length normal-speed viewing were not performed; the production report keeps those items pending.
+- Scene style: PASS for `pilots/v14_education/blender/spur_gears_scene.py` and `pilots/v14_education/manim/spur_gears_scene.py`.
+- Regression: PASS — all 195 unittest tests with the locked `sim-render`, `sim-math`, `sim-can`, and `sim-motor` groups installed. `compileall` over `core scripts tests assets/education`: PASS. Asset registry: PASS, 39 entries; education asset validation: PASS, 6 generated models.
+- Delivery recheck: PASS with 960×540 preview thresholds, 30 fps, shared timeline and caption timing, and FFmpeg full decode. The default 1080p delivery threshold correctly rejects this preview-sized file.
+- Black-frame scan: FFmpeg `blackdetect` reported no black intervals. `freezedetect` reports held portions in the storyboard, so this signal alone is not treated as a defect. Representative transition and motion frames were inspected; uninterrupted 80-second normal-speed playback review remains pending.
+- TTS/Whisper and 1080p output were not requested and were not run. The output is a silent 960×540 review preview, not a narrated master.
 
-Do not report V14.1 as production-complete until the executable is run from an environment with working Blender access and all required video checks pass.
+This confirms the Blender + Manim mixed preview path locally. It does not validate full-motion playback end-to-end, narration, 1080p delivery, or gear contact mechanics.

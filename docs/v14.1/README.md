@@ -16,13 +16,13 @@ uv run python scripts/produce_lesson.py \
   --output-root pilots/v14_education/output/lessons --run-id spur-gears-full
 ```
 
-The Preview command requires working Manim, Blender, WSL/Windows path translation when applicable, and FFmpeg. It should produce 960×540 H.264 at 30 fps, 2,400 frames, plus VTT/SRT, burned-in captions, QA reports, and the renderer provenance in the run directory. A planned or Manim-only render is not the mixed final preview.
+The Preview command requires working Manim, Blender, WSL/Windows path translation when applicable, and FFmpeg. A verified local run produced 960×540 H.264 at 30 fps, 2,400 frames, plus VTT/SRT, burned-in captions, QA reports, and renderer provenance. See `INTEGRATION_REPORT.md` for its exact output path and evidence. A planned or Manim-only render is not the mixed preview.
 
 ## Asset and pivot handling
 
 The Blender renderer loads `assets/education/generated/spur_gears_20_40.blend` by registry ID `edu.spur_gears_20_40.v1` and checks its SHA-256 against the sidecar/catalog. It requires `Pinion_20T`, `Gear_40T`, `Pinion_Hub`, and `Gear_Hub`. In this generated asset the gear mesh coordinates include their center offsets while object origins may remain at the world origin. The Scene checks the mesh bounds centers against the shared ±30 mm axes, clears the generator's preview animation in memory, and parents each gear/hub to a temporary Empty at its true axis while preserving its world matrix. It does not save the loaded `.blend`.
 
-The generated geometry is CC0-1.0 according to the tracked sidecar. It is stylized polygonal, non-involute teaching geometry, not a commercial CAD part. The resulting lesson does not calculate tooth contact, forces, friction, efficiency, stress, or deformation.
+The generated geometry is CC0-1.0 according to the tracked sidecar. It is stylized polygonal, non-involute teaching geometry, not a commercial CAD part. The Blender renderer aligns the animated 40T gear's mesh centroid to its axis in memory after clearing the asset's preview action; this retains its tooth phase and does not save the source `.blend`. The lesson does not calculate tooth contact, forces, friction, efficiency, stress, or deformation.
 
 ## Shared kinematics and timing
 
@@ -32,4 +32,4 @@ After Blender has loaded the asset and validated pivots, it writes `asset_load_r
 
 ## Verification status
 
-The pure planning and animation-keyframe checks can run in CI without Blender. Full mixed-renderer acceptance also requires the actual Blender asset load, short rotation test, rendered 80-second Preview, exact frame count, subtitle checks, and FFmpeg full decode. These remain separate status items; tests or plan-only do not imply they passed.
+The pure planning and animation-keyframe checks can run in CI without Blender. The local mixed-renderer acceptance run loaded the actual asset in Blender, checked fixed pivots, rendered the 80-second Preview, checked the exact frame count and burned captions, and passed FFmpeg full decode. This is a silent 960×540 preview; it does not validate TTS, 1080p output, contact mechanics, or normal-speed full-video listening.

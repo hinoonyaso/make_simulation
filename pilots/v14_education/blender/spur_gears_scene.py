@@ -72,6 +72,15 @@ def mesh_centroid_world(obj) -> Vector:
     return total / len(obj.data.vertices)
 
 
+def mesh_centroid_local(obj) -> Vector:
+    if not getattr(obj.data, "vertices", None):
+        raise RuntimeError(f"{obj.name} has no mesh vertices for local center validation")
+    total = Vector((0.0, 0.0, 0.0))
+    for vertex in obj.data.vertices:
+        total += vertex.co
+    return total / len(obj.data.vertices)
+
+
 def add_axis_pivot(obj, name: str, center: tuple[float, float, float]):
     """Parent while preserving world geometry; rotate the assembly at its true axis."""
     world_before = obj.matrix_world.copy()
@@ -79,9 +88,13 @@ def add_axis_pivot(obj, name: str, center: tuple[float, float, float]):
     bpy.context.scene.collection.objects.link(pivot)
     pivot.location = center
     pivot.rotation_mode = "XYZ"
+    # Resolve matrix_world before preserving the child transform. Without this
+    # update Blender 5 can keep the new Empty's world matrix at the origin.
+    bpy.context.view_layer.update()
     obj.parent = pivot
     obj.matrix_parent_inverse = Matrix.Identity(4)
     obj.matrix_world = world_before
+    bpy.context.view_layer.update()
     return pivot
 
 
@@ -100,19 +113,36 @@ def validate_and_pivot(asset: dict, context: dict) -> tuple[dict, dict]:
     for name, center in ("Pinion_20T", expected["Pinion_20T"]), ("Gear_40T", expected["Gear_40T"]):
         obj = bpy.data.objects[name]
         # The authored asset contains a preview action for its generator render.
-        # Clear it in memory so it cannot combine with the pivot animation.
+        # Clear it in memory so it cannot combine with the pivot animation. The
+        # frame-1 phase remains on the object, so realign the mesh center before
+        # parenting it at the expected axis; this preserves the tooth phase.
         obj.animation_data_clear()
         bpy.context.view_layer.update()
-        observed = bounds_center(obj)
+        if obj.parent is not None:
+            raise RuntimeError(f"{name} must not have a parent in the registered gear asset")
+        local_center = mesh_centroid_local(obj)
+        local_error = (local_center - center).length
+        if local_error > PIVOT_TOLERANCE_M:
+            raise RuntimeError(f"{name} local mesh center {tuple(local_center)} differs from expected "
+                               f"{tuple(center)} by {local_error:.6f} m")
+        center_before_alignment = mesh_centroid_world(obj)
+        translation_correction = center - center_before_alignment
+        obj.location += translation_correction
+        bpy.context.view_layer.update()
+        observed = mesh_centroid_world(obj)
         error = (observed - center).length
         if error > PIVOT_TOLERANCE_M:
-            raise RuntimeError(f"{name} mesh bounds center {tuple(observed)} differs from expected "
-                               f"{tuple(center)} by {error:.6f} m")
+            raise RuntimeError(f"{name} world mesh center {tuple(observed)} differs from expected "
+                               f"{tuple(center)} by {error:.6f} m after alignment")
         geometry_report[name] = {
             "object_origin_world_m": list(obj.matrix_world.translation),
-            "mesh_bounds_center_world_m": list(observed),
+            "mesh_local_centroid_m": list(local_center),
+            "mesh_centroid_before_axis_alignment_m": list(center_before_alignment),
+            "axis_alignment_translation_m": list(translation_correction),
+            "mesh_centroid_world_m": list(observed),
+            "mesh_bounds_center_world_m": list(bounds_center(obj)),
             "expected_axis_center_world_m": list(center),
-            "bounds_center_error_m": error,
+            "axis_center_error_m": error,
             "bounds_world_m": [list(world_bounds(obj)[0]), list(world_bounds(obj)[1])],
         }
     for name, center in (("Pinion_Hub", expected["Pinion_20T"]),
@@ -153,11 +183,16 @@ def key_rotation(pivot, frames: list[int], angles: list[float]) -> None:
 
 
 def setup_camera_and_lights(scene, width: int, height: int, fps: int, samples: int) -> None:
-    scene.render.engine = "BLENDER_EEVEE_NEXT" if hasattr(bpy.app, "version") and bpy.app.version >= (4, 2, 0) else "BLENDER_EEVEE"
+    render_engines = {item.identifier for item in scene.render.bl_rna.properties["engine"].enum_items}
+    eevee_engine = next((name for name in ("BLENDER_EEVEE_NEXT", "BLENDER_EEVEE")
+                         if name in render_engines), None)
+    if eevee_engine is None:
+        raise RuntimeError(f"Blender build does not expose Eevee; available engines: {sorted(render_engines)}")
+    scene.render.engine = eevee_engine
     scene.render.resolution_x, scene.render.resolution_y = width, height
     scene.render.resolution_percentage = 100
     scene.render.fps, scene.render.fps_base = fps, 1.0
-    scene.render.image_settings.file_format = "FFMPEG"
+    scene.render.image_settings.media_type = "VIDEO"
     scene.render.ffmpeg.format = "MPEG4"
     scene.render.ffmpeg.codec = "H264"
     scene.render.ffmpeg.constant_rate_factor = "MEDIUM"
@@ -178,7 +213,7 @@ def setup_camera_and_lights(scene, width: int, height: int, fps: int, samples: i
     camera = bpy.context.object
     camera.name = "V14_1_Gear_Camera"
     camera.data.type = "ORTHO"
-    camera.data.ortho_scale = .138
+    camera.data.ortho_scale = .155
     camera.data.clip_start = .01
     direction = Vector((.01, 0, 0)) - camera.location
     camera.rotation_euler = direction.to_track_quat("-Z", "Y").to_euler()
@@ -194,8 +229,8 @@ def setup_camera_and_lights(scene, width: int, height: int, fps: int, samples: i
         light.data.color = color
         light.rotation_euler = (Vector((0, 0, 0)) - light.location).to_track_quat("-Z", "Y").to_euler()
 
-    area("V14_1_Key_Softbox", (-.055, -.075, .11), 35, .11, (0.78, .87, 1.0))
-    area("V14_1_Fill_Softbox", (.08, .04, .07), 18, .14, (1.0, .78, .48))
+    area("V14_1_Key_Softbox", (-.055, -.075, .11), 7, .11, (0.78, .87, 1.0))
+    area("V14_1_Fill_Softbox", (.08, .04, .07), 3, .14, (1.0, .78, .48))
 
 
 def add_camera_text(camera, body: str, name: str, location: tuple[float, float, float],
@@ -222,12 +257,38 @@ def add_camera_text(camera, body: str, name: str, location: tuple[float, float, 
     return obj
 
 
+def add_rotation_marker(pivot, name: str, start_radius: float, end_radius: float,
+                        color: tuple[float, float, float, float]):
+    """Add a short axis-following index line so symmetric gears visibly rotate."""
+    curve = bpy.data.curves.new(name + "_curve", "CURVE")
+    curve.dimensions = "3D"
+    curve.bevel_depth = 0.00045
+    curve.bevel_resolution = 2
+    spline = curve.splines.new("POLY")
+    spline.points.add(1)
+    spline.points[0].co = (start_radius, 0.0, 0.0042, 1.0)
+    spline.points[1].co = (end_radius, 0.0, 0.0042, 1.0)
+    marker = bpy.data.objects.new(name, curve)
+    bpy.context.scene.collection.objects.link(marker)
+    marker.parent = pivot
+    marker.matrix_parent_inverse = Matrix.Identity(4)
+    marker.location = (0.0, 0.0, 0.0)
+    material = bpy.data.materials.new(name + "_emission")
+    nodes = material.node_tree.nodes
+    nodes.clear()
+    emission = nodes.new("ShaderNodeEmission")
+    emission.inputs["Color"].default_value = color
+    output = nodes.new("ShaderNodeOutputMaterial")
+    material.node_tree.links.new(emission.outputs["Emission"], output.inputs["Surface"])
+    curve.materials.append(material)
+    bpy.context.view_layer.update()
+    return marker
+
+
 def setup_labels(camera, results: dict, fps: int, phase_frames: dict[str, tuple[int, int]]) -> None:
     labels = [
-        add_camera_text(camera, "INPUT  20T", "V14_1_Input_Label", (-.068, .032, -.1), .006, (.98, .68, .2, 1)),
-        add_camera_text(camera, "OUTPUT  40T", "V14_1_Output_Label", (.012, -.025, -.1), .006, (.72, .86, 1, 1)),
-        add_camera_text(camera, "EXTERNAL GEAR | IDEAL RATIO  -0.5", "V14_1_Ratio_Label",
-                        (-.068, -.035, -.1), .0045, (.95, .97, 1, 1)),
+        add_camera_text(camera, "INPUT  20T", "V14_1_Input_Label", (-.072, .034, -.1), .0045, (.98, .68, .2, 1)),
+        add_camera_text(camera, "OUTPUT  40T", "V14_1_Output_Label", (.012, .034, -.1), .0045, (.72, .86, 1, 1)),
     ]
     # Labels persist throughout the Blender track; the shared timeline decides
     # which renderer's frames are actually used for each beat.
@@ -282,6 +343,10 @@ def render_lesson(args: argparse.Namespace) -> None:
     scene.unit_settings.system = "METRIC"
     scene.unit_settings.scale_length = 1.0
     pivots, geometry = validate_and_pivot(asset, context)
+    add_rotation_marker(pivots["Pinion_20T"], "V14_1_Input_Rotation_Index", .009, .016,
+                        (.02, .85, 1.0, 1.0))
+    add_rotation_marker(pivots["Gear_40T"], "V14_1_Output_Rotation_Index", .013, .034,
+                        (1.0, .25, .035, 1.0))
 
     fps = int(timeline["fps"])
     if fps != args.fps:
@@ -326,12 +391,12 @@ def render_lesson(args: argparse.Namespace) -> None:
     setup_camera_and_lights(scene, args.width, args.height, args.fps, args.samples)
     setup_labels(scene.camera, results, fps, phase_frames)
     scene.render.filepath = str(args.output.resolve())
-    scene.render.image_settings.file_format = "FFMPEG"
     report = create_load_report(asset, geometry, pivots, bpy.app.version_string, fixed_center_validation)
     report_path = args.output.with_name("asset_load_report.json")
     report_path.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     if args.still_frame is not None:
         scene.frame_set(max(1, min(args.still_frame, scene.frame_end)))
+        scene.render.image_settings.media_type = "IMAGE"
         scene.render.image_settings.file_format = "PNG"
         scene.render.filepath = str(args.output.with_suffix(".png"))
         bpy.ops.render.render(write_still=True)
