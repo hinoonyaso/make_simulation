@@ -20,13 +20,21 @@ Render the full bearing preview with Blender and Manim:
 uv run python scripts/produce_lesson.py --spec examples/education/bearing.json --preview
 ```
 
-The default preview is silent, writes sentence-level VTT captions and burns the same captions into the MP4. `--with-tts` explicitly invokes the existing Edge TTS and Whisper alignment workflow; it is not run automatically. No solver is needed for the bearing lesson, and no measured friction/contact result is claimed. Full narrated output is only reported after TTS, caption timing, audio mux and media validation succeed.
+The default preview is silent. `caption_timing.json` is the authoritative cue list used to write both VTT/SRT sidecars and the burn-in ASS track; TTS mode instead consumes the Whisper-aligned cue list for all three. `--with-tts` explicitly invokes the existing Edge TTS and Whisper alignment workflow; it is not run automatically and requires approval before external script transmission. `--plan-only --with-tts` is rejected before output-directory creation or subprocess execution. Both delivery-validation passes use the selected mode's minimum dimensions: 960×540 for preview and 1920×1080 for final. No solver is needed for the bearing lesson, and no measured friction/contact result is claimed. Full narrated output is only reported after TTS, caption timing, audio mux and final media validation succeed; muxing does not use `-shortest`.
+
+Audio QA uses `NOT_REQUESTED` for the default silent path, `PASS` only after an audio stream is present and final delivery validation succeeds, and `FAIL` when a requested audio path fails. `BLOCKED` is reserved for an explicit authorization-denied state supplied to the QA writer; the CLI has no approval-state input and never infers approval or denial. Engineering QA reports manifest contract and video/timeline checks separately from the evidence type and pending human accuracy review. The bearing remains `CONCEPTUAL_ILLUSTRATION`; these automated checks do not establish physical calculations or validate the lesson's engineering claims.
 
 ## Pilot output and review status
 
 Latest recorded bearing preview: `pilots/v13_education/output/lessons/bearing-v13-preview-r6/preview.mp4` (84 seconds, 960×540, 30 fps, silent). This output directory is ignored/generated and is not present in a clean clone. V9 manifest media validation and full MP4 decode passed for that recorded preview. Sampled frames were reviewed, but full normal-speed playback and narration review remain incomplete. See `EDUCATIONAL_QA.md` for the evidence and limits. A fresh Edge TTS authorization is required before sending this Korean script to the external TTS service.
 
 On 2026-10-11, the Manim-only smoke command above was rerun from the pushed-branch source using Manim 0.21.0. It produced a 960×540, 30 fps silent MP4 under a temporary directory and passed full decode. Manim printed a missing-SoX warning; SoX is not used by this silent path. This smoke render is not the bearing preview or a narrated final.
+
+### V13.5 local production branch preview
+
+The latest local output is `pilots/v13_education/output/lessons/bearing-v13.5-silent-readable-r5/preview.mp4`: an 84-second, 960×540, 30 fps H.264 silent preview. Blender 5.2.1 rendered 2,520 frames and Manim 0.21.0 rendered the comparison beats. Full decode, V9 manifest media validation, and 20-cue caption timing validation passed. `caption_timing.json` drives VTT, SRT, and burn-in; the final MP4 contains no audio. The Edge TTS request was declined, so no script was transmitted and no `final.mp4` or 1080p master was produced. R5 enlarges and brightens the unboxed labels while preserving R4's softer lighting; see `EDUCATIONAL_QA.md` for review evidence and limits.
+
+One-pass render review after a targeted layout correction inspected frames at 12, 24, 31, 36, 40, 43, 46, 48, 53, 65, and 77 seconds. The revised right-side labels no longer cover the bearing in sampled frames, and the camera-space rotation arrow and shaft-face marker are visible. No blocker/high defect was found in those stills. Full normal-speed playback, audio, and novice comprehension remain unreviewed; see `EDUCATIONAL_QA.md` and the generated `review_report.yaml`. These are local branch results, not a GitHub Actions run or narrated/final delivery.
 
 ## CI status
 

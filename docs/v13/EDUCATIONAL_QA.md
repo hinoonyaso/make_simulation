@@ -36,3 +36,55 @@ The procedural bearing is a single-row deep-groove conceptual assembly. It omits
 - SKF, [At the boundary between lubrication and wear](https://evolution.skf.com/at-the-boundary-between-lubrication-and-wear-part-1/): notes sliding can be superimposed on rolling in bearing contacts. This supports the script's caveat that friction and slip are not zero.
 
 The script uses these as technical review sources, but the video is still an illustrative teaching model and is not manufacturer design guidance.
+
+## V13.5 local production branch review (2026-10-11)
+
+### Output
+
+- Generated, ignored output: `pilots/v13_education/output/lessons/bearing-v13.5-silent-review-r2/preview.mp4`.
+- 84.000 s, 2,520 frames, 960×540, 30 fps, H.264, silent. Blender 5.2.1 render: 319.05 s; Manim 0.21.0 render: 11.55 s.
+- `validate_delivery.py --fps 30 --caption-timing ... --timeline ... --full-decode`: PASS; V9 manifest `--require-media`: PASS.
+- Manim smoke preview: PASS at 960×540, 30 fps, full decode. It emitted the existing missing-SoX warning; SoX is not needed by this silent route.
+- All repository unit tests: 162/162 PASS in the existing project virtual environment. Education-focused module: 14/14 PASS. Python `compileall`: PASS. Asset registry: 39 entries PASS; education asset validation: 39 registry entries, six catalog models, six generated assets checked PASS.
+- Scene style: Blender PASS; Manim PASS.
+
+### Changes and frame review
+
+- The Blender rotation beat now uses a camera-space counter-clockwise arc and a contrasting marker attached to the shaft face. The direction cue appears only during the rotation phase. A one-frame Blender 5.2.1 check verified the shared `studio_utils.set_interpolation` helper and saved the expected frame.
+- The first full preview review found the component label panel overlapping the bearing. The panel was moved to a narrower right-side area and the complete preview was rerendered as R2. A still check confirmed the labels fit inside the frame without covering the bearing.
+- Two render-review passes were performed. The final pass inspected 12, 24, 31, 36, 40, 43, 46, 48, 53, 65, and 77 seconds. No blocker/high issue was found in the inspected frames. The rotation marker and rolling-element arrangement differ across sampled times; the exploded and reassembly poses show vertical separation.
+- This is a sampled-frame review, not normal-speed playback. Full-motion rhythm/continuity, audio playback, and novice comprehension remain unreviewed. `review_report.yaml` records this as `INCOMPLETE`, not PASS.
+
+### Delivery boundary
+
+- The user declined Edge TTS script transmission. No external TTS call was made; `audio_qa.json` records the audio step as not run. Consequently, this output is a silent preview only: no `final.mp4`, AAC stream, or 1080p master was produced.
+- The captions are sentence-level. `caption_timing.json` is the single timing source for VTT/SRT and burn-in; ASS represents the same cue boundaries rounded to centiseconds while VTT/SRT retain millisecond timestamps. Unit tests check that the burn-in consumes the saved cue list and that the audio mux path does not use `-shortest`.
+- The bearing remains a conceptual illustration. No contact, friction, deformation, or load-distribution solver was run; the load arrow is an explanatory overlay, not a computed force result.
+- The generated video and reports are ignored local artifacts and are not present in a clean clone. CI was not run for this local review; remote Actions status is recorded separately by the PR.
+
+### R3 component-card revision
+
+- This intermediate revision replaced the cropped label plane with a rounded information card. User review found it still overlapped the bearing and did not match the requested simple style; R4 below supersedes it.
+- Full silent preview regenerated at `pilots/v13_education/output/lessons/bearing-v13.5-silent-card-r3/preview.mp4`: 84 seconds, 960×540, 30 fps, H.264; 2,520 frames and 20 sentence-caption cues. The production delivery validator, manifest media check, Blender/Manim scene-style checks and full decode passed.
+- This result was superseded after user review and is not the latest preview.
+
+### R4 minimal labels and softer lighting
+
+- Removed the information card completely. The title and four part/function labels sit in the upper-right negative space without a panel, border or swatches; the camera framing leaves separation from the bearing.
+- Reduced the three area lights from 520/300/420 to 320/180/240 W, increased their size, and changed the race/ball materials to lower-metallic, higher-roughness satin finishes.
+- R4 preview: `pilots/v13_education/output/lessons/bearing-v13.5-silent-minimal-r4/preview.mp4`. The local still at 31 seconds shows the unboxed labels outside the bearing silhouette and softer highlights. Full R4 render and delivery decode passed: 84 seconds, 2,520 frames, 960×540, 30 fps, H.264, 20 caption cues, silent.
+- Still-based review only; normal-speed viewing and learner comprehension remain unreviewed.
+
+### R5 readable minimal labels
+
+- Increased the title from 0.15 to 0.19 scene units, the part rows from 0.105 to 0.14, and the emission strength to 1.5 with pure white text. Kept the text unboxed and outside the bearing silhouette.
+- R5 preview: `pilots/v13_education/output/lessons/bearing-v13.5-silent-readable-r5/preview.mp4`; 84 seconds, 2,520 frames, 960×540, 30 fps, H.264, silent. Full decode and 20-cue caption timing validation passed.
+- The 31-second rendered frame confirms larger, high-contrast text with no panel or model overlap. This remains a sampled-frame check, not full-motion or comprehension review.
+
+### V13.5 production QA reporting fix
+
+- The existing R5 preview evidence above is retained unchanged. No TTS, Whisper end-to-end run, 1080p render, or full-motion review was performed for this code change.
+- Delivery validation now uses the same mode-specific minimum dimensions before and after audio mux: 960×540 for preview and 1920×1080 for final.
+- Silent runs record audio as `NOT_REQUESTED`. Audio `PASS` requires a present audio stream and successful post-mux delivery validation; requested-path errors record `FAIL`. `BLOCKED` is only reportable when an explicit denied-authorization state is supplied. The CLI does not expose that state, so the script does not infer approval or denial.
+- QA JSON and Markdown separate manifest contract validation, video/timeline validation, evidence type, and pending human accuracy review. The bearing remains `CONCEPTUAL_ILLUSTRATION`; automated rendering and delivery checks do not calculate contact force, friction, stress, or deformation.
+- These changes are covered by mocked unit tests. The recorded R5 video and its earlier validation are not reclassified as evidence for the new code path.

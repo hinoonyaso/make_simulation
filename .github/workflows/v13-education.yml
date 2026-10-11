@@ -140,8 +140,27 @@ jobs:
           report = json.loads((run_dir / "production_report.json").read_text(encoding="utf-8"))
           if report.get("status") != "SILENT_PREVIEW":
               raise SystemExit(f"unexpected production status: {report.get('status')}")
-          if report.get("audio_status") != "not generated":
-              raise SystemExit("smoke preview unexpectedly reports audio")
+          if report.get("audio_status") != "NOT_REQUESTED":
+              raise SystemExit(f"unexpected audio status for silent preview: {report.get('audio_status')}")
+          audio_qa = json.loads((run_dir / "audio_qa.json").read_text(encoding="utf-8"))
+          qa_report = json.loads((run_dir / "qa_report.json").read_text(encoding="utf-8"))
+          if audio_qa.get("status") != "NOT_REQUESTED" or qa_report.get("audio", {}).get("status") != "NOT_REQUESTED":
+              raise SystemExit("silent preview audio QA status is inconsistent")
+          if audio_qa.get("audio_streams") != 0:
+              raise SystemExit("silent smoke preview unexpectedly contains an audio stream")
+          engineering = qa_report.get("engineering", {})
+          expected_engineering = {
+              "status": "REVIEW_REQUIRED",
+              "manifest_contract": {"status": "PASS"},
+              "video_timeline": {"status": "PASS"},
+              "human_accuracy_review": {"status": "PENDING"},
+          }
+          for key, value in expected_engineering.items():
+              if engineering.get(key) != value:
+                  raise SystemExit(f"unexpected engineering QA field {key}: {engineering.get(key)!r}")
+          evidence = engineering.get("evidence", {})
+          if evidence.get("type") != "CONCEPTUAL_ILLUSTRATION" or evidence.get("calculation_status") != "NOT_COMPUTED":
+              raise SystemExit(f"unexpected engineering evidence: {evidence!r}")
           if not json.loads((run_dir / "visual_manifest.json").read_text(encoding="utf-8")).get("beats"):
               raise SystemExit("visual manifest has no beats")
           probe = subprocess.run([
