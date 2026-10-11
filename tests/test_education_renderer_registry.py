@@ -80,11 +80,102 @@ class EducationRendererRegistryTests(unittest.TestCase):
         with self.assertRaisesRegex(RendererResolutionError, "no manim implementation"):
             plan_lesson(spec)
 
-    def test_topic_without_blender_cannot_select_blender(self):
+    def test_spur_gear_topic_selects_registered_blender_renderer(self):
         spec = self.load("spur_gears.json")
         spec["beats"][0]["tool"] = "B"
-        with self.assertRaisesRegex(RendererResolutionError, "does not implement blender"):
-            plan_lesson(spec)
+        plan = plan_lesson(spec)
+        self.assertIn("blender", plan["renderer_contract"]["selected_modes"])
+        self.assertEqual(plan["renderer_contract"]["scene"]["blender_script"],
+                         "pilots/v14_education/blender/spur_gears_scene.py")
+
+    def test_full_gear_lesson_is_80_seconds_and_mixed_renderer(self):
+        spec = self.load("spur_gears_full.json")
+        plan = plan_lesson(spec)
+        self.assertEqual(plan["timeline"]["fps"], 30)
+        self.assertEqual(plan["timeline"]["total_frames"], 2400)
+        self.assertEqual(plan["timeline"]["total_duration_sec"], 80)
+        self.assertEqual(plan["renderer_contract"]["selected_modes"], ["blender", "manim"])
+        self.assertEqual(plan["renderer_contract"]["calculated_results"]["omega_2_over_omega_1"], -.5)
+        self.assertEqual(plan["renderer_contract"]["calculated_results"]["pinion_center_m"], (-.03, 0, 0))
+        self.assertEqual(plan["renderer_contract"]["calculated_results"]["gear_center_m"], (.03, 0, 0))
+        self.assertEqual(plan["evidence"]["status"], "CONCEPT_ONLY")
+
+    def test_blender_gear_keys_share_ideal_ratio_and_continuous_phase_boundaries(self):
+        from core.education.gear_animation import plan_gear_rotation_keys
+        planned = plan_lesson(self.load("spur_gears_full.json"))
+        keys = plan_gear_rotation_keys(planned["visual_manifest"], planned["timeline"], -.5)
+        pinion = keys["Pinion_20T"]
+        gear = keys["Gear_40T"]
+        first_input = next(row for row in pinion if row["frame"] == 661)
+        first_output = next(row for row in gear if row["frame"] == 661)
+        last_input = next(row for row in pinion if row["frame"] == 1021)
+        last_output = next(row for row in gear if row["frame"] == 1021)
+        self.assertEqual(first_input["angle_rad"], 0)
+        self.assertEqual(first_output["angle_rad"], 0)
+        self.assertAlmostEqual(last_input["angle_rad"], 2 * __import__("math").pi)
+        self.assertAlmostEqual(last_output["angle_rad"], -__import__("math").pi)
+        for name in ("Pinion_Hub", "Gear_Hub"):
+            self.assertEqual(keys[name], keys["Pinion_20T"] if name == "Pinion_Hub" else keys["Gear_40T"])
+
+    def test_gear_key_planner_rejects_nonfinite_turns_and_mismatched_phases(self):
+        from core.education.gear_animation import plan_gear_rotation_keys
+        planned = plan_lesson(self.load("spur_gears_full.json"))
+        manifest, timeline = planned["visual_manifest"], planned["timeline"]
+        manifest["beats"][2]["input_turns"] = float("nan")
+        with self.assertRaisesRegex(ValueError, "input_turns must be finite"):
+            plan_gear_rotation_keys(manifest, timeline, -.5)
+        manifest, timeline = planned["visual_manifest"], planned["timeline"]
+        timeline["phases"].pop()
+        with self.assertRaisesRegex(ValueError, "must match"):
+            plan_gear_rotation_keys(manifest, timeline, -.5)
+
+    def test_gear_rotation_key_planner_scales_two_turns_and_reverse_input(self):
+        import math
+        from core.education.gear_animation import plan_gear_rotation_keys
+        planned = plan_lesson(self.load("spur_gears_full.json"))
+        manifest = copy.deepcopy(planned["visual_manifest"])
+        manifest["beats"][2]["input_turns"] = 2.0
+        forward = plan_gear_rotation_keys(manifest, planned["timeline"], -.5)
+        self.assertAlmostEqual(next(row["angle_rad"] for row in forward["Pinion_20T"]
+                                   if row["frame"] == 1021), 4 * math.pi)
+        self.assertAlmostEqual(next(row["angle_rad"] for row in forward["Gear_40T"]
+                                   if row["frame"] == 1021), -2 * math.pi)
+        manifest["beats"][2]["input_turns"] = -1.0
+        reverse = plan_gear_rotation_keys(manifest, planned["timeline"], -.5)
+        self.assertAlmostEqual(next(row["angle_rad"] for row in reverse["Pinion_20T"]
+                                   if row["frame"] == 1021), -2 * math.pi)
+        self.assertAlmostEqual(next(row["angle_rad"] for row in reverse["Gear_40T"]
+                                   if row["frame"] == 1021), math.pi)
+
+    def test_blender_load_report_must_match_registered_asset_and_objects(self):
+        from scripts.produce_lesson import validate_blender_asset_load_report
+        planned = plan_lesson(self.load("spur_gears_full.json"))
+        contract = planned["renderer_contract"]
+        metadata = contract["asset_validation"]["metadata"]
+        report = {"status": "PASS", "asset_id": contract["asset_id"],
+                  "asset_sha256": contract["asset_validation"]["sha256"],
+                  "blender_loaded_objects": metadata["objects"],
+                  "loaded_objects_present": True, "pivot_validation": "PASS",
+                  "centers_fixed_during_animation": True,
+                  "fixed_center_validation": {"status": "PASS"}}
+        validate_blender_asset_load_report(report, contract)
+        report["asset_sha256"] = "0" * 64
+        with self.assertRaisesRegex(RuntimeError, "does not prove"):
+            validate_blender_asset_load_report(report, contract)
+        report["asset_sha256"] = contract["asset_validation"]["sha256"]
+        report["blender_loaded_objects"] = metadata["objects"][:-1]
+        with self.assertRaisesRegex(RuntimeError, "does not prove"):
+            validate_blender_asset_load_report(report, contract)
+
+    def test_full_gear_lesson_cannot_silently_fall_back_to_manim(self):
+        from scripts.produce_lesson import renderer_runtime_preflight
+        spec = self.load("spur_gears_full.json")
+        plan = plan_lesson(spec)
+        with patch("scripts.produce_lesson.subprocess.run") as run:
+            with self.assertRaisesRegex(RendererResolutionError, "no renderer fallback"):
+                renderer_runtime_preflight(resolve_renderer(spec["topic"]),
+                                           plan["renderer_contract"], manim_only=True)
+        self.assertFalse(run.called)
 
     def test_plan_only_writes_plan_without_external_renderer_or_tts_calls(self):
         from scripts.produce_lesson import main

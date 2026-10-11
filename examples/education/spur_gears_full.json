@@ -1,0 +1,93 @@
+{
+  "schema": "education-lesson-spec/v1",
+  "topic": "spur_gears",
+  "asset_id": "edu.spur_gears_20_40.v1",
+  "title": "기어는 어떻게 회전 방향을 바꾸고 속도를 줄일까?",
+  "question": "외접 기어는 왜 반대 방향으로 돌고, 큰 기어는 왜 느릴까?",
+  "audience": "beginner",
+  "language": "ko-KR",
+  "duration_target_sec": 80,
+  "learning_objectives": [
+    "20T 입력 기어와 40T 출력 기어의 역할을 구분한다",
+    "맞물림점의 공통 접선 속도와 반대 각속도의 관계를 설명한다",
+    "잇수 비로 이상적인 출력 각속도를 계산한다",
+    "교육용 기어 형상과 실제 접촉 해석의 범위를 구분한다"
+  ],
+  "common_misconceptions": [
+    "맞물린 외접 기어는 같은 방향으로 돈다",
+    "기어비가 실제 효율과 치면 응력까지 알려준다"
+  ],
+  "prerequisites": ["각속도와 기어 잇수"],
+  "engineering_domain": "mechanical_engineering",
+  "modes": ["concept_visualization", "mathematical_demonstration"],
+  "visualization": "blender+manim",
+  "computation_policy": "only_when_needed",
+  "output_profile": "education_preview",
+  "solver": null,
+  "trace": null,
+  "beats": [
+    {
+      "id": "G01", "phase_id": "gear_pair", "sec": 10,
+      "text": "작은 20T 기어가 입력을 받고 큰 40T 기어가 출력을 받습니다.",
+      "caption": "작은 20T 기어가 입력을 받습니다. 큰 40T 기어가 출력을 받습니다.",
+      "visual_caption": "20T 입력 기어와 40T 출력 기어",
+      "object": "20T와 40T 외접 기어 쌍", "state_change": "두 기어의 역할을 구분",
+      "focus": "입력과 출력", "tool": "B", "blueprint": "before_after",
+      "evidence_type": "conceptual_illustration"
+    },
+    {
+      "id": "G02", "phase_id": "tooth_structure", "sec": 12,
+      "text": "작은 기어에는 20개, 큰 기어에는 40개의 이가 있습니다. 이 잇수 차이가 회전 속도 비를 결정합니다.",
+      "caption": "작은 기어에는 20개의 이가 있습니다. 큰 기어에는 40개의 이가 있습니다.",
+      "visual_caption": "20개와 40개의 기어 이",
+      "object": "등록된 다각형 교육용 기어 자산", "state_change": "잇수와 크기 차이를 드러냄",
+      "focus": "잇수 20 대 40", "tool": "B", "blueprint": "before_after",
+      "evidence_type": "conceptual_illustration"
+    },
+    {
+      "id": "G03", "phase_id": "opposite_direction", "sec": 12,
+      "text": "입력 기어를 한 바퀴 돌리면 맞물린 출력 기어는 반대 방향으로 반 바퀴 돕니다.",
+      "caption": "입력 기어가 한 바퀴 돕니다. 출력 기어는 반대 방향으로 반 바퀴 돕니다.",
+      "visual_caption": "외접 기어의 반대 방향 회전",
+      "object": "회전하는 20T·40T 기어 쌍", "state_change": "같은 중심에서 서로 반대 방향으로 회전",
+      "focus": "회전 방향과 회전 수", "tool": "B", "blueprint": "before_after",
+      "evidence_type": "conceptual_illustration", "input_turns": 1.0
+    },
+    {
+      "id": "G04", "phase_id": "pitch_velocity", "sec": 12,
+      "text": "맞물림을 이상적으로 보면 피치점에서 두 기어의 접선 속도는 같습니다. 접선 방향은 같지만 회전 중심이 반대편에 있어 각속도의 부호가 반대가 됩니다.",
+      "caption": "이상적인 피치점에서 두 접선 속도는 같습니다. 회전 중심이 반대편이라 각속도 방향은 반대입니다.",
+      "visual_caption": "공통 접선 속도가 반대 각속도를 만드는 이유",
+      "object": "두 피치원과 공통 피치점", "state_change": "공통 접선 속도와 반대 각속도를 함께 표시",
+      "focus": "원인: 같은 접선 속도와 다른 반지름 방향", "tool": "M", "blueprint": "before_after",
+      "evidence_type": "derived_calculation", "input_turns": 1.0
+    },
+    {
+      "id": "G05", "phase_id": "speed_ratio", "sec": 12,
+      "text": "같은 1회전 동안 큰 기어는 반 바퀴만 돕니다. 따라서 출력 각속도의 크기는 입력의 절반입니다.",
+      "caption": "입력이 한 바퀴 돌 때 출력은 반 바퀴 돕니다. 출력 각속도 크기는 입력의 절반입니다.",
+      "visual_caption": "입력 1회전 대 출력 0.5회전",
+      "object": "입출력 기어 회전량", "state_change": "입력과 출력의 회전량을 비교",
+      "focus": "속도 크기 1 대 0.5", "tool": "B", "blueprint": "before_after",
+      "evidence_type": "derived_calculation", "input_turns": 1.0
+    },
+    {
+      "id": "G06", "phase_id": "ratio_calculation", "sec": 12,
+      "text": "각속도 비는 마이너스 입력 잇수 나누기 출력 잇수입니다. 20 나누기 40을 대입하면 마이너스 0.5가 됩니다.",
+      "caption": "각속도 비는 −Z1 나누기 Z2입니다. 20 나누기 40을 대입하면 −0.5입니다.",
+      "visual_caption": "잇수 비에서 각속도 비 도출",
+      "object": "잇수와 각속도 관계식", "state_change": "기호식에 잇수를 대입해 결과를 계산",
+      "focus": "ω₂/ω₁ = −20/40 = −0.5", "tool": "M", "blueprint": "before_after",
+      "evidence_type": "derived_calculation"
+    },
+    {
+      "id": "G07", "phase_id": "ideal_boundary", "sec": 10,
+      "text": "마이너스 0.5는 이상적인 운동학 관계입니다. 이 교육용 비인벌류트 형상은 접촉력, 마찰, 응력이나 실제 효율을 계산하지 않습니다.",
+      "caption": "−0.5는 이상적인 속도 비입니다. 접촉력과 마찰, 응력, 효율은 여기서 계산하지 않습니다.",
+      "visual_caption": "이상적 계산과 미해석 물리량의 경계",
+      "object": "기어 운동학과 교육 모델의 한계", "state_change": "계산된 관계와 미계산 물리량을 분리",
+      "focus": "이상적 운동학만 계산", "tool": "M", "blueprint": "before_after",
+      "evidence_type": "conceptual_illustration"
+    }
+  ]
+}

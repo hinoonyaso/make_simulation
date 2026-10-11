@@ -28,7 +28,7 @@ on:
       - 'tests/test_education_first.py'
       - 'tests/test_education_renderer_registry.py'
   push:
-    branches: [main, v13-education-first, v14-generic-education-renderer]
+    branches: [main, v13-education-first, v14-generic-education-renderer, v14.1-gear-blender-education]
     paths:
       - '.github/workflows/v13-education.yml'
       - '.python-version'
@@ -107,6 +107,11 @@ jobs:
             --output-root "$RUNNER_TEMP/education-renderer/plan-output" \
             --run-id "gear-plan-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" \
             2>&1 | tee "$RUNNER_TEMP/education-renderer/gear-plan.log"
+          uv run --locked --no-sync python scripts/produce_lesson.py \
+            --spec examples/education/spur_gears_full.json --plan-only \
+            --output-root "$RUNNER_TEMP/education-renderer/plan-output" \
+            --run-id "gear-full-plan-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" \
+            2>&1 | tee "$RUNNER_TEMP/education-renderer/gear-full-plan.log"
           uv run --locked --no-sync python scripts/produce_lesson.py \
             --spec examples/education/education_smoke.json --plan-only \
             --output-root "$RUNNER_TEMP/education-renderer/plan-output" \

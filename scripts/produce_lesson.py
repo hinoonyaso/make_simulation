@@ -214,6 +214,22 @@ def renderer_runtime_preflight(renderer: EducationRenderer, contract: dict, *, m
     return result
 
 
+def validate_blender_asset_load_report(report: dict, renderer_contract: dict) -> None:
+    """Reject Blender output unless its report proves the registered asset was loaded."""
+    expected_asset = renderer_contract["asset_validation"]
+    expected_objects = set(expected_asset.get("metadata", {}).get("objects", []))
+    observed_objects = set(report.get("blender_loaded_objects", []))
+    if (report.get("status") != "PASS"
+            or report.get("asset_id") != renderer_contract.get("asset_id")
+            or report.get("asset_sha256") != expected_asset.get("sha256")
+            or observed_objects != expected_objects
+            or report.get("pivot_validation") != "PASS"
+            or not report.get("loaded_objects_present")
+            or report.get("centers_fixed_during_animation") is not True
+            or report.get("fixed_center_validation", {}).get("status") != "PASS"):
+        raise RuntimeError("Blender asset load report does not prove the registered asset was loaded and validated")
+
+
 def render(manifest_path: Path, timeline_path: Path, run_dir: Path, mode: str, manim_only: bool = False,
            *, renderer: EducationRenderer | None = None, renderer_contract: dict | None = None,
            runtime_versions: dict | None = None):
@@ -224,6 +240,7 @@ def render(manifest_path: Path, timeline_path: Path, run_dir: Path, mode: str, m
     blender_sec = 0.0
     blender_output = None
     blender = None
+    asset_load_report = None
     selected = set(renderer_contract["selected_modes"])
     uses_blender = "blender" in selected and not manim_only
     if uses_blender:
@@ -234,7 +251,9 @@ def render(manifest_path: Path, timeline_path: Path, run_dir: Path, mode: str, m
         blender_output = run_dir / f"{renderer.topic}_blender.mp4"
         blender_args = [blender, "--background", "--factory-startup", "--python-exit-code", "1", "--python",
             blender_path_arg(blender_script, blender), "--", "--manifest", blender_path_arg(manifest_path, blender),
-            "--timeline", blender_path_arg(timeline_path, blender), "--output", blender_path_arg(blender_output, blender),
+            "--timeline", blender_path_arg(timeline_path, blender), "--context",
+            blender_path_arg(run_dir / "renderer_context.json", blender),
+            "--output", blender_path_arg(blender_output, blender),
             "--width", str(width), "--height", str(height), "--fps", "30"]
         blender_args.extend(["--samples", "16" if mode == "preview" else "32"])
         started = time.perf_counter()
@@ -242,6 +261,11 @@ def render(manifest_path: Path, timeline_path: Path, run_dir: Path, mode: str, m
         blender_sec = time.perf_counter() - started
         if not blender_output.is_file() or blender_output.stat().st_size == 0:
             raise RuntimeError(f"Blender exited without producing its expected video: {blender_output}")
+        asset_report_path = run_dir / "asset_load_report.json"
+        if not asset_report_path.is_file():
+            raise RuntimeError("Blender rendered without its required asset_load_report.json")
+        asset_load_report = json.loads(asset_report_path.read_text(encoding="utf-8"))
+        validate_blender_asset_load_report(asset_load_report, renderer_contract)
 
     scene = ROOT / renderer.manim_script
     manim_dir = run_dir / f"{renderer.topic}_manim"
@@ -287,7 +311,8 @@ def render(manifest_path: Path, timeline_path: Path, run_dir: Path, mode: str, m
         "asset_id": renderer_contract["asset_id"],
         "asset_validation": renderer_contract["asset_validation"],
         "calculated_results": renderer_contract.get("calculated_results"),
-        "asset_loaded_by_renderer": False,
+        "asset_loaded_by_renderer": asset_load_report is not None,
+        "asset_load_report": "asset_load_report.json" if asset_load_report is not None else None,
         "fps": 30,
         "resolution": [width, height],
         "renderers": (["manim"] + (["blender"] if uses_blender else [])),

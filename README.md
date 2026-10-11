@@ -58,12 +58,13 @@ uv run python scripts/produce_lesson.py \
 | 주제 | 자료 | 표현 |
 |---|---|---|
 | 베어링 6204 | [PNG](assets/education/generated/bearing_6204.png) · [spec](examples/education/bearing.json) | Blender asset 및 lesson |
-| 평기어 20T:40T | [PNG](assets/education/generated/spur_gears_20_40.png) · [spec](examples/education/spur_gears.json) | 교육용 자산과 Manim smoke lesson; 이상적 속도 비만 계산 |
+| 평기어 20T:40T | [PNG](assets/education/generated/spur_gears_20_40.png) · [12초 spec](examples/education/spur_gears.json) · [80초 spec](examples/education/spur_gears_full.json) | 짧은 Manim smoke와 Blender+Manim 혼합 lesson 계획 |
 | BLDC 모터 개념 모델 | [PNG](assets/education/generated/bldc_motor_concept.png) | 교육용 3D 자산 미리보기 |
 | 적층 PCB | [PNG](assets/education/generated/pcb_layered.png) | 교육용 3D 자산 미리보기 |
 | RAG | [trace](pilots/v10_rag_poc/data/ai_trace.json) | trace 기반 예시, 제한은 [pilot 문서](pilots/v10_rag_poc/README.md) 참조 |
 
 위 파일이 현재 체크아웃에서 존재하는지 먼저 확인하세요. Preview 영상은 로컬 실행으로 생성하며, 무음 Preview는 나레이션 완성본이 아닙니다.
+80초 기어 spec은 V14.1 mixed-renderer 구현을 대상으로 하며, Blender 장면과 최종 혼합 MP4는 실제 실행·검증 전까지 완성 영상으로 간주하지 않습니다. 상세 범위는 [V14.1 문서](docs/v14.1/README.md)를 참조하세요.
 
 ## Supported Environments
 
@@ -143,6 +144,11 @@ uv run python scripts/produce_lesson.py --spec examples/education/bearing.json -
 # 등록된 두 번째 주제: 기어 20T:40T Manim smoke
 uv run python scripts/produce_lesson.py \
   --spec examples/education/spur_gears.json --preview --manim-only
+
+# 80초 Blender + Manim 혼합 기어 Preview (Blender 실행 환경 필요)
+uv run python scripts/produce_lesson.py \
+  --spec examples/education/spur_gears_full.json --preview \
+  --output-root pilots/v14_education/output/lessons --run-id spur-gears-full
 
 # Manim만 사용해 무음 preview
 uv run python scripts/produce_lesson.py \
@@ -256,9 +262,11 @@ git diff --check
 
 Manim smoke preview는 Quick Start 명령으로 실제 미디어를 생성하고 FFmpeg로 검사합니다. Blender 검증은 Blender 설치 및 실행 가능한 환경에서 수행합니다. CI 정의는 [workflow](.github/workflows/v13-education.yml)를 참고하세요.
 
-**CI 상태 (2026-10-11, main `0a2979b`):** [AI trace run #35](https://github.com/hinoonyaso/make_simulation/actions/runs/38065253356), [V13 Education run #3](https://github.com/hinoonyaso/make_simulation/actions/runs/38065253393), [V12 Engineering run #10](https://github.com/hinoonyaso/make_simulation/actions/runs/38065253366)이 모두 성공했습니다. run #35에서 전체 155개 unittest를 통과했고, Education run은 실제 Manim smoke 미디어를 렌더·검증했습니다. V12 Engineering run은 physics, CAN, motor FOC, timeline 테스트와 세 편의 렌더·전체 디코드를 통과했습니다. V12.1 PR의 [run #7](https://github.com/hinoonyaso/make_simulation/actions/runs/38033443003)도 7개 check 모두 성공해 Merge Commit `d0e868c`로 main에 반영됐습니다. run #28의 Vendor CAD 오류는 9a43b20에서 수정되어, CAD가 없는 clone에서도 catalog·license·재배포 정책·Git 미추적 검사는 유지되고 로컬 파일 검사는 파일이 있을 때만 실행됩니다.
+**CI 기록:** 아래 run들은 `main` `0a2979b`에서 2026-10-11에 성공한 기존 검증입니다. [AI trace run #35](https://github.com/hinoonyaso/make_simulation/actions/runs/38065253356), [V13 Education run #3](https://github.com/hinoonyaso/make_simulation/actions/runs/38065253393), [V12 Engineering run #10](https://github.com/hinoonyaso/make_simulation/actions/runs/38065253366)이 모두 성공했습니다. run #35에서 전체 155개 unittest를 통과했고, Education run은 실제 Manim smoke 미디어를 렌더·검증했습니다. V12 Engineering run은 physics, CAN, motor FOC, timeline 테스트와 세 편의 렌더·전체 디코드를 통과했습니다. V12.1 PR의 [run #7](https://github.com/hinoonyaso/make_simulation/actions/runs/38033443003)도 7개 check 모두 성공해 Merge Commit `d0e868c`로 main에 반영됐습니다. run #28의 Vendor CAD 오류는 9a43b20에서 수정되어, CAD가 없는 clone에서도 catalog·license·재배포 정책·Git 미추적 검사는 유지되고 로컬 파일 검사는 파일이 있을 때만 실행됩니다.
 
-V13 전용 workflow는 교육 테스트만 실행하며, Python/Manim 패키지는 `uv.lock`의 `sim-render` group으로 설치합니다. education asset 검증, 계획 검증, Manim-only smoke, 960×540·30 fps·H.264 metadata, VTT와 production report, FFmpeg 전체 디코드를 검사하고 로그·미디어·리포트를 Artifact로 보관합니다. 교육 관련 경로를 바꾼 PR, `main`/`v13-education-first`의 관련 파일 push, 수동 dispatch에서 실행됩니다. 전체 회귀는 `ai-trace.yml`이 계속 담당합니다. main 통합 후 세 workflow의 성공은 위 run #35, #3, #10에서 확인했습니다.
+V14 PR #5는 Merge Commit [`e6c1250`](https://github.com/hinoonyaso/make_simulation/commit/e6c12505f5bd052c9b14bb7f92a0b2ab0bbb9529)으로 main에 통합됐습니다. 이 병합 커밋 자체에 연결된 Actions run은 현재 없습니다. V14.1의 80초 기어 혼합 Preview는 아직 Blender 통합·최종 MP4 검증 전입니다.
+
+교육 workflow는 테스트와 Manim smoke를 실행하며 Python/Manim 패키지는 `uv.lock`의 `sim-render` group으로 설치합니다. 교육 asset 검증, 계획 검증, Manim-only smoke, 960×540·30 fps·H.264 metadata, VTT와 production report, FFmpeg 전체 디코드를 검사하고 로그·미디어·리포트를 Artifact로 보관합니다. Blender 렌더는 Linux CI 필수 항목이 아닙니다. 전체 회귀는 `ai-trace.yml`이 계속 담당합니다. V14.1 full lesson 계획 검증도 추가했으며, 실제 Blender 통합 검증은 별도로 수행해야 합니다.
 
 | 검증 | 상태 | 범위 |
 |---|---|---|
@@ -267,13 +275,15 @@ V13 전용 workflow는 교육 테스트만 실행하며, Python/Manim 패키지�
 | Asset registry / education asset validation | PASS | Registry 39 entries, 6 generated models |
 | Education plan | PASS | `education_smoke.json`, concept-only |
 | Manim smoke preview | PASS | [GitHub Actions main V13 run #3](https://github.com/hinoonyaso/make_simulation/actions/runs/38065253393), 960×540, 30 fps, silent, VTT/report present, full decode |
-| Blender render | PASS (기록된 R6 로컬 검증) | Windows Blender 5.2.1 from WSL; Ubuntu CI에서는 실행하지 않음 |
+| Blender render | PASS (기록된 R6 bearing 검증) | Windows Blender 5.2.1 from WSL; 이번 V14.1 gear render는 별도 미검증 |
+| V14.1 80초 Gear mixed Preview | PLAN PASS / Blender render BLOCKED in this WSL session | Plan: 2,400 frames, 30 fps; Windows 실행 파일은 찾았으나 interop launch에서 vsock 오류 |
 | Narration/TTS | NOT TESTED | Smoke는 무음이며 외부 TTS를 호출하지 않음 |
 | 최종 1080p 영상 검증 | NOT TESTED | CI preview는 960×540 무음 smoke |
 
 ## Current Capabilities & Limitations
 
 - V13 lesson pipeline은 실험적이며, 주제별 출력과 renderer 지원이 다릅니다.
+- V14.1 기어 lesson은 80초 Blender+Manim 혼합 Preview 대상으로 개발 중입니다. Plan-only 성공은 Blender 렌더·자막·최종 MP4 검증을 의미하지 않습니다.
 - 로컬에서 검증한 무음 smoke preview는 960×540, 30 fps입니다. 이는 1080p 완성 영상 검증이 아닙니다.
 - TTS는 별도 선택이며, Edge TTS 서버로 대본 텍스트가 전송됩니다.
 - Blender 렌더는 Blender 실행 파일과 환경 연동이 필요합니다. 현재 개발 환경에서 Windows Blender 5.2.1을 확인했지만 모든 WSL 설정에서 실행된다는 뜻은 아닙니다.
@@ -298,6 +308,8 @@ V13 전용 workflow는 교육 테스트만 실행하며, Python/Manim 패키지�
 
 - [Routing and topic selection](ROUTING.md)
 - [V13 education pipeline](docs/v13/README.md)
+- [V14 generic renderer](docs/v14/README.md)
+- [V14.1 gear production](docs/v14.1/README.md)
 - [Asset index](assets/README.md)
 - [Education asset library](assets/education/README.md)
 - [Asset source/license matrix](docs/assets/SOURCE_LICENSE_MATRIX.md)

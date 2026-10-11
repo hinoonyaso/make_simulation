@@ -112,12 +112,21 @@ class SpurGearsLessonScene(Scene):
         phases = {row["phase_id"]: row for row in timeline["phases"]}
         for beat in manifest["beats"]:
             phase = phases[beat["phase_id"]]
-            duration = (phase["presentation_end_frame"] - phase["presentation_start_frame"]) / timeline["fps"]
+            phase_frames = (phase["presentation_end_frame"] - phase["presentation_start_frame"])
+            fps = timeline["fps"]
+            duration = phase_frames / fps
+            seconds_for_frames = lambda frames: frames / fps
+            # The Manim track keeps exact frame alignment while Blender owns
+            # this beat in the shared mixed-renderer composition.
+            if beat.get("tool") == "B":
+                self.wait(duration)
+                continue
             if beat["phase_id"] == "gear_pair":
-                intro = min(.75, duration * .25)
+                intro_frames = min(22, phase_frames)
+                intro = seconds_for_frames(intro_frames)
                 self.play(FadeIn(title), FadeIn(parts), run_time=intro)
-                self.wait(max(0, duration - intro))
-            elif beat["phase_id"] == "opposite_direction":
+                self.wait(seconds_for_frames(phase_frames - intro_frames))
+            elif beat["phase_id"] in {"opposite_direction", "pitch_velocity"}:
                 pitch_point = left_center + np.array([pitch_r1, 0.0, 0.0])
                 pitch_circle1 = DashedVMobject(Circle(radius=pitch_r1).move_to(left_center),
                                                num_dashes=40).set_stroke(P.active, width=1.4, opacity=.9)
@@ -126,7 +135,7 @@ class SpurGearsLessonScene(Scene):
                 point = Dot(pitch_point, radius=.07, color=P.fg)
                 point_leader = Line(pitch_point + np.array([0, -.12, 0]),
                                     pitch_point + np.array([0, -.42, 0])).set_stroke(P.fg, width=1.2, opacity=.8)
-                point_label = txt("P · 이상 피치점", 18, P.fg).move_to([-.75, -.82, 0])
+                point_label = txt("P · 이상 피치점", 18, P.fg).move_to([-2.55, -2.08, 0])
                 # At P, both ideal rolling velocities are equal and point along
                 # the same common tangent even though omega_1 and omega_2 differ in sign.
                 vt = nominal["pinion_pitch_velocity_m_s"]
@@ -136,44 +145,79 @@ class SpurGearsLessonScene(Scene):
                                           pitch_point + np.array([.18, .78 * tangent_sign, 0]),
                                           buff=0, color=P.result, stroke_width=4,
                                           max_tip_length_to_length_ratio=.28)
-                    tangent_label = txt("vₜ₁ = vₜ₂", 20, P.fg).move_to([-1.0, -1.38 * tangent_sign, 0])
+                    tangent_label = txt("vₜ₁ = vₜ₂", 20, P.fg).move_to([2.3, -2.08, 0])
                 else:
                     tangent_arrow = VGroup()
-                    tangent_label = txt("vₜ₁ = vₜ₂ = 0", 19, P.fg).move_to([-1.0, -1.38, 0])
+                    tangent_label = txt("vₜ₁ = vₜ₂ = 0", 19, P.fg).move_to([2.3, -2.08, 0])
                 angular1 = angular_direction_arrow(left_center, nominal["pinion_angular_velocity_rad_s"], P.active)
                 angular2 = angular_direction_arrow(right_center, nominal["gear_angular_velocity_rad_s"], P.result)
                 omega1_label = txt("ω₁", 18, P.fg).move_to(left_center + np.array([-.48, -.22, 0]))
                 omega2_label = txt("ω₂", 18, P.fg).move_to(right_center + np.array([-.48, -.22, 0]))
                 causal_note = txt("같은 접선 속도를 유지하려면 각속도는 반대 방향", 19, P.fg)
-                causal_note.move_to([0, -2.03, 0])
+                causal_note.move_to([0, -2.72, 0])
                 pitch_guides = VGroup(pitch_circle1, pitch_circle2, point, point_leader, point_label,
                                       tangent_arrow, tangent_label, angular1, angular2,
                                       omega1_label, omega2_label, causal_note)
-                intro = min(.5, duration * .18)
-                self.play(Create(pitch_circle1), Create(pitch_circle2), FadeIn(point),
+                intro_frames = min(18, phase_frames)
+                intro = seconds_for_frames(intro_frames)
+                animations = [Create(pitch_circle1), Create(pitch_circle2), FadeIn(point),
                           FadeIn(point_label), FadeIn(tangent_arrow), FadeIn(tangent_label),
                           Create(angular1), Create(angular2), FadeIn(omega1_label),
-                          FadeIn(omega2_label), FadeIn(causal_note), run_time=intro)
+                          FadeIn(omega2_label), FadeIn(causal_note)]
+                if beat["phase_id"] == "pitch_velocity":
+                    animations.extend([FadeIn(title), FadeIn(parts)])
+                self.play(*animations, run_time=intro)
                 rotate_pair(self, driver, driven, left_center, right_center,
-                            data["omega_2_over_omega_1"], .5, max(.05, duration - intro))
+                            data["omega_2_over_omega_1"],
+                            float(beat.get("input_turns", .5)),
+                            max(1 / fps, seconds_for_frames(phase_frames - intro_frames)))
             elif beat["phase_id"] == "speed_ratio":
                 formula = txt(f"ω₂ / ω₁ = −Z₁ / Z₂ = {data['omega_2_over_omega_1']:.1f}", 26, P.fg)
                 formula.move_to([0, -2.25, 0])
-                intro = min(.4, duration * .18)
+                intro_frames = min(12, phase_frames)
+                intro = seconds_for_frames(intro_frames)
                 animations = [FadeIn(formula)]
                 if pitch_guides is not None:
                     animations.append(FadeOut(pitch_guides))
                 self.play(*animations, run_time=intro)
                 rotate_pair(self, driver, driven, left_center, right_center,
-                            data["omega_2_over_omega_1"], .5, max(.05, duration - intro))
+                            data["omega_2_over_omega_1"],
+                            float(beat.get("input_turns", .5)),
+                            max(1 / fps, seconds_for_frames(phase_frames - intro_frames)))
+            elif beat["phase_id"] == "ratio_calculation":
+                prefix_frames = min(15, phase_frames)
+                prefix = seconds_for_frames(prefix_frames)
+                if pitch_guides is not None:
+                    self.play(FadeOut(pitch_guides), run_time=prefix)
+                remaining_frames = phase_frames - (prefix_frames if pitch_guides is not None else 0)
+                steps = [
+                    MathTex(r"\frac{\omega_2}{\omega_1}=-\frac{Z_1}{Z_2}", color=P.fg),
+                    MathTex(r"\frac{\omega_2}{\omega_1}=-\frac{20}{40}", color=P.fg),
+                    MathTex(r"\frac{\omega_2}{\omega_1}=-0.5", color=P.result),
+                ]
+                for item in steps:
+                    item.scale(.88).move_to([0, -2.72, 0])
+                hold_frames = min(24, remaining_frames // 10)
+                reveal_frames = min(48, (remaining_frames - 2 * hold_frames) // 3)
+                hold = seconds_for_frames(hold_frames)
+                reveal = seconds_for_frames(reveal_frames)
+                self.play(Write(steps[0]), run_time=reveal)
+                self.wait(hold)
+                current_formula = steps[0]
+                self.play(ReplacementTransform(current_formula, steps[1]), run_time=reveal)
+                self.wait(hold)
+                self.play(ReplacementTransform(steps[1], steps[2]), run_time=reveal)
+                self.wait(seconds_for_frames(remaining_frames - 3 * reveal_frames - 2 * hold_frames))
+                formula = steps[2]
             elif beat["phase_id"] == "ideal_boundary":
                 boundary = txt("이상적 속도 비 · 효율/응력/백래시는 미계산", 18, P.muted)
-                boundary.move_to([0, -2.25, 0])
-                intro = min(.5, duration * .2)
+                boundary.move_to([0, -2.72, 0])
+                intro_frames = min(15, phase_frames)
+                intro = seconds_for_frames(intro_frames)
                 if formula is not None:
                     self.play(FadeOut(formula), FadeIn(boundary), run_time=intro)
                 else:
                     self.play(FadeIn(boundary), run_time=intro)
-                self.wait(max(0, duration - intro))
+                self.wait(seconds_for_frames(phase_frames - intro_frames))
             else:
                 raise ValueError(f"SpurGearsLessonScene has no implementation for phase {beat['phase_id']!r}")
