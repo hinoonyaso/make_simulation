@@ -153,12 +153,14 @@ jobs:
               "status": "REVIEW_REQUIRED",
               "manifest_contract": {"status": "PASS"},
               "video_timeline": {"status": "PASS"},
-              "evidence": {"type": "CONCEPTUAL_ILLUSTRATION", "calculation_status": "NOT_COMPUTED"},
               "human_accuracy_review": {"status": "PENDING"},
           }
           for key, value in expected_engineering.items():
               if engineering.get(key) != value:
                   raise SystemExit(f"unexpected engineering QA field {key}: {engineering.get(key)!r}")
+          evidence = engineering.get("evidence", {})
+          if evidence.get("type") != "CONCEPTUAL_ILLUSTRATION" or evidence.get("calculation_status") != "NOT_COMPUTED":
+              raise SystemExit(f"unexpected engineering evidence: {evidence!r}")
           if not json.loads((run_dir / "visual_manifest.json").read_text(encoding="utf-8")).get("beats"):
               raise SystemExit("visual manifest has no beats")
           probe = subprocess.run([
