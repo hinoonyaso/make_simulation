@@ -28,6 +28,14 @@ class SparseRenderPlanTests(unittest.TestCase):
         self.assertEqual(plan["total_frames"], 720)
         self.assertEqual(plan["blender_still_count"], 1)
         self.assertEqual(plan["blender_animation_frames"], 180)
+        self.assertEqual(
+            [(s["beat_id"], s["renderer"], s["timeline_start"], s["timeline_end"], s["output_frames"])
+             for s in plan["segments"]],
+            [("BAT01", "blender", 0, 180, 180),
+             ("BAT02", "manim", 180, 360, 180),
+             ("BAT03", "blender", 360, 540, 180),
+             ("BAT04", "manim", 540, 720, 180)],
+        )
         self.assertEqual(plan["segments"][0]["source_frame"], 1)
         self.assertEqual(plan["segments"][2]["source_frame_start"], 361)
         self.assertEqual(plan["segments"][2]["source_frame_end"], 540)

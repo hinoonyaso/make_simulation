@@ -13,7 +13,7 @@
 | Asset registry and education asset checks | PASS | 39 registry entries; 6 generated assets checked |
 | Real PyBaMM Solver output and result validation | PASS | Run `v143-local-validation`, 361 samples, 1800 s |
 | Manim-only battery preview | PASS | 960×540, 30 fps, 180 frames / 6 s, H.264, silent, full decode; `/tmp/v14.3-manim/manim-smoke/preview.mp4` |
-| Automatic full Blender render gate | PASS | `battery-mixed-preview` remains `if: github.event_name == 'workflow_dispatch'`; no automatic full Blender call added |
+| Blender execution in GitHub Actions | PASS | `battery-mixed-preview` job, Blender installation, and Blender render commands removed from this workflow; other workflow `run` blocks contain no Blender execution |
 | Actual Blender sparse preview, Eevee backend, rendered-frame count, final full decode | BLOCKED | Windows Blender launch fails in WSL with `UtilBindVsockAnyPort`; no Linux Blender executable is available |
 | GPU verification | BLOCKED | `nvidia-smi`: GPU access blocked by operating system |
 
