@@ -93,8 +93,11 @@ def render(manifest_path: Path, timeline_path: Path, run_dir: Path, mode: str, m
     blender = None
     if not manim_only:
         blender = _blender_binary()
-        blender_script = ROOT / "pilots/v13_education/blender/bearing_scene.py"
-        blender_output = run_dir / "bearing_blender.mp4"
+        source_manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        asset_backed = bool(source_manifest.get("asset_id"))
+        blender_script = ROOT / ("pilots/v13_education/blender/asset_scene.py" if asset_backed
+                                 else "pilots/v13_education/blender/bearing_scene.py")
+        blender_output = run_dir / ("asset_blender.mp4" if asset_backed else "bearing_blender.mp4")
         blender_args = [blender, "--background", "--factory-startup", "--python-exit-code", "1", "--python",
             blender_path_arg(blender_script, blender), "--", "--manifest", blender_path_arg(manifest_path, blender),
             "--timeline", blender_path_arg(timeline_path, blender), "--output", blender_path_arg(blender_output, blender),
@@ -144,6 +147,8 @@ def render(manifest_path: Path, timeline_path: Path, run_dir: Path, mode: str, m
         "blender": blender, "blender_render_sec": blender_sec,
         "manim_render_sec": manim_sec, "composition": "per-beat renderer selected by V9 manifest tool",
         "fps": 30, "resolution": [width, height], "solver_used": False,
+        "asset_id": json.loads(manifest_path.read_text(encoding="utf-8")).get("asset_id"),
+        "blender_asset_evidence": "blender_asset_evidence.json" if (run_dir / "blender_asset_evidence.json").is_file() else None,
         "manim_only": manim_only,
         "evidence_boundary": "conceptual illustration; no contact force/friction solver"},
         ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
@@ -210,6 +215,7 @@ def main() -> int:
     report = {"status": "PLANNED" if args.plan_only else "RUNNING", "solver_used": False,
               "evidence_status": planned["evidence"], "manifest": str(manifest_path),
               "timeline": str(timeline_path), "audio_status": "not generated",
+              "asset_id": planned["visual_manifest"].get("asset_id"),
               "output_dir": str(run_dir)}
     if args.plan_only:
         report["status"] = "PLAN_VALIDATED"
@@ -221,6 +227,9 @@ def main() -> int:
                       "--fps", "30", "--full-decode"]
         subprocess.run(validation, cwd=ROOT, check=True)
         report.update(metrics)
+        asset_evidence_path = run_dir / "blender_asset_evidence.json"
+        if asset_evidence_path.is_file():
+            report["asset_evidence"] = json.loads(asset_evidence_path.read_text(encoding="utf-8"))
         if args.with_tts:
             narration = run_dir / "output/narration.wav"
             if not narration.exists():

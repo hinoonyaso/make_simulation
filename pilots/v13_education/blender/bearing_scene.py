@@ -93,6 +93,8 @@ def make_scene(manifest, timeline, output, width, height, fps, samples=16, still
     scene.render.film_transparent = False
     scene.world.color = (.018, .026, .043)
     scene.view_settings.view_transform = "AgX"
+    scene.view_settings.look = "AgX - Medium Low Contrast"
+    scene.view_settings.exposure = -0.7
     scene.render.image_settings.color_mode = "RGB"
 
     steel = material("Satin chromium steel", (.33, .49, .66), .82, .24)
@@ -195,7 +197,7 @@ def make_scene(manifest, timeline, output, width, height, fps, samples=16, still
     camera_data.ortho_scale = 7.7
     scene.camera = camera
 
-    for loc, energy, size in [((2,-4,6), 1200, 5), ((-4,-1,2), 750, 4), ((1,4,4), 1300, 3)]:
+    for loc, energy, size in [((2,-4,6), 180, 5.5), ((-4,-1,2), 110, 4.5), ((1,4,4), 140, 3.5)]:
         light_data = bpy.data.lights.new("studio_softbox", "AREA")
         light_data.energy = energy
         light_data.shape = "DISK"

@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from core.education.blueprint_registry import get_blueprint
+from core.education.blueprint_registry import get_blueprint, validate_asset_blueprint
 from core.education.evidence_router import route_evidence
 from core.education.lesson_validator import validate_manifest
 from core.mechanism.timeline import build_timeline
@@ -20,13 +20,23 @@ def plan_lesson(spec: dict[str, Any], *, fps: int = 30) -> dict[str, Any]:
     manifest = {"language": spec.get("language", "ko-KR"), "voice": spec.get("voice", "ko-KR-SunHiNeural"),
                 "rate": spec.get("rate", "+0%"), "format": "technical_preview",
                 "title": spec.get("title", spec["question"]), "beats": beats}
+    if spec.get("asset_id"):
+        manifest["asset_id"] = spec["asset_id"]
+    if spec.get("blueprint"):
+        manifest["blueprint"] = spec["blueprint"]
     errors = validate_manifest(manifest)
     if errors:
         raise ValueError("invalid V9 visual manifest: " + "; ".join(errors))
     for beat in beats:
         blueprint = beat.get("blueprint")
         if blueprint:
-            get_blueprint(blueprint)
+            capabilities = get_blueprint(blueprint)
+            expected_renderer = {"B": "blender", "M": "manim"}.get(beat.get("tool"))
+            if expected_renderer and expected_renderer not in capabilities["renderers"]:
+                raise ValueError(f"beat {beat.get('id')}: blueprint {blueprint} does not support renderer {expected_renderer}")
+            if spec.get("asset_id"):
+                validate_asset_blueprint(spec["asset_id"], blueprint,
+                                         beat.get("animation", spec.get("animation")))
     evidence = route_evidence(spec, beats)
     if evidence["status"] == "BLOCKED":
         raise ValueError(f"engineering solver route is blocked: {evidence.get('reason')}")

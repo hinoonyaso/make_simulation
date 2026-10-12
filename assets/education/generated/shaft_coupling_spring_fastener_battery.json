@@ -12,7 +12,7 @@
   "fasteners": "generic M6 educational geometry",
   "cell": "18650 envelope-inspired concept; internal layers simplified, not cell construction data",
   "blend_file": "shaft_coupling_spring_fastener_battery.blend",
-  "source_sha256": "d37958e2b25b6deb484dc45ecd5d69cf51c26dde2f6283099d749ef2743a0cc1",
+  "source_sha256": "277558f5e8fb9b77c9d7069f2ba59acf8b4173d178f0254bfeb2342179a4753a",
   "objects": [
     "Stepped_Shaft",
     "Shaft_Step",

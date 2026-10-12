@@ -42,7 +42,7 @@
       "Bearing_6204_Assembly"
     ],
     "blend_file": "bearing_6204.blend",
-    "source_sha256": "b352ab136b6a7f9a29f64e412ee34605d53975dc9019bd15b4bd2d0568c8fbb6",
+    "source_sha256": "0e76a8f0084eda59c76f41bccafc144634a4f2ce8ab24df2bbca720e9e0c729b",
     "animation_ready": true
   },
   {
@@ -60,7 +60,7 @@
     "gear_teeth": 40,
     "profile": "stylized polygonal teeth, non-involute; pitch radii give 0.06 m center distance",
     "blend_file": "spur_gears_20_40.blend",
-    "source_sha256": "104e336318474d0e30b94abbf84372a17506e5a0f253aafbae1bc0896c0df636",
+    "source_sha256": "745f835250b534b77d613fafaaf951f53cac93af0ea7624ae82ed2d2d0d9d13e",
     "objects": [
       "Pinion_20T",
       "Gear_40T",
@@ -84,9 +84,27 @@
       "C": "copper"
     },
     "magnet_poles": "alternating N/S labels; color is explanatory",
+    "hierarchy": {
+      "Rotor_Assembly": [
+        "Rotor_Core",
+        "Rotor_Magnets",
+        "Motor_Shaft"
+      ],
+      "Stator_Assembly": [
+        "Stator_Core",
+        "Stator_Teeth",
+        "Phase_Coils"
+      ]
+    },
+    "radial_geometry": {
+      "rotor_core_radius_m": 0.02,
+      "magnet_center_radius_m": 0.027,
+      "stator_bore_radius_m": 0.038,
+      "nominal_magnet_to_stator_gap_m": 0.0035
+    },
     "motion": "rotor angle is keyframed; no electromagnetic field or torque solver",
     "blend_file": "bldc_motor_concept.blend",
-    "source_sha256": "6478b90527c611c6b45ee50734e6caa679e8eae5ca61c3c8cb7d6826485811c2",
+    "source_sha256": "e1e079612536a5a404521e62f10ae24e14a7b0a0434930362918f1252fea02a9",
     "objects": [
       "Stator_Core",
       "Stator_Tooth_01",
@@ -107,6 +125,7 @@
       "Phase_B_Coil_08",
       "Stator_Tooth_09",
       "Phase_C_Coil_09",
+      "Stator_Assembly",
       "Rotor_Core",
       "Rotor_Magnet_01",
       "Rotor_Magnet_02",
@@ -115,6 +134,7 @@
       "Rotor_Magnet_05",
       "Rotor_Magnet_06",
       "Motor_Shaft",
+      "Rotor_Assembly",
       "BLDC_Assembly"
     ],
     "animation_ready": true
@@ -173,7 +193,7 @@
       "Power_Connector"
     ],
     "blend_file": "pcb_layered.blend",
-    "source_sha256": "a492df346ac6e20c97037649248292f54474bf37e41af4ceb08ae8dcfbc5bf85",
+    "source_sha256": "f09c11adbe7a053fe789554b79d35bae3c753c4c85ccd998275aa4e57aac0d40",
     "animation_ready": true
   },
   {
@@ -190,7 +210,7 @@
     "fasteners": "generic M6 educational geometry",
     "cell": "18650 envelope-inspired concept; internal layers simplified, not cell construction data",
     "blend_file": "shaft_coupling_spring_fastener_battery.blend",
-    "source_sha256": "d37958e2b25b6deb484dc45ecd5d69cf51c26dde2f6283099d749ef2743a0cc1",
+    "source_sha256": "277558f5e8fb9b77c9d7069f2ba59acf8b4173d178f0254bfeb2342179a4753a",
     "objects": [
       "Stepped_Shaft",
       "Shaft_Step",
@@ -235,8 +255,21 @@
     "bracket": "conceptual L-bracket with symbolic hole rims",
     "heatsink": "regular fins for heat-flow explanation, not thermal CFD geometry",
     "fan": "5-blade simplified impeller; no aerodynamic performance claim",
+    "fan_hierarchy": {
+      "Cooling_Fan": [
+        "Fan_Frame"
+      ],
+      "Fan_Rotor": [
+        "Fan_Hub",
+        "Fan_Blade_1",
+        "Fan_Blade_2",
+        "Fan_Blade_3",
+        "Fan_Blade_4",
+        "Fan_Blade_5"
+      ]
+    },
     "blend_file": "beam_bracket_heatsink_fan.blend",
-    "source_sha256": "7437e82721c1c6c4b459a09c3da8958ef8b47e481bfa0703bd2471849ba0ed2d",
+    "source_sha256": "9bed08cee3679fe37e09761431048f4fb4a108a53c12dad9b73aa2e0f57dad6e",
     "objects": [
       "Cantilever_Beam",
       "Fixed_Wall",
@@ -256,6 +289,8 @@
       "Heat_Sink_Fin_09",
       "Fan_Frame",
       "Fan_Hub",
+      "Cooling_Fan",
+      "Fan_Rotor",
       "Fan_Blade_1",
       "Fan_Blade_2",
       "Fan_Blade_3",

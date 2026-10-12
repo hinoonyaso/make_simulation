@@ -478,7 +478,9 @@
       "attribution_required": false,
       "source_revision": "generator-v1",
       "blender_verified": true,
-      "animation_ready": true
+      "animation_ready": true,
+      "source_sha256": "3b79192bb54f86a262591d364120205a3a84cd213d5429add78bdb76bed676da",
+      "blender_collection": "6204 envelope and estimated internal teaching geometry"
     },
     {
       "id": "edu.spur_gears_20_40.v1",
@@ -495,7 +497,9 @@
       "attribution_required": false,
       "source_revision": "generator-v1",
       "blender_verified": true,
-      "animation_ready": true
+      "animation_ready": true,
+      "source_sha256": "2188eeb4f1055acef6edd9e4950d8aa5ee9feaafeb8ae6ff3fa2b10955bd3b88",
+      "blender_collection": "Gear pair | separate animated bodies"
     },
     {
       "id": "edu.bldc_motor_concept.v1",
@@ -512,7 +516,9 @@
       "attribution_required": false,
       "source_revision": "generator-v1",
       "blender_verified": true,
-      "animation_ready": true
+      "animation_ready": true,
+      "source_sha256": "60d0b7077f97378a1bbc6c42aabbfa9f6e1b2027cf282866732f5932244ea0ec",
+      "blender_collection": "Motor assembly | separated stator, coils, magnets and rotor"
     },
     {
       "id": "edu.pcb_layered.v1",
@@ -529,7 +535,9 @@
       "attribution_required": false,
       "source_revision": "generator-v1",
       "blender_verified": true,
-      "animation_ready": true
+      "animation_ready": true,
+      "source_sha256": "5e5988f64a5c8eb57e416adb9a450c5e7fb76b1bc00ad76518d90015be58696a",
+      "blender_collection": "PCB | visible laminate, copper, vias, MCU and connectors"
     },
     {
       "id": "edu.mechanical_primitives.v1",
@@ -546,7 +554,9 @@
       "attribution_required": false,
       "source_revision": "generator-v1",
       "blender_verified": true,
-      "animation_ready": false
+      "animation_ready": false,
+      "source_sha256": "19524bf0b9c46b2d1c88163e47bc9fe7be064578c6a13d60e851e63b535dd5ce",
+      "blender_collection": "Parametric engineering primitives"
     },
     {
       "id": "edu.energy_structural_thermal.v1",
@@ -563,7 +573,9 @@
       "attribution_required": false,
       "source_revision": "generator-v1",
       "blender_verified": true,
-      "animation_ready": true
+      "animation_ready": true,
+      "source_sha256": "24935247b3a7952da20a537d0a2be89eae41a15b3050a89e19382aede3cc9d41",
+      "blender_collection": "Structural and thermal fluid teaching geometry"
     }
   ]
 }

@@ -13,9 +13,27 @@
     "C": "copper"
   },
   "magnet_poles": "alternating N/S labels; color is explanatory",
+  "hierarchy": {
+    "Rotor_Assembly": [
+      "Rotor_Core",
+      "Rotor_Magnets",
+      "Motor_Shaft"
+    ],
+    "Stator_Assembly": [
+      "Stator_Core",
+      "Stator_Teeth",
+      "Phase_Coils"
+    ]
+  },
+  "radial_geometry": {
+    "rotor_core_radius_m": 0.02,
+    "magnet_center_radius_m": 0.027,
+    "stator_bore_radius_m": 0.038,
+    "nominal_magnet_to_stator_gap_m": 0.0035
+  },
   "motion": "rotor angle is keyframed; no electromagnetic field or torque solver",
   "blend_file": "bldc_motor_concept.blend",
-  "source_sha256": "6478b90527c611c6b45ee50734e6caa679e8eae5ca61c3c8cb7d6826485811c2",
+  "source_sha256": "e1e079612536a5a404521e62f10ae24e14a7b0a0434930362918f1252fea02a9",
   "objects": [
     "Stator_Core",
     "Stator_Tooth_01",
@@ -36,6 +54,7 @@
     "Phase_B_Coil_08",
     "Stator_Tooth_09",
     "Phase_C_Coil_09",
+    "Stator_Assembly",
     "Rotor_Core",
     "Rotor_Magnet_01",
     "Rotor_Magnet_02",
@@ -44,6 +63,7 @@
     "Rotor_Magnet_05",
     "Rotor_Magnet_06",
     "Motor_Shaft",
+    "Rotor_Assembly",
     "BLDC_Assembly"
   ],
   "animation_ready": true

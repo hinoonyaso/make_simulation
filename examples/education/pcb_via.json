@@ -1,0 +1,24 @@
+{
+  "schema": "education-lesson-spec/v1",
+  "topic": "pcb_via_layers",
+  "title": "PCB의 Via는 층 사이를 어떻게 연결할까?",
+  "question": "여러 구리층의 신호는 보드 안에서 어떻게 이어질까?",
+  "audience": "beginner",
+  "language": "ko-KR",
+  "duration_target_sec": 20,
+  "learning_objectives": ["PCB의 절연층과 구리층을 구분한다", "Via가 층간 연결을 나타냄을 설명한다"],
+  "common_misconceptions": ["모든 보드 층이 전기적으로 자동 연결된다", "그림의 임의 경로가 실제 넷리스트다"],
+  "engineering_domain": "electronics",
+  "modes": ["concept_visualization"],
+  "visualization": "blender",
+  "computation_policy": "never",
+  "output_profile": "technical_preview",
+  "asset_id": "edu.pcb_layered.v1",
+  "blueprint": "layered_structure",
+  "beats": [
+    {"id":"P01","phase_id":"stack","sec":4,"text":"PCB는 절연 기판 사이에 구리층을 쌓아 만듭니다.","caption":"절연 기판과 구리층","visual_caption":"PCB의 층 구조","object":"다층 PCB","state_change":"층 구조를 펼쳐 보여 줌","focus":"FR4_Substrate와 Copper_Layer","tool":"B","blueprint":"layered_structure","evidence_type":"conceptual_illustration"},
+    {"id":"P02","phase_id":"separation","sec":7,"text":"층을 벌려 보면 각 구리층이 보드 두께 방향으로 서로 다른 위치에 놓입니다.","caption":"층별 구리 배선","visual_caption":"다층 구리층 분리","object":"Copper_Layer_1~4","state_change":"구리층을 분리해 층 순서를 드러냄","focus":"Copper_Layer와 FR4","tool":"B","blueprint":"layered_structure","animation":{"separate_layers":true},"evidence_type":"conceptual_illustration"},
+    {"id":"P03","phase_id":"via","sec":5,"text":"Via는 도금된 구멍을 통해 서로 다른 구리층의 패턴을 연결합니다.","caption":"Via의 층간 연결","visual_caption":"관통 Via","object":"Through_Via","state_change":"층간 통로를 확인","focus":"Through_Via와 Via_Bore","tool":"B","blueprint":"layered_structure","evidence_type":"conceptual_illustration"},
+    {"id":"P04","phase_id":"scope","sec":4,"text":"이 모델의 배선은 설명용 도형입니다. 실제 네트리스트나 제조 스택업을 검증한 결과는 아닙니다.","caption":"개념 배선, 실제 넷리스트 아님","visual_caption":"모델의 범위","object":"PCB 교육 모델","state_change":"개념 모델의 한계를 확인","focus":"도식과 실제 설계의 차이","tool":"B","blueprint":"before_after","evidence_type":"conceptual_illustration"}
+  ]
+}

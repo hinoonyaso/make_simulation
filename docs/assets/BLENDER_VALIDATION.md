@@ -22,3 +22,17 @@ Rendered PNGs:
 - `assets/education/generated/pcb_layered.png`
 - `assets/education/generated/shaft_coupling_spring_fastener_battery.png`
 - `assets/education/generated/spur_gears_20_40.png`
+
+## V13.1 kinematic checks
+
+`scripts/validate_blender_education_assets.py` also evaluates the generated
+scene at the initial, intermediate, and final frames. It checks that the gear
+centers remain fixed while the 20:40 pair counter-rotates at a -2 ratio; the
+BLDC stator/coils remain fixed while the rotor and magnets move together; the
+fan frame remains fixed while its hub and blades rotate at a constant radius;
+and the bearing rings remain concentric while the cage and balls follow the
+declared ideal no-slip rates. These checks validate authored kinematics only;
+they do not claim collision, electromagnetic, or fluid simulation.
+
+The results for the current generated assets are recorded in
+`assets/education/generated/blender_validation.json`.

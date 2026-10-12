@@ -22,6 +22,10 @@ ROOT = Path(__file__).resolve().parent
 DEFAULT_OUT = ROOT / "generated"
 
 
+def write_json(path: Path, payload) -> None:
+    path.write_bytes((json.dumps(payload, indent=2, ensure_ascii=False) + "\n").encode("utf-8"))
+
+
 def material(name, color, metallic=0.0, roughness=0.35):
     mat = bpy.data.materials.new(name)
     mat.diffuse_color = (*color, 1)
@@ -64,8 +68,8 @@ def reset_scene(name):
     scene.world.color = (0.035, 0.045, 0.06)
     scene.frame_start, scene.frame_end, scene.render.fps = 1, 72, 30
     scene.view_settings.view_transform = "AgX"
-    scene.view_settings.look = "AgX - Medium High Contrast"
-    scene.view_settings.exposure = -3.0
+    scene.view_settings.look = "AgX - Medium Low Contrast"
+    scene.view_settings.exposure = -3.5
     return scene
 
 
@@ -160,15 +164,15 @@ def gear(name, teeth, module, center, mat, coll, bore_radius):
     for i in range(teeth):
         a=2*math.pi*i/teeth
         for frac,r in ((0,root),(0.18,root),(0.28,tip),(0.72,tip),(0.82,root),(1,root)):
-            points.append((center[0]+r*math.cos(a+frac*2*math.pi/teeth),
-                           center[1]+r*math.sin(a+frac*2*math.pi/teeth)))
+            points.append((r*math.cos(a+frac*2*math.pi/teeth),
+                           r*math.sin(a+frac*2*math.pi/teeth)))
     n=len(points)
     verts=[]
     verts.extend((x,y,z0) for x,y in points)
     verts.extend((x,y,z1) for x,y in points)
     for z in (z0,z1):
-        verts.extend((center[0]+bore_radius*math.cos(2*math.pi*i/n),
-                      center[1]+bore_radius*math.sin(2*math.pi*i/n),z) for i in range(n))
+        verts.extend((bore_radius*math.cos(2*math.pi*i/n),
+                      bore_radius*math.sin(2*math.pi*i/n),z) for i in range(n))
     ob,ot,ib,it=0,n,2*n,3*n
     faces=[]
     for i in range(n):
@@ -178,6 +182,7 @@ def gear(name, teeth, module, center, mat, coll, bore_radius):
                       (ob+i,ob+j,ot+j,ot+i),
                       (ib+j,ib+i,it+i,it+j)))
     obj=mesh_obj(name,verts,faces,mat,coll)
+    obj.location=center
     for poly in obj.data.polygons: poly.use_smooth=False
     obj["teeth"]=teeth; obj["module_m"]=module; obj["pitch_radius_m"]=rp
     obj["root_radius_m"]=root
@@ -193,8 +198,11 @@ def gear_stage():
     g1=gear("Pinion_20T",20,module,(-0.03,0,0),GOLD,c,0.003)
     g2=gear("Gear_40T",40,module,(0.03,0,0),STEEL,c,0.005)
     # Each tooth is explicitly represented by the profile; add shallow hub and shafts.
-    cylinder("Pinion_Hub",(-0.03,0,0.006),0.006,0.008,DARK,axis="Z",coll=c)
-    cylinder("Gear_Hub",(0.03,0,0.006),0.010,0.008,DARK,axis="Z",coll=c)
+    pinion_hub=cylinder("Pinion_Hub",(-0.03,0,0.006),0.006,0.008,DARK,axis="Z",coll=c)
+    gear_hub=cylinder("Gear_Hub",(0.03,0,0.006),0.010,0.008,DARK,axis="Z",coll=c)
+    for child,parent in ((pinion_hub,g1),(gear_hub,g2)):
+        child.parent=parent
+        child.matrix_parent_inverse=parent.matrix_world.inverted()
     for frame in (1,72):
         t=(frame-1)/71
         g1.rotation_euler[2]=t*2*math.pi
@@ -278,26 +286,43 @@ def motor_stage():
                    (RED,BLUE,COPPER)[i%3],c)
         coil.rotation_euler[1]=math.pi/2
         coil.rotation_euler[2]=a
-    rotor=cylinder("Rotor_Core",(0,0,0),0.033,0.022,STEEL,axis="Z",coll=c)
+    stator_root=bpy.data.objects.new("Stator_Assembly",None); c.objects.link(stator_root)
+    stator_members=[obj for obj in c.objects if obj.name == "Stator_Core" or
+                    obj.name.startswith("Stator_Tooth_") or obj.name.startswith("Phase_")]
+    for obj in stator_members:
+        obj.parent=stator_root
+        obj.matrix_parent_inverse=stator_root.matrix_world.inverted()
+    # Keep the alternating pole magnets exposed on the rotor surface with a
+    # small illustrative air gap to the stator bore (0.038 m radius).
+    rotor=cylinder("Rotor_Core",(0,0,0),0.020,0.022,STEEL,axis="Z",coll=c)
     for i in range(6):
         a=2*math.pi*i/6
         magnet=cube(f"Rotor_Magnet_{i+1:02d}",(0.027*math.cos(a),0.027*math.sin(a),0),
                     (0.015,0.020,0.018),RED if i%2==0 else BLUE,0.002,c)
         magnet.rotation_euler[2]=a
         magnet["pole"]="N" if i%2==0 else "S"
-    cylinder("Motor_Shaft",(0,0,0.028),0.006,0.070,STEEL,axis="Z",coll=c)
+    shaft=cylinder("Motor_Shaft",(0,0,0.028),0.006,0.070,STEEL,axis="Z",coll=c)
+    rotor_root=bpy.data.objects.new("Rotor_Assembly",None); c.objects.link(rotor_root)
+    rotor_members=[rotor,shaft]+[obj for obj in c.objects if obj.name.startswith("Rotor_Magnet_")]
+    for obj in rotor_members:
+        obj.parent=rotor_root
+        obj.matrix_parent_inverse=rotor_root.matrix_world.inverted()
     for frame,angle in ((1,0),(72,math.pi*2)):
-        rotor.rotation_euler[2]=angle; rotor.keyframe_insert("rotation_euler",frame=frame)
-        for obj in c.objects:
-            if obj.name.startswith("Rotor_Magnet"):
-                obj.rotation_euler[2]=obj.rotation_euler[2]+angle
-                obj.keyframe_insert("rotation_euler",frame=frame)
-    linearize_object_animation(list(c.objects))
+        rotor_root.rotation_euler[2]=angle
+        rotor_root.keyframe_insert("rotation_euler",frame=frame)
+    linearize_object_animation([rotor_root])
     root=bpy.data.objects.new("BLDC_Assembly",None); c.objects.link(root)
+    for group in (stator_root,rotor_root):
+        group.parent=root
+        group.matrix_parent_inverse=root.matrix_world.inverted()
     return {"main":root,"focus":list(c.objects)}, {
         "topology":"9-slot/6-pole educational concept, not product specification",
         "phase_colors":{"A":"red","B":"blue","C":"copper"},
         "magnet_poles":"alternating N/S labels; color is explanatory",
+        "hierarchy":{"Rotor_Assembly":["Rotor_Core","Rotor_Magnets","Motor_Shaft"],
+                     "Stator_Assembly":["Stator_Core","Stator_Teeth","Phase_Coils"]},
+        "radial_geometry":{"rotor_core_radius_m":0.020,"magnet_center_radius_m":0.027,
+                           "stator_bore_radius_m":0.038,"nominal_magnet_to_stator_gap_m":0.0035},
         "motion":"rotor angle is keyframed; no electromagnetic field or torque solver"}
 
 
@@ -390,19 +415,33 @@ def structure_fluid_stage():
     cube("Heat_Sink_Base",(.26,0,0),(.10,.08,.010),STEEL,.002,c)
     for i in range(9): cube(f"Heat_Sink_Fin_{i+1:02d}",(.26-.044+i*.011,0,.027),(.003,.07,.045),STEEL,.0008,c)
     torus("Fan_Frame",(.42,0,.025),.038,.004,DARK,c)
-    cylinder("Fan_Hub",(.42,0,.025),.010,.018,GOLD,axis="Y",coll=c)
+    hub=cylinder("Fan_Hub",(.42,0,.025),.010,.018,GOLD,axis="Y",coll=c)
+    frame_obj=bpy.data.objects["Fan_Frame"]
+    cooling_root=bpy.data.objects.new("Cooling_Fan",None); cooling_root.location=(.42,0,.025); c.objects.link(cooling_root)
+    frame_obj.parent=cooling_root
+    frame_obj.matrix_parent_inverse=cooling_root.matrix_world.inverted()
+    fan_root=bpy.data.objects.new("Fan_Rotor",None); fan_root.location=(.42,0,.025); c.objects.link(fan_root)
+    fan_root.parent=cooling_root
+    fan_root.matrix_parent_inverse=cooling_root.matrix_world.inverted()
+    rotor_parts=[hub]
     for i in range(5):
         a=2*math.pi*i/5
         blade=cube(f"Fan_Blade_{i+1}",(.42+.022*math.cos(a),.0,.025+.022*math.sin(a)),(.034,.003,.010),BLUE,.003,c)
         blade.rotation_euler[1]=-a
-        for frame,angle in ((1,0),(72,2*math.pi)):
-            blade.rotation_euler[1]=-a+angle; blade.keyframe_insert("rotation_euler",frame=frame)
-    linearize_object_animation([obj for obj in c.objects if obj.name.startswith("Fan_Blade_")])
+        rotor_parts.append(blade)
+    for obj in rotor_parts:
+        obj.parent=fan_root
+        obj.matrix_parent_inverse=fan_root.matrix_world.inverted()
+    for frame,angle in ((1,0),(72,2*math.pi)):
+        fan_root.rotation_euler[1]=angle
+        fan_root.keyframe_insert("rotation_euler",frame=frame)
+    linearize_object_animation([fan_root])
     return {"main":bpy.data.objects["Cantilever_Beam"],"focus":list(c.objects)}, {
         "beam":"visual load-transfer example only; no stress field",
         "bracket":"conceptual L-bracket with symbolic hole rims",
         "heatsink":"regular fins for heat-flow explanation, not thermal CFD geometry",
-        "fan":"5-blade simplified impeller; no aerodynamic performance claim"}
+        "fan":"5-blade simplified impeller; no aerodynamic performance claim",
+        "fan_hierarchy":{"Cooling_Fan":["Fan_Frame"],"Fan_Rotor":["Fan_Hub","Fan_Blade_1","Fan_Blade_2","Fan_Blade_3","Fan_Blade_4","Fan_Blade_5"]}}
 
 
 def add_stage(scene, targets):
@@ -444,11 +483,11 @@ def configure_camera(scene, focus_objects, camera_loc, target, ortho=0.34):
 
 
 def setup_lighting(scene):
-    bpy.ops.object.light_add(type="AREA",location=(0.2,-0.35,0.35)); key=bpy.context.object; key.name="Key_Softbox"; key.data.energy=28; key.data.shape="DISK"; key.data.size=.4
+    bpy.ops.object.light_add(type="AREA",location=(0.2,-0.35,0.35)); key=bpy.context.object; key.name="Key_Softbox"; key.data.energy=8; key.data.shape="DISK"; key.data.size=.58
     key.rotation_euler=(Vector((0,0,0))-key.location).to_track_quat("-Z","Y").to_euler()
-    bpy.ops.object.light_add(type="AREA",location=(-.28,.18,.18)); fill=bpy.context.object; fill.name="Fill_Softbox"; fill.data.energy=15; fill.data.size=.32
+    bpy.ops.object.light_add(type="AREA",location=(-.28,.18,.18)); fill=bpy.context.object; fill.data.energy=5; fill.data.size=.48
     fill.rotation_euler=(Vector((0,0,0))-fill.location).to_track_quat("-Z","Y").to_euler()
-    bpy.ops.object.light_add(type="AREA",location=(0,.25,.3)); rim=bpy.context.object; rim.name="Rim_Softbox"; rim.data.energy=18; rim.data.size=.22
+    bpy.ops.object.light_add(type="AREA",location=(0,.25,.3)); rim=bpy.context.object; rim.data.energy=6; rim.data.size=.36
     rim.rotation_euler=(Vector((0,0,0))-rim.location).to_track_quat("-Z","Y").to_euler()
 
 
@@ -488,9 +527,9 @@ def main():
         meta["objects"]=[o.name for o in bpy.context.scene.objects if o.type in {"MESH","CURVE","EMPTY"}]
         meta["animation_ready"]=any(obj.animation_data and obj.animation_data.action
                                      for obj in bpy.context.scene.objects)
-        (out/(name+".json")).write_text(json.dumps(meta,indent=2,ensure_ascii=False)+"\n",encoding="utf-8")
+        write_json(out/(name+".json"),meta)
         reports.append(meta)
-    (out/"generation_report.json").write_text(json.dumps(reports,indent=2,ensure_ascii=False)+"\n",encoding="utf-8")
+    write_json(out/"generation_report.json",reports)
 
 
 if __name__=="__main__": main()

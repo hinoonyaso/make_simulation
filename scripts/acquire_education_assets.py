@@ -38,30 +38,63 @@ def load():
     return catalog, registry
 
 
+def inspect_local_asset(root: Path, entry: dict) -> dict:
+    """Classify a registry path without requiring optional local CAD files."""
+    source = entry["source"].split("::", 1)[0]
+    candidate = Path(source)
+    root = root.resolve()
+    declared_path = (root / candidate) if not candidate.is_absolute() else candidate
+    if declared_path.is_symlink():
+        return {"source": source, "status": "INTEGRITY_FAIL", "files": [], "error": "asset source is a symlink"}
+    path = declared_path.resolve()
+    if not path.is_relative_to(root):
+        return {"source": source, "status": "BROKEN_REGISTRY_PATH", "files": [], "error": "source escapes project root"}
+    if not path.exists():
+        return {"source": source, "status": "MISSING_LOCAL_ASSET", "files": [], "error": None}
+    if path.is_symlink():
+        return {"source": source, "status": "INTEGRITY_FAIL", "files": [], "error": "asset source is a symlink"}
+    files = sorted(p for p in path.rglob("*") if p.is_file()) if path.is_dir() else ([path] if path.is_file() else [])
+    if not files:
+        return {"source": source, "status": "INTEGRITY_FAIL", "files": [], "error": "asset path has no files"}
+    records = [{"path": f.relative_to(root).as_posix(), "size_bytes": f.stat().st_size, "sha256": sha256(f)} for f in files]
+    declared = entry.get("source_sha256")
+    if declared:
+        digest = hashlib.sha256()
+        for f in files:
+            relative = f.name if path.is_file() else f.relative_to(path).as_posix()
+            digest.update(relative.encode("utf-8") + b"\0")
+            with f.open("rb") as stream:
+                for block in iter(lambda: stream.read(1024 * 1024), b""):
+                    digest.update(block)
+        if digest.hexdigest() != declared:
+            return {"source": source, "status": "INTEGRITY_FAIL", "files": records, "error": "source SHA-256 mismatch"}
+    return {"source": source, "status": "PRESENT", "files": records, "error": None}
+
+
 def audit(catalog, registry):
     rows = []
     factory = AssetFactory(ROOT)
     for entry in registry["assets"]:
-        source = entry["source"].split("::", 1)[0]
-        path = ROOT / source
-        exists = path.exists()
-        files = sorted(p for p in path.rglob("*") if p.is_file()) if exists and path.is_dir() else ([path] if exists and path.is_file() else [])
+        inspection = inspect_local_asset(ROOT, entry)
+        source, status, error = inspection["source"], inspection["status"], inspection["error"]
         actual_files = []
-        for f in files:
-            actual_files.append({"path": f.relative_to(ROOT).as_posix(), "size_bytes": f.stat().st_size,
-                                 "sha256": sha256(f), "git_tracked": _tracked(f),
-                                 "remote_main_tree": _remote_tracked(f)})
-        rows.append({"id": entry["id"], "source": source, "exists": exists,
+        for item in inspection["files"]:
+            f = ROOT / item["path"]
+            actual_files.append({**item, "git_tracked": _tracked(f), "remote_main_tree": _remote_tracked(f)})
+        files = [ROOT / item["path"] for item in inspection["files"]]
+        rows.append({"id": entry["id"], "source": source, "exists": status == "PRESENT",
                      "file_count": len(actual_files), "files": actual_files,
                      "license": entry.get("license", "UNKNOWN"),
-                     "factory_validation": "NOT_RUN"})
+                     "status": status, "error": error, "factory_validation": "NOT_RUN"})
         if entry.get("source", "").split("::",1)[0] != entry.get("source"):
             rows[-1]["factory_validation"] = "NOT_APPLICABLE: code reference"
-        elif exists and files and entry.get("tool") == "blender":
+        elif status == "PRESENT" and files and entry.get("tool") == "blender":
             try:
                 factory.validate_asset(entry["id"])
                 rows[-1]["factory_validation"] = "PASS"
             except Exception as exc:
+                rows[-1]["status"] = "INTEGRITY_FAIL"
+                rows[-1]["error"] = f"{type(exc).__name__}: {exc}"
                 rows[-1]["factory_validation"] = f"FAIL: {type(exc).__name__}: {exc}"
     return rows
 
@@ -127,10 +160,25 @@ def validate(catalog, registry):
             if path.suffix == ".blend" and path.stat().st_size <= 1024:
                 raise ValueError(f"generated .blend unexpectedly small: {path}")
     factory = AssetFactory(ROOT)
+    missing_local_assets = 0
+    local_assets_checked = 0
+    for entry in registry["assets"]:
+        if "::" in entry.get("source", ""):
+            continue
+        inspection = inspect_local_asset(ROOT, entry)
+        if inspection["status"] == "MISSING_LOCAL_ASSET":
+            missing_local_assets += 1
+            continue
+        if inspection["status"] != "PRESENT":
+            raise ValueError(f"{entry['id']}: {inspection['status']}: {inspection['error']}")
+        factory.validate_asset(entry["id"])
+        local_assets_checked += 1
     generated_ids = {m["id"] for m in catalog["models"]}
     integrity = [factory.validate_asset(aid) for aid in generated_ids]
     return {"registry_entries": len(ids), "catalog_models": len(catalog["models"]),
             "generated_assets_checked": len(integrity),
+            "local_assets_checked": local_assets_checked,
+            "missing_local_assets": missing_local_assets,
             "validation": "metadata_and_present_generated_files_sha256"}
 
 

@@ -1,0 +1,24 @@
+{
+  "schema": "education-lesson-spec/v1",
+  "topic": "bldc_motor_rotation",
+  "title": "BLDC 모터는 어떻게 회전할까?",
+  "question": "고정된 코일과 영구자석 회전자가 어떻게 회전을 만들까?",
+  "audience": "beginner",
+  "language": "ko-KR",
+  "duration_target_sec": 20,
+  "learning_objectives": ["고정자와 회전자를 구분한다", "회전자 자석이 축 주위로 함께 회전함을 설명한다"],
+  "common_misconceptions": ["자석이 고정된 채 방향만 바뀐다", "장면이 실제 전자기장 해석이다"],
+  "engineering_domain": "electromechanical_engineering",
+  "modes": ["concept_visualization"],
+  "visualization": "blender",
+  "computation_policy": "never",
+  "output_profile": "technical_preview",
+  "asset_id": "edu.bldc_motor_concept.v1",
+  "blueprint": "mechanism_motion",
+  "beats": [
+    {"id":"M01","phase_id":"assembly","sec":4,"text":"먼저 모터를 고정자와 회전자로 나눠 봅니다.","caption":"고정자와 회전자","visual_caption":"고정자와 회전자 조립체","object":"BLDC 조립체","state_change":"두 하위 조립체를 분해해 보여 줌","focus":"Stator_Assembly와 Rotor_Assembly","tool":"B","blueprint":"exploded_assembly","animation":{"explode":true},"evidence_type":"conceptual_illustration"},
+    {"id":"M02","phase_id":"stator","sec":4,"text":"고정자에는 세 상의 코일이 배치되고, 이 장면은 코일 배치 개념을 보여 줍니다.","caption":"세 상 코일의 배치","visual_caption":"고정자 코일","object":"고정자","state_change":"코일 배열을 드러냄","focus":"Phase_A/B/C_Coil","tool":"B","blueprint":"layered_structure","evidence_type":"conceptual_illustration"},
+    {"id":"M03","phase_id":"rotation","sec":7,"text":"회전자 코어와 N극·S극 자석은 하나의 축에 고정되어 함께 돕니다.","caption":"코어와 자석이 함께 회전","visual_caption":"회전자와 자석의 결합 운동","object":"Rotor_Assembly","state_change":"회전자 전체가 중심축을 따라 회전","focus":"Rotor_Magnet과 Motor_Shaft","tool":"B","blueprint":"mechanism_motion","animation":{"rotate":true},"evidence_type":"conceptual_illustration"},
+    {"id":"M04","phase_id":"scope","sec":5,"text":"실제 BLDC에서는 전류 제어가 자속과 토크를 만듭니다. 이 미리보기는 구조와 운동만 설명하며 전자기장을 계산하지 않습니다.","caption":"구조·운동 개념도, 전자기장 해석 아님","visual_caption":"교육용 구조 애니메이션","object":"BLDC 구조","state_change":"해석 범위와 한계를 확인","focus":"개념 모델의 경계","tool":"B","blueprint":"before_after","evidence_type":"conceptual_illustration"}
+  ]
+}

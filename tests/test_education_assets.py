@@ -41,8 +41,6 @@ class EducationAssetLibraryTests(unittest.TestCase):
                 local_path = ROOT / source
                 license_text = entry["license"].lower()
 
-                # These vendor assets may be available in a developer's ignored local
-                # checkout, but must remain absent from public clone contents.
                 self.assertEqual(metadata["path"], source)
                 self.assertEqual(metadata["status"], "LOCAL_USE_ONLY")
                 self.assertFalse(metadata["reproducible_clone"])
@@ -50,25 +48,36 @@ class EducationAssetLibraryTests(unittest.TestCase):
                 self.assertEqual(row["source"], source)
                 self.assertIn("proprietary", license_text)
                 self.assertIn("internal", license_text)
-                self.assertTrue(
-                    any(term in license_text for term in (
-                        "don't republish", "not redistribute", "internal reference use only",
-                    )),
-                    f"{asset_id}: expected explicit redistribution restriction",
-                )
-
-                tracked = subprocess.run(
-                    ["git", "ls-files", "--", source], cwd=ROOT,
-                    check=True, capture_output=True, text=True,
-                ).stdout.splitlines()
+                self.assertTrue(any(term in license_text for term in (
+                    "don't republish", "not redistribute", "internal reference use only",
+                )), f"{asset_id}: expected explicit redistribution restriction")
+                tracked = subprocess.run(["git", "ls-files", "--", source], cwd=ROOT,
+                                         check=True, capture_output=True, text=True).stdout.splitlines()
                 self.assertEqual(tracked, [], f"vendor CAD must not be Git tracked: {source}")
-
-                # File-level validation is meaningful only where the optional local
-                # vendor source has actually been provided.
+                self.assertIn(row["status"], {"PRESENT", "MISSING_LOCAL_ASSET"}, asset_id)
                 self.assertEqual(row["exists"], local_path.exists(), asset_id)
                 if row["exists"]:
                     self.assertGreater(row["file_count"], 0, asset_id)
                     self.assertFalse(any(f["git_tracked"] for f in row["files"]), asset_id)
+
+    def test_local_asset_statuses_cover_present_missing_broken_and_corrupt(self):
+        import hashlib
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            present = root / "models" / "part.stl"
+            present.parent.mkdir()
+            present.write_bytes(b"valid fixture")
+            digest = hashlib.sha256(present.name.encode("utf-8") + b"\0" + present.read_bytes()).hexdigest()
+            common = {"id": "fixture", "tool": "blender", "kind": "mesh", "version": 1,
+                      "assumptions": "test", "semantic_role": "test", "provenance": "fixture"}
+            good = acquire.inspect_local_asset(root, {**common, "source": "models/part.stl", "source_sha256": digest})
+            missing = acquire.inspect_local_asset(root, {**common, "source": "models/absent.stl"})
+            broken = acquire.inspect_local_asset(root, {**common, "source": "../outside.stl"})
+            corrupt = acquire.inspect_local_asset(root, {**common, "source": "models/part.stl", "source_sha256": "0" * 64})
+        self.assertEqual(good["status"], "PRESENT")
+        self.assertEqual(missing["status"], "MISSING_LOCAL_ASSET")
+        self.assertEqual(broken["status"], "BROKEN_REGISTRY_PATH")
+        self.assertEqual(corrupt["status"], "INTEGRITY_FAIL")
 
     def test_acquisition_modes_default_safe(self):
         catalog, _ = acquire.load()

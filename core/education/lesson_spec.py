@@ -24,6 +24,9 @@ class LessonSpec:
     output_profile: str
     solver: str | None = None
     trace: str | None = None
+    asset_id: str | None = None
+    blueprint: str | None = None
+    animation: dict[str, Any] | None = None
 
     @classmethod
     def from_dict(cls, raw: dict[str, Any]) -> "LessonSpec":
@@ -37,7 +40,9 @@ class LessonSpec:
                    visualization=raw.get("visualization", "auto"),
                    computation_policy=raw.get("computation_policy", "only_when_needed"),
                    output_profile=raw.get("output_profile", "youtube_education"),
-                   solver=raw.get("solver"), trace=raw.get("trace"))
+                   solver=raw.get("solver"), trace=raw.get("trace"),
+                   asset_id=raw.get("asset_id"), blueprint=raw.get("blueprint"),
+                   animation=raw.get("animation"))
 
     @classmethod
     def load(cls, path: str | Path) -> "LessonSpec":
@@ -68,4 +73,14 @@ def validate_lesson_spec(raw: Any) -> list[str]:
         errors.append("computation_policy must be only_when_needed, always or never")
     if raw.get("evidence_type", "conceptual_illustration") not in EVIDENCE_TYPES:
         errors.append("evidence_type must be a supported evidence type")
+    for key in ("asset_id", "blueprint"):
+        if raw.get(key) is not None and (not isinstance(raw[key], str) or not raw[key].strip()):
+            errors.append(f"{key} must be a non-empty string when supplied")
+    if raw.get("animation") is not None and not isinstance(raw["animation"], dict):
+        errors.append("animation must be an object when supplied")
+    for index, beat in enumerate(raw.get("beats", []) if isinstance(raw.get("beats", []), list) else []):
+        if not isinstance(beat, dict):
+            continue
+        if beat.get("animation") is not None and not isinstance(beat["animation"], dict):
+            errors.append(f"beats[{index}].animation must be an object")
     return errors

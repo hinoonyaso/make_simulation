@@ -14,6 +14,8 @@
       }
     ],
     "license": "UNKNOWN",
+    "status": "PRESENT",
+    "error": null,
     "factory_validation": "NOT_APPLICABLE: code reference"
   },
   {
@@ -31,6 +33,8 @@
       }
     ],
     "license": "UNKNOWN",
+    "status": "PRESENT",
+    "error": null,
     "factory_validation": "NOT_APPLICABLE: code reference"
   },
   {
@@ -48,6 +52,8 @@
       }
     ],
     "license": "UNKNOWN",
+    "status": "PRESENT",
+    "error": null,
     "factory_validation": "NOT_APPLICABLE: code reference"
   },
   {
@@ -65,6 +71,8 @@
       }
     ],
     "license": "UNKNOWN",
+    "status": "PRESENT",
+    "error": null,
     "factory_validation": "NOT_APPLICABLE: code reference"
   },
   {
@@ -82,6 +90,8 @@
       }
     ],
     "license": "UNKNOWN",
+    "status": "PRESENT",
+    "error": null,
     "factory_validation": "NOT_APPLICABLE: code reference"
   },
   {
@@ -99,6 +109,8 @@
       }
     ],
     "license": "UNKNOWN",
+    "status": "PRESENT",
+    "error": null,
     "factory_validation": "NOT_APPLICABLE: code reference"
   },
   {
@@ -123,6 +135,8 @@
       }
     ],
     "license": "Apache-2.0 (per source package.xml)",
+    "status": "PRESENT",
+    "error": null,
     "factory_validation": "PASS"
   },
   {
@@ -161,6 +175,8 @@
       }
     ],
     "license": "Apache-2.0 (per source package.xml)",
+    "status": "PRESENT",
+    "error": null,
     "factory_validation": "PASS"
   },
   {
@@ -290,6 +306,8 @@
       }
     ],
     "license": "Apache-2.0 (per source package.xml)",
+    "status": "PRESENT",
+    "error": null,
     "factory_validation": "PASS"
   },
   {
@@ -342,6 +360,8 @@
       }
     ],
     "license": "Apache-2.0 (per source package.xml)",
+    "status": "PRESENT",
+    "error": null,
     "factory_validation": "PASS"
   },
   {
@@ -422,6 +442,8 @@
       }
     ],
     "license": "Apache-2.0 (per source package.xml)",
+    "status": "PRESENT",
+    "error": null,
     "factory_validation": "PASS"
   },
   {
@@ -474,6 +496,8 @@
       }
     ],
     "license": "Apache-2.0 (per source package.xml)",
+    "status": "PRESENT",
+    "error": null,
     "factory_validation": "PASS"
   },
   {
@@ -498,6 +522,8 @@
       }
     ],
     "license": "Apache-2.0 (per source package.xml)",
+    "status": "PRESENT",
+    "error": null,
     "factory_validation": "PASS"
   },
   {
@@ -613,6 +639,8 @@
       }
     ],
     "license": "Apache-2.0 (per source package.xml)",
+    "status": "PRESENT",
+    "error": null,
     "factory_validation": "PASS"
   },
   {
@@ -847,6 +875,8 @@
       }
     ],
     "license": "BSD-3-Clause (per repo LICENSE)",
+    "status": "PRESENT",
+    "error": null,
     "factory_validation": "PASS"
   },
   {
@@ -1634,6 +1664,8 @@
       }
     ],
     "license": "BSD-3-Clause (per repo LICENSE)",
+    "status": "PRESENT",
+    "error": null,
     "factory_validation": "PASS"
   },
   {
@@ -1959,6 +1991,8 @@
       }
     ],
     "license": "Apache-2.0 (per rotors_description/package.xml)",
+    "status": "PRESENT",
+    "error": null,
     "factory_validation": "PASS"
   },
   {
@@ -2011,6 +2045,8 @@
       }
     ],
     "license": "BSD (per repo package.xml, no LICENSE file present)",
+    "status": "PRESENT",
+    "error": null,
     "factory_validation": "PASS"
   },
   {
@@ -2112,6 +2148,8 @@
       }
     ],
     "license": "per repo LICENSE",
+    "status": "PRESENT",
+    "error": null,
     "factory_validation": "PASS"
   },
   {
@@ -2269,6 +2307,8 @@
       }
     ],
     "license": "BSD-3-Clause (per repo LICENSE)",
+    "status": "PRESENT",
+    "error": null,
     "factory_validation": "PASS"
   },
   {
@@ -3119,6 +3159,8 @@
       }
     ],
     "license": "BSD-3-Clause (per repo LICENSE)",
+    "status": "PRESENT",
+    "error": null,
     "factory_validation": "PASS"
   },
   {
@@ -3416,6 +3458,8 @@
       }
     ],
     "license": "Apache-2.0 (per repo LICENSE/NOTICE)",
+    "status": "PRESENT",
+    "error": null,
     "factory_validation": "PASS"
   },
   {
@@ -3517,6 +3561,8 @@
       }
     ],
     "license": "Apache-2.0 (per repo LICENSE)",
+    "status": "PRESENT",
+    "error": null,
     "factory_validation": "PASS"
   },
   {
@@ -3667,6 +3713,8 @@
       }
     ],
     "license": "Apache-2.0 (per repo LICENSE)",
+    "status": "PRESENT",
+    "error": null,
     "factory_validation": "PASS"
   },
   {
@@ -4006,6 +4054,8 @@
       }
     ],
     "license": "Apache-2.0 (per repo LICENSE)",
+    "status": "PRESENT",
+    "error": null,
     "factory_validation": "PASS"
   },
   {
@@ -4268,6 +4318,8 @@
       }
     ],
     "license": "Apache-2.0 (per repo LICENSE/NOTICE.md)",
+    "status": "PRESENT",
+    "error": null,
     "factory_validation": "PASS"
   },
   {
@@ -4488,6 +4540,8 @@
       }
     ],
     "license": "per repo LICENSE",
+    "status": "PRESENT",
+    "error": null,
     "factory_validation": "PASS"
   },
   {
@@ -4519,6 +4573,8 @@
       }
     ],
     "license": "Proprietary vendor reference CAD (DJI/Livox) -- publicly downloadable for product-integration use, not an OSS license. Use for internal video-geometry reference only; don't republish the raw file standalone.",
+    "status": "PRESENT",
+    "error": null,
     "factory_validation": "PASS"
   },
   {
@@ -4550,6 +4606,8 @@
       }
     ],
     "license": "Proprietary vendor reference CAD (Ouster) -- publicly downloadable, not an OSS license. Internal reference use only.",
+    "status": "PRESENT",
+    "error": null,
     "factory_validation": "PASS"
   },
   {
@@ -4581,6 +4639,8 @@
       }
     ],
     "license": "Proprietary vendor reference CAD (Ouster) -- publicly downloadable, not an OSS license. Internal reference use only.",
+    "status": "PRESENT",
+    "error": null,
     "factory_validation": "PASS"
   },
   {
@@ -4612,6 +4672,8 @@
       }
     ],
     "license": "Proprietary vendor reference CAD (Ouster) -- publicly downloadable, not an OSS license. Internal reference use only.",
+    "status": "PRESENT",
+    "error": null,
     "factory_validation": "PASS"
   },
   {
@@ -4636,6 +4698,8 @@
       }
     ],
     "license": "Proprietary vendor reference CAD (Stereolabs) -- publicly downloadable, not an OSS license. Internal reference use only.",
+    "status": "PRESENT",
+    "error": null,
     "factory_validation": "PASS"
   },
   {
@@ -4667,6 +4731,8 @@
       }
     ],
     "license": "MIT (c) Raspberry Pi Ltd -- LICENSE.txt included in assets/raspberry_pi5/; genuinely OSS unlike the LiDAR/camera CAD in this folder, which are proprietary vendor reference-only",
+    "status": "PRESENT",
+    "error": null,
     "factory_validation": "PASS"
   },
   {
@@ -4677,13 +4743,15 @@
     "files": [
       {
         "path": "assets/education/generated/bearing_6204.blend",
-        "size_bytes": 237173,
-        "sha256": "b352ab136b6a7f9a29f64e412ee34605d53975dc9019bd15b4bd2d0568c8fbb6",
-        "git_tracked": false,
+        "size_bytes": 236572,
+        "sha256": "0e76a8f0084eda59c76f41bccafc144634a4f2ce8ab24df2bbca720e9e0c729b",
+        "git_tracked": true,
         "remote_main_tree": false
       }
     ],
     "license": "CC0-1.0",
+    "status": "PRESENT",
+    "error": null,
     "factory_validation": "PASS"
   },
   {
@@ -4694,13 +4762,15 @@
     "files": [
       {
         "path": "assets/education/generated/spur_gears_20_40.blend",
-        "size_bytes": 135189,
-        "sha256": "104e336318474d0e30b94abbf84372a17506e5a0f253aafbae1bc0896c0df636",
-        "git_tracked": false,
+        "size_bytes": 135044,
+        "sha256": "745f835250b534b77d613fafaaf951f53cac93af0ea7624ae82ed2d2d0d9d13e",
+        "git_tracked": true,
         "remote_main_tree": false
       }
     ],
     "license": "CC0-1.0",
+    "status": "PRESENT",
+    "error": null,
     "factory_validation": "PASS"
   },
   {
@@ -4711,13 +4781,15 @@
     "files": [
       {
         "path": "assets/education/generated/bldc_motor_concept.blend",
-        "size_bytes": 178415,
-        "sha256": "6478b90527c611c6b45ee50734e6caa679e8eae5ca61c3c8cb7d6826485811c2",
-        "git_tracked": false,
+        "size_bytes": 176674,
+        "sha256": "e1e079612536a5a404521e62f10ae24e14a7b0a0434930362918f1252fea02a9",
+        "git_tracked": true,
         "remote_main_tree": false
       }
     ],
     "license": "CC0-1.0",
+    "status": "PRESENT",
+    "error": null,
     "factory_validation": "PASS"
   },
   {
@@ -4728,13 +4800,15 @@
     "files": [
       {
         "path": "assets/education/generated/pcb_layered.blend",
-        "size_bytes": 123948,
-        "sha256": "a492df346ac6e20c97037649248292f54474bf37e41af4ceb08ae8dcfbc5bf85",
-        "git_tracked": false,
+        "size_bytes": 123956,
+        "sha256": "f09c11adbe7a053fe789554b79d35bae3c753c4c85ccd998275aa4e57aac0d40",
+        "git_tracked": true,
         "remote_main_tree": false
       }
     ],
     "license": "CC0-1.0",
+    "status": "PRESENT",
+    "error": null,
     "factory_validation": "PASS"
   },
   {
@@ -4745,13 +4819,15 @@
     "files": [
       {
         "path": "assets/education/generated/shaft_coupling_spring_fastener_battery.blend",
-        "size_bytes": 174080,
-        "sha256": "d37958e2b25b6deb484dc45ecd5d69cf51c26dde2f6283099d749ef2743a0cc1",
-        "git_tracked": false,
+        "size_bytes": 174072,
+        "sha256": "277558f5e8fb9b77c9d7069f2ba59acf8b4173d178f0254bfeb2342179a4753a",
+        "git_tracked": true,
         "remote_main_tree": false
       }
     ],
     "license": "CC0-1.0",
+    "status": "PRESENT",
+    "error": null,
     "factory_validation": "PASS"
   },
   {
@@ -4762,13 +4838,15 @@
     "files": [
       {
         "path": "assets/education/generated/beam_bracket_heatsink_fan.blend",
-        "size_bytes": 167421,
-        "sha256": "7437e82721c1c6c4b459a09c3da8958ef8b47e481bfa0703bd2471849ba0ed2d",
-        "git_tracked": false,
+        "size_bytes": 166626,
+        "sha256": "9bed08cee3679fe37e09761431048f4fb4a108a53c12dad9b73aa2e0f57dad6e",
+        "git_tracked": true,
         "remote_main_tree": false
       }
     ],
     "license": "CC0-1.0",
+    "status": "PRESENT",
+    "error": null,
     "factory_validation": "PASS"
   }
 ]

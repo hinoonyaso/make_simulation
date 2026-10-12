@@ -5,7 +5,7 @@ from pathlib import Path
 import unittest
 from tempfile import TemporaryDirectory
 
-from core.education.blueprint_registry import available_blueprints, get_blueprint
+from core.education.blueprint_registry import available_blueprints, get_blueprint, validate_asset_blueprint
 from core.education.education_planner import plan_lesson
 from core.education.evidence_router import route_evidence
 from core.education.lesson_spec import LessonSpec, validate_lesson_spec
@@ -29,6 +29,7 @@ class EducationFirstTests(unittest.TestCase):
         planned = plan_lesson(spec)
         self.assertEqual(validate_manifest(planned["visual_manifest"]), [])
         self.assertEqual(planned["evidence"]["status"], "CONCEPT_ONLY")
+        self.assertEqual(planned["visual_manifest"]["asset_id"], "edu.bearing_6204.v1")
         self.assertFalse(planned["evidence"]["execution_required"])
         self.assertEqual(validate_timeline(planned["timeline"],
                          expected_phase_ids=[b["phase_id"] for b in spec["beats"]]), [])
@@ -43,10 +44,39 @@ class EducationFirstTests(unittest.TestCase):
 
     def test_blueprint_registry_is_deterministic(self):
         self.assertEqual(set(available_blueprints()), {"exploded_assembly", "layered_structure", "signal_timing",
-                         "coordinate_transform", "process_flow", "before_after"})
+                         "coordinate_transform", "process_flow", "before_after", "mechanism_motion"})
         self.assertIn("blender", get_blueprint("exploded_assembly")["renderers"])
         with self.assertRaises(ValueError):
             get_blueprint("unknown")
+
+    def test_same_blueprint_routes_across_assets_and_rejects_unsupported_combinations(self):
+        self.assertEqual(validate_asset_blueprint("edu.bldc_motor_concept.v1", "layered_structure")["renderer"], "blender")
+        self.assertEqual(validate_asset_blueprint("edu.pcb_layered.v1", "layered_structure")["blueprint"], "layered_structure")
+        with self.assertRaisesRegex(ValueError, "unsupported asset/blueprint combination"):
+            validate_asset_blueprint("edu.pcb_layered.v1", "mechanism_motion")
+        with self.assertRaisesRegex(ValueError, "does not support animation operations"):
+            validate_asset_blueprint("edu.bearing_6204.v1", "exploded_assembly", {"rotate": True})
+
+    def test_registry_backed_asset_loader_resolves_hash_and_license(self):
+        from core.education.blender_asset_loader import resolve_education_asset
+        resolved = resolve_education_asset("edu.bearing_6204.v1")
+        self.assertTrue(resolved["path"].is_file())
+        self.assertEqual(resolved["collection"], "6204 envelope and estimated internal teaching geometry")
+        self.assertEqual(resolved["license"], "CC0-1.0")
+        self.assertEqual(len(resolved["sha256"]), 64)
+
+    def test_blender_asset_lessons_plan_from_manifest_asset_ids(self):
+        for name, asset_id, duration in (("bldc_motor.json","edu.bldc_motor_concept.v1",20),
+                                         ("pcb_via.json","edu.pcb_layered.v1",20)):
+            spec=self.load(name)
+            self.assertEqual(validate_lesson_spec(spec), [])
+            planned=plan_lesson(spec)
+            self.assertEqual(planned["visual_manifest"]["asset_id"],asset_id)
+            self.assertEqual(planned["timeline"]["total_frames"],duration*30)
+        spec=self.load("pcb_via.json")
+        spec["beats"][0]["blueprint"]="mechanism_motion"
+        with self.assertRaisesRegex(ValueError,"unsupported asset/blueprint combination"):
+            plan_lesson(spec)
 
     def test_computed_mode_requires_solver(self):
         spec = self.load("bearing.json")

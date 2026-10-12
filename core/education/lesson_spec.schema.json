@@ -28,6 +28,9 @@
     "output_profile": {"type": "string"},
     "solver": {"type": ["string", "null"]},
     "trace": {"type": ["string", "null"]},
+    "asset_id": {"type": "string", "minLength": 1},
+    "blueprint": {"type": "string", "minLength": 1},
+    "animation": {"type": "object"},
     "beats": {
       "type": "array", "minItems": 1, "maxItems": 16,
       "items": {
@@ -46,6 +49,7 @@
           "focus": {"type": "string", "minLength": 1},
           "tool": {"enum": ["M", "B", "E"]},
           "blueprint": {"type": "string"},
+          "animation": {"type": "object"},
           "evidence_type": {"enum": ["conceptual_illustration", "derived_calculation", "computed_result", "measured_data"]},
           "trace": {"type": "string"},
           "references": {"type": "array", "items": {"type": "string"}}

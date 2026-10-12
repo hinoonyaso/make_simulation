@@ -3,9 +3,9 @@
   "assets": [
     {
       "file": "bearing_6204.blend",
-      "size_bytes": 237173,
+      "size_bytes": 236572,
       "scene": "EDU | Deep groove bearing assembly | 6204 envelope",
-      "sha256": "b352ab136b6a7f9a29f64e412ee34605d53975dc9019bd15b4bd2d0568c8fbb6",
+      "sha256": "0e76a8f0084eda59c76f41bccafc144634a4f2ce8ab24df2bbca720e9e0c729b",
       "units": "m",
       "object_count": 21,
       "mesh_object_count": 19,
@@ -24,13 +24,27 @@
           0.014000000432133675
         ]
       ],
+      "kinematics": {
+        "status": "PASS",
+        "frames": [
+          1,
+          36,
+          72
+        ],
+        "outer_fixed": true,
+        "inner_center_fixed": true,
+        "ball_pitch_radius_m": 0.01575,
+        "cage_midframe_rad": 1.2782692909240723,
+        "ideal_no_slip_prescribed_motion": true,
+        "contact_solver": false
+      },
       "validation": "PASS"
     },
     {
       "file": "spur_gears_20_40.blend",
-      "size_bytes": 135189,
+      "size_bytes": 135044,
       "scene": "EDU | Spur gears | 20:40",
-      "sha256": "104e336318474d0e30b94abbf84372a17506e5a0f253aafbae1bc0896c0df636",
+      "sha256": "745f835250b534b77d613fafaaf951f53cac93af0ea7624ae82ed2d2d0d9d13e",
       "units": "m",
       "object_count": 4,
       "mesh_object_count": 4,
@@ -49,17 +63,29 @@
           0.00800000037997961
         ]
       ],
+      "kinematics": {
+        "status": "PASS",
+        "frames": [
+          1,
+          36,
+          72
+        ],
+        "gear_center_distance_m": 0.06,
+        "center_drift_m": 0,
+        "angular_ratio_20_to_40": -2.0,
+        "profile_note": "polygonal non-involute; mesh contact fidelity is not claimed"
+      },
       "validation": "PASS"
     },
     {
       "file": "bldc_motor_concept.blend",
-      "size_bytes": 178415,
+      "size_bytes": 176674,
       "scene": "EDU | Three phase BLDC motor concept",
-      "sha256": "6478b90527c611c6b45ee50734e6caa679e8eae5ca61c3c8cb7d6826485811c2",
+      "sha256": "e1e079612536a5a404521e62f10ae24e14a7b0a0434930362918f1252fea02a9",
       "units": "m",
-      "object_count": 28,
+      "object_count": 30,
       "mesh_object_count": 27,
-      "keyframed_object_count": 7,
+      "keyframed_object_count": 1,
       "bounds_m": [
         [
           0.012000000104308128,
@@ -74,13 +100,28 @@
           0.07000000029802322
         ]
       ],
+      "kinematics": {
+        "status": "PASS",
+        "frames": [
+          1,
+          36,
+          72
+        ],
+        "rotor_magnet_midframe_displacement_m": 0.05398678619085382,
+        "magnet_radial_extent_m": [
+          0.02191460725681787,
+          0.03592004921899753
+        ],
+        "stator_drift_m": 0,
+        "hierarchy": "BLDC_Assembly -> Rotor_Assembly and Stator_Assembly"
+      },
       "validation": "PASS"
     },
     {
       "file": "pcb_layered.blend",
-      "size_bytes": 123948,
+      "size_bytes": 123956,
       "scene": "EDU | Layered PCB teaching model",
-      "sha256": "a492df346ac6e20c97037649248292f54474bf37e41af4ceb08ae8dcfbc5bf85",
+      "sha256": "f09c11adbe7a053fe789554b79d35bae3c753c4c85ccd998275aa4e57aac0d40",
       "units": "m",
       "object_count": 38,
       "mesh_object_count": 38,
@@ -99,13 +140,14 @@
           0.012000000104308128
         ]
       ],
+      "kinematics": null,
       "validation": "PASS"
     },
     {
       "file": "shaft_coupling_spring_fastener_battery.blend",
-      "size_bytes": 174080,
+      "size_bytes": 174072,
       "scene": "EDU | Shafts, coupling, spring, fasteners and battery",
-      "sha256": "d37958e2b25b6deb484dc45ecd5d69cf51c26dde2f6283099d749ef2743a0cc1",
+      "sha256": "277558f5e8fb9b77c9d7069f2ba59acf8b4173d178f0254bfeb2342179a4753a",
       "units": "m",
       "object_count": 28,
       "mesh_object_count": 27,
@@ -124,17 +166,18 @@
           0.18000000715255737
         ]
       ],
+      "kinematics": null,
       "validation": "PASS"
     },
     {
       "file": "beam_bracket_heatsink_fan.blend",
-      "size_bytes": 167421,
+      "size_bytes": 166626,
       "scene": "EDU | Bracket, beam, heatsink and fan",
-      "sha256": "7437e82721c1c6c4b459a09c3da8958ef8b47e481bfa0703bd2471849ba0ed2d",
+      "sha256": "9bed08cee3679fe37e09761431048f4fb4a108a53c12dad9b73aa2e0f57dad6e",
       "units": "m",
-      "object_count": 23,
+      "object_count": 25,
       "mesh_object_count": 23,
-      "keyframed_object_count": 5,
+      "keyframed_object_count": 1,
       "bounds_m": [
         [
           0.003000000026077032,
@@ -149,6 +192,17 @@
           0.11999999731779099
         ]
       ],
+      "kinematics": {
+        "status": "PASS",
+        "frames": [
+          1,
+          36,
+          72
+        ],
+        "blade_orbit_radius_m": 0.02200001496854999,
+        "frame_drift_m": 0,
+        "hierarchy": "Cooling_Fan -> fixed Fan_Frame and Fan_Rotor -> hub/blades"
+      },
       "validation": "PASS"
     }
   ],

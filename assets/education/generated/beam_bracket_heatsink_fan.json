@@ -10,8 +10,21 @@
   "bracket": "conceptual L-bracket with symbolic hole rims",
   "heatsink": "regular fins for heat-flow explanation, not thermal CFD geometry",
   "fan": "5-blade simplified impeller; no aerodynamic performance claim",
+  "fan_hierarchy": {
+    "Cooling_Fan": [
+      "Fan_Frame"
+    ],
+    "Fan_Rotor": [
+      "Fan_Hub",
+      "Fan_Blade_1",
+      "Fan_Blade_2",
+      "Fan_Blade_3",
+      "Fan_Blade_4",
+      "Fan_Blade_5"
+    ]
+  },
   "blend_file": "beam_bracket_heatsink_fan.blend",
-  "source_sha256": "7437e82721c1c6c4b459a09c3da8958ef8b47e481bfa0703bd2471849ba0ed2d",
+  "source_sha256": "9bed08cee3679fe37e09761431048f4fb4a108a53c12dad9b73aa2e0f57dad6e",
   "objects": [
     "Cantilever_Beam",
     "Fixed_Wall",
@@ -31,6 +44,8 @@
     "Heat_Sink_Fin_09",
     "Fan_Frame",
     "Fan_Hub",
+    "Cooling_Fan",
+    "Fan_Rotor",
     "Fan_Blade_1",
     "Fan_Blade_2",
     "Fan_Blade_3",

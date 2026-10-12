@@ -3,7 +3,7 @@
 | Source/family | YouTube commercial use | GitHub redistribution | Status | Evidence
 |---|---|---|---|
 | Self-authored education geometry | Allowed under CC0-1.0 | Allowed under CC0-1.0 | Generated locally | `assets/education/generate_assets.py`; no third-party geometry incorporated.
-| KiCad library collection | Library data may be used in designs/generated files without relicensing those designs; collection redistribution requires CC-BY-SA 4.0 and attribution | Conditional CC-BY-SA 4.0 | Plan only | https://www.kicad.org/libraries/license/
+| KiCad library collection | Library data may be used in designs/generated files without relicensing those designs; collection redistribution requires CC-BY-SA 4.0 and attribution | Conditional CC-BY-SA 4.0 | Candidate identified; no file acquired | Official license and package index: https://www.kicad.org/libraries/license/ and https://kicad.github.io/packages3d/; WSL has no FreeCAD/STEP converter for validated conversion in this run.
 | NSK CAD | Not established for video use; official page prohibits unauthorized copying/use | Not established | Manual/legal review | https://www.nsk.com/kr-ko/catalogs-and-cad/
 | MISUMI CAD | Terms limit CAD to design/layout checking; other use requires prior permission | Not allowed absent permission | Blocked | https://jp.misumi-ec.com/contents/terms/cad_use.html
 | Livox/Ouster/ZED2i vendor CAD already present locally | Unknown beyond product-reference terms described in local registry | Not established; ignored by Git | Local use only; no redistribute | Existing local registry and `.gitignore`; no new downloads.

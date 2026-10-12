@@ -22,6 +22,8 @@
   ],
   "modes": ["concept_visualization", "mathematical_demonstration"],
   "visualization": "auto",
+  "asset_id": "edu.bearing_6204.v1",
+  "blueprint": "exploded_assembly",
   "computation_policy": "only_when_needed",
   "output_profile": "youtube_education",
   "bearing_type": "single-row deep-groove ball bearing, conceptual geometry",

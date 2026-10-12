@@ -13,7 +13,7 @@
   "gear_teeth": 40,
   "profile": "stylized polygonal teeth, non-involute; pitch radii give 0.06 m center distance",
   "blend_file": "spur_gears_20_40.blend",
-  "source_sha256": "104e336318474d0e30b94abbf84372a17506e5a0f253aafbae1bc0896c0df636",
+  "source_sha256": "745f835250b534b77d613fafaaf951f53cac93af0ea7624ae82ed2d2d0d9d13e",
   "objects": [
     "Pinion_20T",
     "Gear_40T",
