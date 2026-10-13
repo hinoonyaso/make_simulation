@@ -4,6 +4,45 @@
     "aspect_ratio": "16:9",
     "safe_margin_fraction": 0.05
   },
+  "visual_profiles": {
+    "studio_light": {
+      "background": "#D9DEE4",
+      "surface": "#F4F6F8",
+      "primary_text": "#18212B",
+      "secondary_text": "#3D4A59",
+      "muted_text": "#536273",
+      "border": "#9AA6B2",
+      "divider": "#B7C0C9",
+      "neutral_geometry": "#596675",
+      "floor": "#C7CDD4",
+      "bearing_steel": "#65717D",
+      "bearing_inner": "#326A91",
+      "bearing_ball": "#D9E0E7",
+      "bearing_cage": "#8A5814",
+      "bearing_stage": "#C7CDD4",
+      "world_strength": 0.42,
+      "lighting": {"key": 1.0, "fill": 0.25, "rim": 0.28},
+      "semantic_colors": {
+        "sensor": "#006E99", "active": "#855400", "result": "#137A45",
+        "error": "#B42318", "learned": "#6941A5", "axis_x": "#B42318",
+        "axis_y": "#137A45", "axis_z": "#155EEF", "input": "#006E99",
+        "output": "#137A45", "warning": "#855400"
+      }
+    },
+    "technical_dark": {
+      "background": "#0B1020",
+      "surface": "#121B2A",
+      "primary_text": "#F4F7FB",
+      "secondary_text": "#8A94A6",
+      "muted_text": "#A8B2C1",
+      "border": "#334155",
+      "divider": "#263449",
+      "neutral_geometry": "#A7B4C2",
+      "floor": "#111827",
+      "world_strength": 0.12,
+      "lighting": {"key": 0.85, "fill": 0.24, "rim": 0.45}
+    }
+  },
   "colors": {
     "background": "#0B1020",
     "primary_text": "#F4F7FB",
@@ -14,6 +53,10 @@
     "result": "#34D399",
     "error": "#F87171",
     "learned": "#A78BFA",
+    "input": "#38BDF8",
+    "output": "#34D399",
+    "warning": "#FBBF24",
+    "neutral": "#A7B4C2",
     "axis_x": "#EF4444",
     "axis_y": "#22C55E",
     "axis_z": "#3B82F6",
@@ -29,6 +72,42 @@
     "primary_label_px": 32,
     "secondary_label_px": 28,
     "caption_px": 46,
+    "equation_px": 48,
+    "numerical_readout_px": 40,
+    "technical_annotation_px": 26,
+    "evidence_label_px": 24,
     "minimum_critical_preview_px": 14
+  },
+  "layout": {
+    "safe_margin_fraction": 0.05,
+    "caption_exclusion_fraction": 0.16,
+    "presets": {
+      "hero_focus": {"subject": [0.08, 0.14, 0.92, 0.86]},
+      "object_explanation": {"subject": [0.06, 0.12, 0.62, 0.88], "explanation": [0.68, 0.14, 0.94, 0.82]},
+      "side_by_side": {"left": [0.06, 0.14, 0.47, 0.84], "right": [0.53, 0.14, 0.94, 0.84]},
+      "equation_geometry": {"geometry": [0.06, 0.16, 0.54, 0.82], "equation": [0.60, 0.18, 0.94, 0.80]},
+      "graph_state": {"graph": [0.06, 0.16, 0.68, 0.80], "state": [0.73, 0.18, 0.94, 0.78]},
+      "process_flow": {"content": [0.06, 0.18, 0.94, 0.78]},
+      "recap": {"content": [0.08, 0.14, 0.92, 0.78]}
+    }
+  },
+  "motion_seconds": {
+    "reveal": [0.25, 0.60],
+    "emphasis": [0.20, 0.50],
+    "state_transition": [0.40, 0.90],
+    "label_appearance": [0.20, 0.45],
+    "label_disappearance": [0.15, 0.35],
+    "camera_transition": [0.60, 1.40],
+    "hold": [0.60, 2.00]
+  },
+  "material_roles": {
+    "metal": {"metallic": 0.72, "roughness": 0.30},
+    "matte_metal": {"metallic": 0.48, "roughness": 0.48},
+    "plastic": {"metallic": 0.02, "roughness": 0.38},
+    "rubber": {"metallic": 0.0, "roughness": 0.82},
+    "glass": {"metallic": 0.0, "roughness": 0.16, "transmission": 0.65},
+    "neutral_structure": {"metallic": 0.12, "roughness": 0.52},
+    "active_component": {"metallic": 0.08, "roughness": 0.40},
+    "annotation": {"metallic": 0.0, "roughness": 0.50}
   }
 }

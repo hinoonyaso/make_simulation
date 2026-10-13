@@ -6,8 +6,11 @@ import unittest
 from pathlib import Path
 
 from core.visual_primitives.font_support import (
+    COMMON_FONT_ENV,
     FONT_ENV,
+    MANIM_FONT_ENV,
     discover_korean_font,
+    discover_manim_korean_font,
     missing_hangul_glyphs,
 )
 
@@ -56,6 +59,13 @@ class BearingFontTests(unittest.TestCase):
         self.assertEqual(selected, "/custom/korean.ttf")
         self.assertEqual(calls, ["/custom/korean.ttf"])
 
+    def test_common_font_variable_precedes_legacy_bearing_variable(self):
+        selected = discover_korean_font(
+            "한글", platform="linux", env={COMMON_FONT_ENV: "/common.ttf", FONT_ENV: "/legacy.ttf"},
+            file_exists=lambda _path: True, coverage_check=lambda _path, _text: [],
+        )
+        self.assertEqual(selected, "/common.ttf")
+
     def test_invalid_explicit_font_fails_instead_of_falling_back(self):
         with self.assertRaisesRegex(FileNotFoundError, FONT_ENV):
             discover_korean_font("한글", "/missing/font.ttf", platform="linux", env={},
@@ -91,9 +101,27 @@ class BearingFontTests(unittest.TestCase):
         self.assertIn("malgunbd.ttf", selected.lower())
 
     def test_no_supported_font_fails_with_actionable_message(self):
-        with self.assertRaisesRegex(RuntimeError, "Set BEARING_KOREAN_FONT"):
+        with self.assertRaisesRegex(RuntimeError, "legacy BEARING_KOREAN_FONT"):
             discover_korean_font("한글", platform="linux", env={}, file_exists=lambda _path: False,
                                  coverage_check=lambda _path, _text: [], fontconfig_lookup=lambda _family: "")
+
+    def test_manim_family_requires_installed_font_and_hangul_coverage(self):
+        calls = []
+
+        def lookup(family, _platform):
+            calls.append(family)
+            return f"/fonts/{family}.ttf"
+
+        selected = discover_manim_korean_font(
+            "한글", platform="linux", env={MANIM_FONT_ENV: "NanumGothic"},
+            font_path_lookup=lookup, coverage_check=lambda _path, text: [] if "한" in text else ["글"],
+        )
+        self.assertEqual(selected, "NanumGothic")
+        self.assertEqual(calls, ["NanumGothic"])
+        with self.assertRaisesRegex(RuntimeError, MANIM_FONT_ENV):
+            discover_manim_korean_font("한글", platform="linux", env={MANIM_FONT_ENV: "Missing"},
+                                       font_path_lookup=lambda _family, _platform: "",
+                                       coverage_check=lambda _path, _text: [])
 
 
 if __name__ == "__main__":

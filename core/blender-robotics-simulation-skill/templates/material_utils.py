@@ -1,6 +1,18 @@
 from __future__ import annotations
 
 import bpy
+from pathlib import Path
+import sys
+
+_ROOT = Path(__file__).resolve().parents[3]
+if str(_ROOT) not in sys.path:
+    sys.path.insert(0, str(_ROOT))
+
+from core.visual_primitives.design_tokens import (
+    TOKENS as DESIGN_TOKENS,
+    hex_to_linear_rgba,
+    profile_color,
+)
 
 
 def _rgba(value):
@@ -16,6 +28,7 @@ def principled_material(
     roughness=0.45,
     emission_color=None,
     emission_strength=0.0,
+    transmission=0.0,
 ):
     mat = bpy.data.materials.get(name) or bpy.data.materials.new(name)
     mat.use_nodes = True
@@ -23,6 +36,9 @@ def principled_material(
     bsdf.inputs['Base Color'].default_value = _rgba(base_color)
     bsdf.inputs['Metallic'].default_value = metallic
     bsdf.inputs['Roughness'].default_value = roughness
+    transmission_socket = bsdf.inputs.get('Transmission Weight') or bsdf.inputs.get('Transmission')
+    if transmission_socket is not None:
+        transmission_socket.default_value = transmission
 
     # Blender 4.x/5.x Principled input names.
     if emission_color is not None:
@@ -33,6 +49,21 @@ def principled_material(
         if 'Emission Strength' in bsdf.inputs:
             bsdf.inputs['Emission Strength'].default_value = emission_strength
     return mat
+
+
+def visual_material(name, color_role, *, profile='technical_dark', material_role='plastic'):
+    """Create a semantic Blender material from shared design and material tokens."""
+    try:
+        color = profile_color(color_role, profile)
+    except KeyError as exc:
+        raise KeyError(f"unknown visual color role {color_role!r}") from exc
+    try:
+        material = DESIGN_TOKENS['material_roles'][material_role]
+    except KeyError as exc:
+        raise ValueError(f"unknown material role {material_role!r}") from exc
+    return principled_material(name, hex_to_linear_rgba(color),
+                               metallic=material['metallic'], roughness=material['roughness'],
+                               transmission=material.get('transmission', 0.0))
 
 
 def assign_material(obj, material):

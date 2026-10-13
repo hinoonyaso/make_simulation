@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import os
 from pathlib import Path
 import sys
 
@@ -17,8 +18,10 @@ from mathutils import Vector
 BLENDER_KIT = REPO_ROOT / "core/blender-robotics-simulation-skill/templates"
 if str(BLENDER_KIT) not in sys.path:
     sys.path.insert(0, str(BLENDER_KIT))
-from studio_utils import set_interpolation
-from core.visual_primitives.design_tokens import COLORS, TOKENS, hex_to_linear_rgba
+from studio_utils import apply_world_profile, set_interpolation
+from core.visual_primitives.design_tokens import (
+    COLORS, TOKENS, get_visual_profile, hex_to_linear_rgba, profile_color,
+)
 from core.visual_primitives.font_support import discover_korean_font
 
 
@@ -31,6 +34,7 @@ def args_after_separator():
     parser.add_argument("--height", type=int, default=540)
     parser.add_argument("--fps", type=int, default=30)
     parser.add_argument("--samples", type=int, default=16)
+    parser.add_argument("--visual-profile", choices=("studio_light", "technical_dark"))
     parser.add_argument("--still-frame", type=int, default=0,
                         help="render one review still instead of the full animation")
     values = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
@@ -151,11 +155,13 @@ def key_visibility_for_phases(obj, timeline, visible_phase_ids, frame_end):
     set_interpolation(obj, "CONSTANT", paths=["hide_render"])
 
 
-def token_rgb(token_name):
-    return hex_to_linear_rgba(COLORS[token_name])[:3]
+def token_rgb(token_name, profile="technical_dark"):
+    return hex_to_linear_rgba(profile_color(token_name, profile))[:3]
 
 
 def make_scene(manifest, timeline, output, width, height, fps, samples=16, still_frame=0):
+    visual_profile = os.environ.get("EDU_VISUAL_PROFILE", "technical_dark")
+    lighting = get_visual_profile(visual_profile)["lighting"]
     bpy.ops.object.select_all(action="SELECT")
     bpy.ops.object.delete(use_global=False)
     scene = bpy.context.scene
@@ -174,18 +180,18 @@ def make_scene(manifest, timeline, output, width, height, fps, samples=16, still
     scene.render.ffmpeg.constant_rate_factor = "HIGH"
     scene.render.filepath = str(output)
     scene.render.film_transparent = False
-    scene.world.color = (.018, .026, .043)
+    apply_world_profile(scene, visual_profile)
     scene.view_settings.view_transform = "AgX"
     scene.render.image_settings.color_mode = "RGB"
 
-    steel = material("Satin chromium steel", token_rgb("bearing_steel"), .40, .50)
-    blue_steel = material("Inner race blue steel", token_rgb("bearing_inner"), .38, .48)
-    ceramic = material("Rolling elements", token_rgb("bearing_ball"), .18, .42)
-    cage_mat = material("Cage polymer brass", token_rgb("bearing_cage"), .24, .46)
-    ground_mat = material("Stage", token_rgb("bearing_stage"), .16, .55)
-    accent = material("Load path highlight", token_rgb("error"), .25, .33)
-    white = material("Labels", token_rgb("primary_text"), .1, .5)
-    label_ink = emissive_material("Minimal overlay text", token_rgb("primary_text"), 1.0)
+    steel = material("Satin chromium steel", token_rgb("bearing_steel", visual_profile), .40, .50)
+    blue_steel = material("Inner race blue steel", token_rgb("bearing_inner", visual_profile), .38, .48)
+    ceramic = material("Rolling elements", token_rgb("bearing_ball", visual_profile), .18, .42)
+    cage_mat = material("Cage polymer brass", token_rgb("bearing_cage", visual_profile), .24, .46)
+    ground_mat = material("Stage", token_rgb("bearing_stage", visual_profile), .16, .55)
+    accent = material("Load path highlight", token_rgb("error", visual_profile), .25, .33)
+    white = material("Labels", token_rgb("primary_text", visual_profile), .1, .5)
+    label_ink = emissive_material("Minimal overlay text", token_rgb("primary_text", visual_profile), 1.0)
     part_rows = [
         "내륜  ·  축과 함께 회전",
         "외륜  ·  하우징에 고정",
@@ -302,7 +308,10 @@ def make_scene(manifest, timeline, output, width, height, fps, samples=16, still
     camera.location += camera.rotation_euler.to_quaternion() @ Vector((.55, 0, 0))
     scene.camera = camera
 
-    for loc, energy, size in [((2,-4,6), 320, 7), ((-4,-1,2), 180, 6), ((1,4,4), 240, 5)]:
+    for loc, energy, size in [
+            ((2, -4, 6), 320 * lighting["key"], 7),
+            ((-4, -1, 2), 320 * lighting["fill"], 6),
+            ((1, 4, 4), 320 * lighting["rim"], 5)]:
         light_data = bpy.data.lights.new("studio_softbox", "AREA")
         light_data.energy = energy
         light_data.shape = "DISK"
@@ -419,6 +428,8 @@ def make_scene(manifest, timeline, output, width, height, fps, samples=16, still
 
 def main():
     args = args_after_separator()
+    if args.visual_profile:
+        os.environ["EDU_VISUAL_PROFILE"] = args.visual_profile
     manifest = json.loads(Path(args.manifest).read_text(encoding="utf-8"))
     timeline = json.loads(Path(args.timeline).read_text(encoding="utf-8"))
     make_scene(manifest, timeline, Path(args.output), args.width, args.height, args.fps,

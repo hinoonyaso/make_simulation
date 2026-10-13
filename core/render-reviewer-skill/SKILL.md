@@ -2,7 +2,7 @@
 name: render-reviewer-skill
 description: One-pass QA of real rendered previews, focused on comprehension, state continuity, subject scale, and production defects.
 metadata:
-  version: "2.4-surface-refinement-evidence"
+  version: "2.5-visual-profile-render-metrics"
 ---
 
 # Render Reviewer
@@ -66,6 +66,8 @@ Keep motion/voice, frame comprehension and physics evidence separate. Retain use
 Use the first-view procedure in `core/robotics-ai-visual-director-skill/references/director-qa.md` when learner understanding is in scope. Record in the optional `learner_check` report fields whether the respondent was a human novice, an informed user or an agent, the inspected clip, prompts and answers before hints, and the specific misunderstanding. A user's natural pacing approval does not answer the steering-reason question. An agent can diagnose a likely gap but cannot certify novice comprehension. Missing learner evidence is `not_assessed`, not a hidden PASS or an automatic production blocker.
 
 For requested material/light/camera polish, use `references/visual.md` to compare rendered candidates and record timestamped craft observations with an owner, minimal change and visible verification target. Correctness and zero blocker/high defects do not establish polished craft. Escalate only when a defect hides a necessary relation or misleads; aesthetic preferences remain observations. User playback feedback may support motion/audio assessment within its stated scope and must be attributed to the user, without claiming direct tool inspection.
+
+Use `scripts/analyze_visual_render.py <preview.mp4> --report <report.json>` for dimensions/fps/decode metadata and sampled black/freeze/brightness candidates. These are leads for inspection, not confirmed defects or a quality score; the 4 fps sampling can miss shorter events. Static token/contrast checks use `scripts/validate_visual_design.py`; neither script can determine semantic overlap, educational comprehension or motion naturalness. Record profile, source clip and exact inspected range in the report.
 
 ## Decide when requested refinement is finished
 

@@ -1,10 +1,19 @@
 from __future__ import annotations
 import bpy
 from pathlib import Path
+import sys
+_ROOT=Path(__file__).resolve().parents[3]
+if str(_ROOT) not in sys.path:
+    sys.path.insert(0, str(_ROOT))
+from core.visual_primitives.design_tokens import (
+    COLORS as TOKEN_COLORS,
+    get_visual_profile,
+    hex_to_linear_rgba,
+)
 from camera_utils import create_camera, create_target, look_at, setup_dof
 from geometry_utils import add_floor, add_cube, add_cylinder, add_sphere, curve_between, apply_bevel
 from lighting_utils import setup_three_point_lighting, setup_world
-from material_utils import assign_material, principled_material
+from material_utils import assign_material, principled_material, visual_material
 from robotics_visual_utils import add_coordinate_frame, add_point, add_trajectory, apply_matrix, add_stylized_robot_arm, add_planar_arm_rig, keyframe_joint_angles
 from animation_utils import StateObject, keyframe_trace, set_linear_interpolation
 from framing_utils import frame_objects, world_bounds
@@ -76,6 +85,25 @@ def material_library():
     }
 
 
+def material_library_for_profile(profile='technical_dark'):
+    """Build semantic materials from shared tokens; physical asset materials stay local."""
+    p = get_visual_profile(profile)
+    def make(name, token, material_role):
+        return visual_material(name, token, profile=profile, material_role=material_role)
+    return {
+        'neutral': make('Neutral', 'neutral_geometry', 'neutral_structure'),
+        'robot_link': make('RobotLink', 'neutral_geometry', 'matte_metal'),
+        'robot_joint': make('RobotJoint', 'neutral_geometry', 'metal'),
+        'sensor': make('Sensor', 'sensor', 'plastic'),
+        'active': make('Active', 'active', 'active_component'),
+        'result': make('Result', 'result', 'plastic'),
+        'error': make('Error', 'error', 'plastic'),
+        'learned': make('Learned', 'learned', 'plastic'),
+        'glass': make('Glass', 'sensor', 'glass'),
+        'floor': principled_material('Floor', hex_to_linear_rgba(p['floor']), roughness=.82),
+    }
+
+
 def camera_shot(kind='wide', subject=(0,0,.8)):
     specs={
         'wide':((5.2,-5.2,3.4),50,None,6),
@@ -90,15 +118,27 @@ def camera_shot(kind='wide', subject=(0,0,.8)):
     look_at(c,t); return c,t
 
 
-def bootstrap(profile='FINAL', subject=(0,0,.8), camera='wide', style='minimal', floor=True, transparent=False):
-    clear(); mats=material_library(); render_setup(profile, transparent=transparent)
-    setup_world(.12, COLORS['bg'])
+def bootstrap(profile='FINAL', subject=(0,0,.8), camera='wide', style='minimal', floor=True,
+              transparent=False, visual_profile='technical_dark'):
+    """Bootstrap render settings and a named shared look profile.
+
+    ``profile`` remains the legacy render-quality preset; ``visual_profile`` only
+    controls appearance. Omitting it preserves the historical Technical Dark look.
+    """
+    look = get_visual_profile(visual_profile)
+    clear(); mats=material_library_for_profile(visual_profile); render_setup(profile, transparent=transparent)
+    look_colors = {key: hex_to_linear_rgba(look.get(key, TOKEN_COLORS.get(key, '#A7B4C2')))
+                   for key in ('background', 'neutral_geometry', 'surface', 'sensor', 'active',
+                               'result', 'error', 'learned', 'floor')}
+    setup_world(float(look['world_strength']), look_colors['background'])
     fl=None
     if floor:
         fl=add_floor(14,0); assign_material(fl,mats['floor'])
     setup_three_point_lighting(subject, .85)
     cam,target=camera_shot(camera,subject)
-    return {'scene':bpy.context.scene,'materials':mats,'floor':fl,'camera':cam,'target':target,'colors':COLORS}
+    look_colors.update({'bg': look_colors['background'], 'neutral': look_colors['neutral_geometry']})
+    return {'scene':bpy.context.scene,'materials':mats,'floor':fl,'camera':cam,'target':target,
+            'colors':look_colors,'visual_profile':visual_profile}
 
 
 
@@ -130,6 +170,7 @@ def review(frames=(1,), directory='review'):
     return d
 
 __all__=['bpy','COLORS','bootstrap','render_setup','camera_shot','look_at','image_sequence','transparent_sequence','review',
+         'material_library_for_profile',
          'add_cube','add_cylinder','add_sphere','curve_between','apply_bevel','assign_material','principled_material',
          'add_coordinate_frame','add_point','add_trajectory','apply_matrix','add_stylized_robot_arm','setup_dof',
          'StateObject','keyframe_trace','set_linear_interpolation','frame_objects','frame_hero','world_bounds','load_trace','positions','append_collection',

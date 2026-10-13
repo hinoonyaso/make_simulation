@@ -47,7 +47,7 @@ Unless explicitly requested otherwise:
 - 1920x1080
 - 30 fps default
 - 2-5 minutes for a single concept
-- bright, clean educational style
+- a clean educational style selected per lesson from the shared `studio_light` or `technical_dark` profile
 - Korean narration
 - Korean captions
 - English technical terms may remain on screen where standard and clearer
@@ -79,15 +79,15 @@ Example:
 
 ### General palette
 
-- background: warm/neutral bright gray or white
-- primary text: dark gray, not pure black when avoidable
-- muted/supporting text: medium gray
-- input/token/selected object: orange or yellow
-- perception/camera: cyan or blue
-- AI/inference: purple
-- planning/valid path: green
-- error/loss/collision/warning: red
-- neutral pipeline/data flow: gray
+Use `core/visual_primitives/design_tokens.json` as the shared source for renderer-neutral semantic colors, typography, layout hints and motion ranges. Select a canvas profile by the primary evidence, required contrast and adjacent-scene continuity; do not bind a profile to Blender or Manim.
+
+- **Studio Light** is the starting choice for visible physical form, assembly, contact and spatial relationships when neutral light improves silhouette and separation.
+- **Technical Dark** is the starting choice for equations, dense data, graphs and algorithm state when it improves focus and text/data contrast.
+- Either renderer can use either profile. When an episode needs both, carry object identity, semantic role, units and trace state through the handoff; a background switch alone does not explain a concept.
+- The profile-specific canvas roles (background, surface, text, borders and floor) may change for contrast. Semantic roles keep their meaning; profile-aware colors may adjust luminance to remain legible.
+- Layout rectangles and motion durations are advisory. Fit the actual evidence and narration; omit unused panels and do not animate solely to fill time.
+
+Semantic roles: input/token/selected object, perception/sensor, AI/learned, planning/valid result, warning/error, output and X/Y/Z axes. Do not use color as the sole carrier of meaning.
 
 ### Coordinate axes
 

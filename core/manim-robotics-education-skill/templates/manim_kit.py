@@ -1,12 +1,21 @@
 from __future__ import annotations
 from dataclasses import dataclass
-import json
+import os
 from pathlib import Path
+import sys
 from manim import *
-
-_TOKEN_FILE = Path(__file__).resolve().parents[3] / "core" / "visual_primitives" / "design_tokens.json"
-_DESIGN = json.loads(_TOKEN_FILE.read_text(encoding="utf-8"))
-_COLORS = _DESIGN["colors"]
+_ROOT = Path(__file__).resolve().parents[3]
+if str(_ROOT) not in sys.path:
+    sys.path.insert(0, str(_ROOT))
+from core.visual_primitives.design_tokens import (
+    COLORS as _COLORS,
+    TOKENS as _DESIGN,
+    get_visual_profile,
+    layout_region,
+    profile_color,
+    recommended_motion,
+)
+from core.visual_primitives.font_support import discover_manim_korean_font
 
 @dataclass(frozen=True)
 class Palette:
@@ -22,7 +31,18 @@ class Palette:
     x: str = _COLORS["axis_x"]
     y: str = _COLORS["axis_y"]
     z: str = _COLORS["axis_z"]
-P = Palette()
+
+    @classmethod
+    def for_profile(cls, profile: str = "technical_dark") -> "Palette":
+        p = get_visual_profile(profile)
+        return cls(bg=p["background"], fg=p["primary_text"], muted=p["secondary_text"],
+                   faint=p["border"], sensor=profile_color("sensor", profile),
+                   active=profile_color("active", profile), result=profile_color("result", profile),
+                   error=profile_color("error", profile), learned=profile_color("learned", profile),
+                   x=profile_color("axis_x", profile), y=profile_color("axis_y", profile),
+                   z=profile_color("axis_z", profile))
+DEFAULT_PROFILE = os.environ.get("EDU_VISUAL_PROFILE", "technical_dark")
+P = Palette.for_profile(DEFAULT_PROFILE)
 
 SEMANTIC = {
     "sensor": P.sensor, "active": P.active, "result": P.result,
@@ -30,21 +50,35 @@ SEMANTIC = {
 }
 
 
-def apply_theme(scene: Scene, background=P.bg):
-    scene.camera.background_color = background
-    return scene
+def palette_for_profile(profile: str = "technical_dark") -> Palette:
+    return Palette.for_profile(profile)
 
 
-def txt(text, size=36, color=P.fg, font="NanumGothic", weight=NORMAL):
+def apply_theme(scene: Scene, profile=None, background=None):
+    """Apply a named canvas profile and expose its palette to the scene."""
+    profile = profile or DEFAULT_PROFILE
+    palette = palette_for_profile(profile)
+    scene.visual_profile = profile
+    scene.palette = palette
+    scene.camera.background_color = background or palette.bg
+    return palette
+
+
+def txt(text, size=36, color=None, font=None, weight=NORMAL, profile=None):
+    palette = palette_for_profile(profile) if profile else P
+    color = color or palette.fg
+    if font is None:
+        font = discover_manim_korean_font(text) if any("\uac00" <= ch <= "\ud7a3" for ch in text) else "NanumGothic"
     return Text(text, font=font, font_size=size, color=color, weight=weight)
 
 
-def title(text, size=54):
-    return txt(text, size=size, weight=BOLD)
+def title(text, size=54, profile=None):
+    return txt(text, size=size, weight=BOLD, profile=profile)
 
 
-def muted(text, size=30):
-    return txt(text, size=size, color=P.muted)
+def muted(text, size=30, profile=None):
+    palette = palette_for_profile(profile) if profile else P
+    return txt(text, size=size, color=palette.muted)
 
 
 def emphasis(mob, color=P.active, scale=1.06):
@@ -74,11 +108,12 @@ def stack(*items, gap=.32):
     return safe(VGroup(*items).arrange(DOWN, buff=gap).move_to(ORIGIN))
 
 
-def semantic_tex(tex, mapping=None, font_size=50):
-    eq = MathTex(tex, font_size=font_size, color=P.fg)
+def semantic_tex(tex, mapping=None, font_size=50, profile=None):
+    palette = palette_for_profile(profile) if profile else P
+    eq = MathTex(tex, font_size=font_size, color=palette.fg)
     mapping = mapping or {}
     for token, role in mapping.items():
-        color = SEMANTIC.get(role, role)
+        color = getattr(palette, role, SEMANTIC.get(role, role))
         try: eq.set_color_by_tex(token, color)
         except Exception: pass
     return eq
@@ -103,10 +138,26 @@ def point_p(pos=ORIGIN, color=P.active, label_text="P"):
     return VGroup(dot, lab)
 
 
-def coordinate_axes_2d(x_range=(-4,4,1), y_range=(-3,3,1), tips=True):
+def coordinate_axes_2d(x_range=(-4,4,1), y_range=(-3,3,1), tips=True, profile=None):
+    palette = palette_for_profile(profile) if profile else P
     ax = Axes(x_range=x_range, y_range=y_range, tips=tips,
-              axis_config={"color": P.muted, "stroke_width": 2})
+              axis_config={"color": palette.muted, "stroke_width": 2})
     return ax
+
+
+def place_in_layout(mob, preset, region, *, center=True, margin=None):
+    """Place a mobject inside a normalized token region; caller owns final fit."""
+    x0, y0, x1, y1 = layout_region(preset, region, config.frame_width, config.frame_height)
+    if margin is None:
+        margin = _DESIGN["layout"]["safe_margin_fraction"] * min(config.frame_width, config.frame_height)
+    left, right = -config.frame_width / 2 + x0 + margin, -config.frame_width / 2 + x1 - margin
+    bottom, top = -config.frame_height / 2 + y0 + margin, -config.frame_height / 2 + y1 - margin
+    if mob.width > right - left:
+        mob.scale_to_fit_width(right - left)
+    if mob.height > top - bottom:
+        mob.scale_to_fit_height(top - bottom)
+    target = [(left + right) / 2, (bottom + top) / 2, 0] if center else [left, top, 0]
+    return mob.move_to(target)
 
 
 def pipeline(labels, colors=None, gap=.35):

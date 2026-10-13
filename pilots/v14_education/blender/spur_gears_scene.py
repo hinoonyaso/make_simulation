@@ -9,6 +9,7 @@ import argparse
 import hashlib
 import json
 import math
+import os
 from pathlib import Path
 import sys
 
@@ -25,7 +26,8 @@ from mathutils import Matrix, Vector
 from core.education.gear_kinematics import external_spur_gear_kinematics
 from core.education.gear_animation import plan_gear_rotation_keys
 from core.education.renderer_registry import resolve_asset
-from studio_utils import set_interpolation
+from core.visual_primitives.design_tokens import get_visual_profile, hex_to_linear_rgba, profile_color
+from studio_utils import apply_world_profile, set_interpolation
 
 ASSET_ID = "edu.spur_gears_20_40.v1"
 OBJECTS = ("Pinion_20T", "Gear_40T", "Pinion_Hub", "Gear_Hub")
@@ -43,6 +45,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--fps", type=int, default=30)
     parser.add_argument("--samples", type=int, default=16)
     parser.add_argument("--still-frame", type=int, default=None)
+    parser.add_argument("--visual-profile", choices=("studio_light", "technical_dark"))
     argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
     return parser.parse_args(argv)
 
@@ -183,6 +186,9 @@ def key_rotation(pivot, frames: list[int], angles: list[float]) -> None:
 
 
 def setup_camera_and_lights(scene, width: int, height: int, fps: int, samples: int) -> None:
+    visual_profile = os.environ.get("EDU_VISUAL_PROFILE", "technical_dark")
+    look = get_visual_profile(visual_profile)
+    lighting = look["lighting"]
     render_engines = {item.identifier for item in scene.render.bl_rna.properties["engine"].enum_items}
     eevee_engine = next((name for name in ("BLENDER_EEVEE_NEXT", "BLENDER_EEVEE")
                          if name in render_engines), None)
@@ -207,7 +213,7 @@ def setup_camera_and_lights(scene, width: int, height: int, fps: int, samples: i
     scene.view_settings.look = "AgX - Medium High Contrast"
     scene.view_settings.exposure = 0
     scene.view_settings.gamma = 1
-    scene.world.color = (.012, .02, .035)
+    apply_world_profile(scene, visual_profile)
 
     bpy.ops.object.camera_add(location=(0.14, -0.20, 0.17))
     camera = bpy.context.object
@@ -229,8 +235,11 @@ def setup_camera_and_lights(scene, width: int, height: int, fps: int, samples: i
         light.data.color = color
         light.rotation_euler = (Vector((0, 0, 0)) - light.location).to_track_quat("-Z", "Y").to_euler()
 
-    area("V14_1_Key_Softbox", (-.055, -.075, .11), 7, .11, (0.78, .87, 1.0))
-    area("V14_1_Fill_Softbox", (.08, .04, .07), 3, .14, (1.0, .78, .48))
+    semantic_input = hex_to_linear_rgba(profile_color("input", visual_profile))[:3]
+    semantic_output = hex_to_linear_rgba(profile_color("output", visual_profile))[:3]
+    area("V14_1_Key_Softbox", (-.055, -.075, .11), 7 * lighting["key"], .11, semantic_input)
+    area("V14_1_Fill_Softbox", (.08, .04, .07), 7 * lighting["key"] * lighting["fill"], .14,
+         semantic_output)
 
 
 def add_camera_text(camera, body: str, name: str, location: tuple[float, float, float],
@@ -286,9 +295,12 @@ def add_rotation_marker(pivot, name: str, start_radius: float, end_radius: float
 
 
 def setup_labels(camera, results: dict, fps: int, phase_frames: dict[str, tuple[int, int]]) -> None:
+    visual_profile = os.environ.get("EDU_VISUAL_PROFILE", "technical_dark")
     labels = [
-        add_camera_text(camera, "INPUT  20T", "V14_1_Input_Label", (-.072, .034, -.1), .0045, (.98, .68, .2, 1)),
-        add_camera_text(camera, "OUTPUT  40T", "V14_1_Output_Label", (.012, .034, -.1), .0045, (.72, .86, 1, 1)),
+        add_camera_text(camera, "INPUT  20T", "V14_1_Input_Label", (-.072, .034, -.1), .0045,
+                        hex_to_linear_rgba(profile_color("input", visual_profile))),
+        add_camera_text(camera, "OUTPUT  40T", "V14_1_Output_Label", (.012, .034, -.1), .0045,
+                        hex_to_linear_rgba(profile_color("output", visual_profile))),
     ]
     # Labels persist throughout the Blender track; the shared timeline decides
     # which renderer's frames are actually used for each beat.
@@ -343,10 +355,11 @@ def render_lesson(args: argparse.Namespace) -> None:
     scene.unit_settings.system = "METRIC"
     scene.unit_settings.scale_length = 1.0
     pivots, geometry = validate_and_pivot(asset, context)
+    visual_profile = os.environ.get("EDU_VISUAL_PROFILE", "technical_dark")
     add_rotation_marker(pivots["Pinion_20T"], "V14_1_Input_Rotation_Index", .009, .016,
-                        (.02, .85, 1.0, 1.0))
+                        hex_to_linear_rgba(profile_color("input", visual_profile)))
     add_rotation_marker(pivots["Gear_40T"], "V14_1_Output_Rotation_Index", .013, .034,
-                        (1.0, .25, .035, 1.0))
+                        hex_to_linear_rgba(profile_color("output", visual_profile)))
 
     fps = int(timeline["fps"])
     if fps != args.fps:
@@ -406,4 +419,7 @@ def render_lesson(args: argparse.Namespace) -> None:
 
 
 if __name__ == "__main__":
-    render_lesson(parse_args())
+    args = parse_args()
+    if args.visual_profile:
+        os.environ["EDU_VISUAL_PROFILE"] = args.visual_profile
+    render_lesson(args)

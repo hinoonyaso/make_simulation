@@ -8,6 +8,7 @@ import json
 from pathlib import Path
 from typing import Any
 from collections.abc import Callable
+from core.visual_primitives.design_tokens import get_visual_profile
 
 ROOT = Path(__file__).resolve().parents[2]
 CATALOG = ROOT / "assets/education/catalog.json"
@@ -239,6 +240,11 @@ def resolve_asset(asset_id: str, *, root: Path = ROOT) -> dict[str, Any]:
 
 
 def resolve_lesson_contract(spec: dict[str, Any], *, root: Path = ROOT) -> dict[str, Any]:
+    visual_profile = spec.get("visual_profile", "technical_dark")
+    try:
+        get_visual_profile(visual_profile)
+    except ValueError as exc:
+        raise RendererResolutionError(f"BLOCKED: {exc}") from exc
     renderer = resolve_renderer(spec.get("topic", ""))
     validate_renderer_registration(renderer, root=root)
     supplied_asset_id = spec.get("asset_id")
@@ -274,6 +280,7 @@ def resolve_lesson_contract(spec: dict[str, Any], *, root: Path = ROOT) -> dict[
     return {
         "registry_id": renderer.topic,
         "requested_topic": spec["topic"],
+        "visual_profile": visual_profile,
         "asset_id": renderer.asset_id,
         "asset_validation": asset,
         "calculated_results": calculated_results,

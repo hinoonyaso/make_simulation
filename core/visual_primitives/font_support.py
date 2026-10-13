@@ -6,10 +6,13 @@ import re
 import struct
 import subprocess
 import sys
+from functools import lru_cache
 from pathlib import Path
 from typing import Callable, Mapping
 
 FONT_ENV = "BEARING_KOREAN_FONT"
+COMMON_FONT_ENV = "EDU_KOREAN_FONT"
+MANIM_FONT_ENV = "EDU_MANIM_FONT"
 _HANGUL_SYLLABLES = range(0xAC00, 0xD7A4)
 
 
@@ -183,12 +186,13 @@ def discover_korean_font(
     env = os.environ if env is None else env
     file_exists = file_exists or (lambda path: Path(path).is_file())
     coverage_check = coverage_check or missing_hangul_glyphs
-    requested = explicit_path if explicit_path is not None else env.get(FONT_ENV, "")
+    requested = explicit_path if explicit_path is not None else (
+        env.get(COMMON_FONT_ENV, "") or env.get(FONT_ENV, ""))
     if requested:
         path = _normalize_path(requested, platform)
         if not file_exists(path):
             raise FileNotFoundError(
-                f"{FONT_ENV} points to a font Blender cannot access: {path!r}; "
+                f"{COMMON_FONT_ENV} / {FONT_ENV} points to a font Blender cannot access: {path!r}; "
                 "use a path visible to the Blender process")
         missing = coverage_check(path, text)
         if missing:
@@ -215,4 +219,57 @@ def discover_korean_font(
             return path
     raise RuntimeError(
         "No installed font with all required Korean Hangul glyphs is accessible to Blender. "
-        f"Set {FONT_ENV} to a readable font file (for Windows Blender, use a Windows-visible path).")
+        f"Set {COMMON_FONT_ENV} (or legacy {FONT_ENV}) to a readable font file "
+        "(for Windows Blender, use a Windows-visible path).")
+
+
+@lru_cache(maxsize=16)
+def _font_path_for_family(family: str, platform: str) -> str:
+    if platform.startswith("linux"):
+        return _fontconfig_lookup(f"{family}:lang=ko")
+    if platform.startswith("win"):
+        names = {
+            "Malgun Gothic": r"C:\Windows\Fonts\malgun.ttf",
+            "NanumGothic": r"C:\Windows\Fonts\NanumGothic.ttf",
+            "Noto Sans KR": r"C:\Windows\Fonts\NotoSansKR-Regular.otf",
+        }
+        path = names.get(family, "")
+        return path if Path(path).is_file() else ""
+    if platform == "darwin":
+        return "/System/Library/Fonts/AppleSDGothicNeo.ttc"
+    return ""
+
+
+def discover_manim_korean_font(
+    text: str,
+    explicit_family: str | None = None,
+    *,
+    platform: str | None = None,
+    env: Mapping[str, str] | None = None,
+    font_path_lookup: Callable[[str, str], str] | None = None,
+    coverage_check: Callable[[str, str], list[str]] | None = None,
+) -> str:
+    """Select a Manim font family whose installed file contains the used Hangul.
+
+    EDU_MANIM_FONT is a Manim family name, while EDU_KOREAN_FONT is a Blender
+    font file. The legacy Blender-only BEARING_KOREAN_FONT remains supported.
+    """
+    platform = platform or sys.platform
+    env = os.environ if env is None else env
+    if not any(ord(char) in _HANGUL_SYLLABLES for char in text):
+        return explicit_family or env.get(MANIM_FONT_ENV, "NanumGothic")
+    requested = explicit_family if explicit_family is not None else env.get(MANIM_FONT_ENV, "")
+    candidates = [requested] if requested else ["NanumGothic", "Noto Sans CJK KR", "Noto Sans KR"]
+    lookup = font_path_lookup or _font_path_for_family
+    coverage_check = coverage_check or missing_hangul_glyphs
+    for family in candidates:
+        path = lookup(family, platform)
+        if path and not coverage_check(path, text):
+            return family
+    if requested:
+        raise RuntimeError(
+            f"Manim font family {requested!r} is unavailable or lacks required Hangul glyphs; "
+            f"install it or set {MANIM_FONT_ENV} to an installed family name")
+    raise RuntimeError(
+        f"No installed Manim font covers the required Hangul; install Nanum Gothic/Noto Sans KR "
+        f"or set {MANIM_FONT_ENV} to an installed family name")

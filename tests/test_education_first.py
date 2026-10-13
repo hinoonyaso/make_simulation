@@ -40,6 +40,18 @@ class EducationFirstTests(unittest.TestCase):
                          expected_phase_ids=[b["phase_id"] for b in spec["beats"]]), [])
         self.assertEqual(sum(b["sec"] for b in spec["beats"]), spec["duration_target_sec"])
 
+    def test_visual_profile_flows_from_lesson_spec_to_both_renderers(self):
+        spec = self.load("education_smoke.json")
+        spec["visual_profile"] = "studio_light"
+        planned = plan_lesson(spec)
+        self.assertEqual(LessonSpec.from_dict(spec).visual_profile, "studio_light")
+        self.assertEqual(planned["visual_manifest"]["visual_profile"], "studio_light")
+        self.assertEqual(planned["visual_plan"]["visual_profile"], "studio_light")
+        self.assertEqual(planned["renderer_contract"]["visual_profile"], "studio_light")
+        self.assertTrue(validate_manifest(planned["visual_manifest"]) == [])
+        spec["visual_profile"] = "unregistered"
+        self.assertTrue(any("visual_profile" in error for error in validate_lesson_spec(spec)))
+
     def test_invalid_spec_and_manifest_are_rejected(self):
         self.assertTrue(validate_lesson_spec({"topic": "x"}))
         spec = self.load("education_smoke.json")
