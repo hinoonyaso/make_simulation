@@ -61,4 +61,4 @@ uv run python scripts/analyze_visual_render.py <rendered-preview.mp4> --report <
 - Motion continuity, camera feel, beat-to-narration synchronization, full-scene cross-renderer cut quality and audio: `INCOMPLETE`. Manim output was fully decoded but not watched at normal speed; no narration was generated.
 - Battery scene and current TEB code were not rendered from this branch. Battery is blocked by missing optional PyBaMM; TEB's local original render was only used as a visual reference.
 - Blender emits a Blender 5.2 deprecation warning for `Material.use_nodes` in Bearing's emission-material helper; it did not fail rendering, but should be migrated before Blender 6 compatibility is required.
-- No GitHub Actions run or PR validation has been reported yet for this feature branch.
+- GitHub Actions AI Trace Reproducibility run `38484695299` (run 119) completed successfully for the PR head. No other workflow run was returned for this head at report time; the local Education Renderer / Blender checks above remain the available evidence.
