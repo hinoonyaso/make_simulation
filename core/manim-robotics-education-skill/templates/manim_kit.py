@@ -1,21 +1,27 @@
 from __future__ import annotations
 from dataclasses import dataclass
+import json
+from pathlib import Path
 from manim import *
+
+_TOKEN_FILE = Path(__file__).resolve().parents[3] / "core" / "visual_primitives" / "design_tokens.json"
+_DESIGN = json.loads(_TOKEN_FILE.read_text(encoding="utf-8"))
+_COLORS = _DESIGN["colors"]
 
 @dataclass(frozen=True)
 class Palette:
-    bg: str = "#0B1020"
-    fg: str = "#F4F7FB"
-    muted: str = "#8A94A6"
-    faint: str = "#334155"
-    sensor: str = "#38BDF8"
-    active: str = "#FBBF24"
-    result: str = "#34D399"
-    error: str = "#F87171"
-    learned: str = "#A78BFA"
-    x: str = "#EF4444"
-    y: str = "#22C55E"
-    z: str = "#3B82F6"
+    bg: str = _COLORS["background"]
+    fg: str = _COLORS["primary_text"]
+    muted: str = _COLORS["secondary_text"]
+    faint: str = _COLORS["faint"]
+    sensor: str = _COLORS["sensor"]
+    active: str = _COLORS["active"]
+    result: str = _COLORS["result"]
+    error: str = _COLORS["error"]
+    learned: str = _COLORS["learned"]
+    x: str = _COLORS["axis_x"]
+    y: str = _COLORS["axis_y"]
+    z: str = _COLORS["axis_z"]
 P = Palette()
 
 SEMANTIC = {
