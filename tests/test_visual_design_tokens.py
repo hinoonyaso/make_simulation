@@ -3,7 +3,9 @@ from __future__ import annotations
 import unittest
 import importlib
 import sys
+import types
 from pathlib import Path
+from unittest.mock import patch
 
 from core.visual_primitives.design_tokens import (
     COLORS,
@@ -24,12 +26,27 @@ class VisualDesignTokenTests(unittest.TestCase):
     def test_manim_kit_reads_shared_palette_tokens(self):
         kit_path = (Path(__file__).resolve().parents[1]
                     / "core/manim-robotics-education-skill/templates")
+        manim_stub = types.ModuleType("manim")
+        manim_stub.Scene = type("Scene", (), {})
+        manim_stub.MovingCameraScene = type("MovingCameraScene", (manim_stub.Scene,), {})
+        manim_stub.ValueTracker = type("ValueTracker", (), {})
+        manim_stub.NORMAL = "NORMAL"
+        manim_stub.ORIGIN = (0, 0, 0)
+        manim_stub.UP = (0, 1, 0)
+        manim_stub.DOWN = (0, -1, 0)
+        manim_stub.LEFT = (-1, 0, 0)
+        manim_stub.RIGHT = (1, 0, 0)
+        manim_stub.UR = (1, 1, 0)
+        manim_stub.RIGHT = (1, 0, 0)
+        manim_stub.BOLD = "BOLD"
+        manim_stub.config = types.SimpleNamespace(frame_width=14.2, frame_height=8.0)
         sys.path.insert(0, str(kit_path))
         try:
-            kit = importlib.import_module("manim_kit")
-            self.assertEqual(kit.P.bg, COLORS["background"])
-            self.assertEqual(kit.P.fg, COLORS["primary_text"])
-            self.assertEqual(kit.P.active, COLORS["active"])
+            with patch.dict(sys.modules, {"manim": manim_stub}):
+                kit = importlib.import_module("manim_kit")
+                self.assertEqual(kit.P.bg, COLORS["background"])
+                self.assertEqual(kit.P.fg, COLORS["primary_text"])
+                self.assertEqual(kit.P.active, COLORS["active"])
         finally:
             sys.path.remove(str(kit_path))
             sys.modules.pop("manim_kit", None)
