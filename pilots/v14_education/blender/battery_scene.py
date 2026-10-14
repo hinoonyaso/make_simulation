@@ -105,6 +105,9 @@ def setup_scene(scene, camera_target: Vector, width: int, height: int, fps: int,
     scene.render.film_transparent = False
     scene.view_settings.view_transform = "AgX"
     scene.view_settings.look = "AgX - Medium High Contrast"
+    # The imported educational asset stores -3 EV; profile renders must not inherit it.
+    scene.view_settings.exposure = 0.0
+    scene.view_settings.gamma = 1.0
     scene.render.image_settings.file_format = "FFMPEG"
     apply_world_profile(scene, visual_profile)
     scene.frame_start = 1
@@ -146,8 +149,8 @@ def add_soc_gauge(scene, camera):
     result = hex_to_linear_rgba(profile_color("result", os.environ.get("EDU_VISUAL_PROFILE", "technical_dark")))
     fill.data.materials.append(new_emission_material("SOC_Gauge_Fill_Material", result, 1))
     fill["base_height_m"] = .074
-    create_text(camera, "18650 EDUCATION MODEL", -0.080, .052, size=.007)
-    create_text(camera, "MODEL SOC", .027, .052, size=.006)
+    create_text(camera, "18650 EDUCATION MODEL", -0.080, .046, size=.007)
+    create_text(camera, "MODEL SOC", .027, .046, size=.006)
     return backing, fill
 
 

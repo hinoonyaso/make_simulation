@@ -1,5 +1,6 @@
 from __future__ import annotations
 from dataclasses import dataclass
+import math
 import os
 from pathlib import Path
 import sys
@@ -146,18 +147,26 @@ def coordinate_axes_2d(x_range=(-4,4,1), y_range=(-3,3,1), tips=True, profile=No
 
 
 def place_in_layout(mob, preset, region, *, center=True, margin=None):
-    """Place a mobject inside a normalized token region; caller owns final fit."""
+    """Fit and place a mobject inside a normalized token region."""
     x0, y0, x1, y1 = layout_region(preset, region, config.frame_width, config.frame_height)
     if margin is None:
         margin = _DESIGN["layout"]["safe_margin_fraction"] * min(config.frame_width, config.frame_height)
+    if not math.isfinite(margin) or margin < 0:
+        raise ValueError("layout margin must be finite and non-negative")
     left, right = -config.frame_width / 2 + x0 + margin, -config.frame_width / 2 + x1 - margin
     bottom, top = -config.frame_height / 2 + y0 + margin, -config.frame_height / 2 + y1 - margin
+    if not all(math.isfinite(value) for value in (left, right, bottom, top)):
+        raise ValueError("layout frame bounds must be finite")
+    if right <= left or top <= bottom:
+        raise ValueError("layout region has no usable area after applying margin")
     if mob.width > right - left:
         mob.scale_to_fit_width(right - left)
     if mob.height > top - bottom:
         mob.scale_to_fit_height(top - bottom)
-    target = [(left + right) / 2, (bottom + top) / 2, 0] if center else [left, top, 0]
-    return mob.move_to(target)
+    if center:
+        return mob.move_to([(left + right) / 2, (bottom + top) / 2, 0])
+    # move_to() aligns object centers. Anchor the actual bounding box instead.
+    return mob.shift([left - mob.get_left()[0], top - mob.get_top()[1], 0])
 
 
 def pipeline(labels, colors=None, gap=.35):
