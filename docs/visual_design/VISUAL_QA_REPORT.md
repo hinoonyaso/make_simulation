@@ -46,7 +46,7 @@ The render outputs below remain local and are ignored by Git. Source revisions a
 
 | Check | Result |
 |---|---|
-| Full unittest suite | PASS — 236 tests, including real Manim object layout bounds. |
+| Full unittest suite | PASS — 242 tests, including real Manim object layout and `apply_theme` API compatibility. |
 | Compileall | PASS — `core scripts tests assets/education pilots/v13_education pilots/v14_education`. |
 | Visual design / scene style | PASS — all six V13/V14 Blender and Manim scenes. |
 | Token contrast | PASS — Studio Light 12.019:1 primary / 6.683:1 secondary; Technical Dark 17.620:1 / 6.191:1. |
@@ -58,8 +58,8 @@ The render outputs below remain local and are ignored by Git. Source revisions a
 | TEB Blender | PASS — representative current-source S1/S3 1080p stills rendered and compared against local reference frames. |
 | TEB Manim | PASS — current source rendered at 1080p30 and full decoded. |
 | Manim layout scene | PASS — real Text/MathTex/VGroup scene rendered at 1080p and full decoded. |
-| GitHub Education Renderer | PASS — run [56](https://github.com/hinoonyaso/make_simulation/actions/runs/38496265191), head `a1a0a798551f2074019593b518972b53604aa7ee`; full CPU regression, registry/plan checks, syntax check, and Manim/gear smoke media verification completed successfully. |
-| GitHub AI Trace | PASS — run [129](https://github.com/hinoonyaso/make_simulation/actions/runs/38496265238), same head; checked-in trace/manifest validation and full CPU regression passed. |
+| GitHub Education Renderer | PASS — run [58](https://github.com/hinoonyaso/make_simulation/actions/runs/38499336935), head `50539d264a20b90d72c2435734e4d7a4e1f1e1b8`; full CPU regression, registry/plan checks, syntax check, and Manim/gear smoke media verification completed successfully. |
+| GitHub AI Trace | PASS — run [133](https://github.com/hinoonyaso/make_simulation/actions/runs/38499336921), same head; checked-in trace/manifest validation and full CPU regression passed. |
 
 `analyze_visual_render.py` is candidate sampling only. It does not establish readability, motion quality, full decode, learner comprehension or a design score. The user-visible video outputs listed above are local/ignored; generated product media is not included in the PR.
 
@@ -68,6 +68,7 @@ The render outputs below remain local and are ignored by Git. Source revisions a
 1. Battery `.blend` asset stored `-3.0 EV`. Setting only AgX transform/look left both palettes too dark. The Battery scene now explicitly sets exposure to `0.0` and gamma to `1.0` after opening the asset; actual renders showed the Light background change from RGB `(38,40,42)` to `(149,152,155)`.
 2. Battery heading was too close to the top edge. Its anchor moved from `y=.052` to `.046` in camera-local space; both profile renders show an inset header.
 3. `place_in_layout(center=False)` aligned object centers rather than bounding-box corners. It now shifts the fitted bounding box to the region's safe upper-left and rejects unusable/non-finite margins. Real Manim tests cover text, equation, group, oversized and center cases.
+4. V14.5 changed `apply_theme`'s second positional argument from legacy `background` to `profile` and returned a `Palette` instead of the `Scene`. The signature now preserves `background` positionally/by keyword, accepts profile keyword-only, and returns the identical Scene; Manim tests cover both profiles, overrides, invalid names, chaining and `VisualReasoningScene.setup()`.
 
 ## Review status and remaining risks
 
@@ -76,7 +77,7 @@ The render outputs below remain local and are ignored by Git. Source revisions a
 - Audio QA: `NOT APPLICABLE` to the new silent render layers; audio in the old TEB reference was not re-reviewed.
 - Before/after provenance: old TEB render source/settings are unknown, as stated above. The comparison is not presented as a controlled render benchmark.
 - Blender logs a deprecation warning for `Material.use_nodes` in the Battery emission helper on Blender 5.2.1. Rendering succeeds; migration is not part of this fix.
-- Earlier remote runs exposed two optional-tool assumptions in the new layout test: some CPU workflows do not install Manim, and the Education runner does not install LaTeX. The test now skips cleanly without Manim and only constructs MathTex when `latex` is present; text and group bounds remain covered. The Education workflow path filter now includes this test. Latest GitHub reruns pass.
+- Earlier remote runs exposed optional-tool assumptions in the layout test: some CPU workflows do not install Manim, and the Education runner does not install LaTeX. The test now skips cleanly without Manim and only constructs MathTex when `latex` is present. The Education workflow path filter includes this test. Latest GitHub reruns pass.
 - PR #10 remains Draft and stacked on PR #9's branch. No PR was made Ready and no merge was attempted.
 
 No overall `10/10` score is claimed. The updated profile and layout checks are supported by real renders and bounds tests, while mixed Battery playback and full-speed human review remain open.
