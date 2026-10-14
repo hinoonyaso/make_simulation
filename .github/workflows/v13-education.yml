@@ -27,6 +27,7 @@ on:
       - 'tests/test_education_assets.py'
       - 'tests/test_education_first.py'
       - 'tests/test_education_renderer_registry.py'
+      - 'tests/test_visual_design_layout.py'
   push:
     branches: [main, v13-education-first, v14-generic-education-renderer, v14.1-gear-blender-education]
     paths:
@@ -52,6 +53,7 @@ on:
       - 'tests/test_education_assets.py'
       - 'tests/test_education_first.py'
       - 'tests/test_education_renderer_registry.py'
+      - 'tests/test_visual_design_layout.py'
   workflow_dispatch:
 
 permissions:
