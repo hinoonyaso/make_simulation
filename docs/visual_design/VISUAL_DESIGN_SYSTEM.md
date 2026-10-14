@@ -38,7 +38,7 @@ These are starting recommendations. Either renderer may use either profile. Sele
 
 ## Layout hints
 
-`layout.presets` stores normalized lower-left-origin rectangles in `[x0,y0,x1,y1]` form: `hero_focus`, `object_explanation`, `side_by_side`, `equation_geometry`, `graph_state`, `process_flow` and `recap`. `layout_region()` converts a region to pixels; Manim `place_in_layout()` fits a mobject inside a chosen region. These rectangles are hints. Keep the attention target large and omit unused regions/cards.
+`layout.presets` stores normalized lower-left-origin rectangles in `[x0,y0,x1,y1]` form: `hero_focus`, `object_explanation`, `side_by_side`, `equation_geometry`, `graph_state`, `process_flow` and `recap`. `layout_region()` converts a region to pixels; Manim `place_in_layout()` fits a mobject inside a chosen region. `center=True` centers the fitted bounding box; `center=False` anchors the fitted bounding box's actual upper-left corner to the region's safe upper-left edge. Oversized mobjects scale proportionally to fit. Negative/non-finite margins and regions with no usable area raise `ValueError`. These rectangles are hints. Keep the attention target large and omit unused regions/cards.
 
 Respect `safe_margin_fraction` and `caption_exclusion_fraction`; inspect the actual final subtitle composition because externally burned captions are not represented in a source scene's bounds.
 

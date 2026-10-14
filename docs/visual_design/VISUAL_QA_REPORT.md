@@ -2,63 +2,81 @@
 
 ## Result summary
 
-This report separates source checks, real render checks and human-review limits. No 10/10 overall score is claimed. The inspected still frames showed no P0/P1 blocker or high-severity visual defect; the 84-second videos were rendered and fully decoded, but not watched end-to-end at normal speed.
+The V14.5 stabilization pass found and corrected two visible problems: the Battery asset's inherited `-3 EV` exposure defeated both selected profiles, and the Manim layout helper treated an upper-left anchor as an object-center coordinate. Battery contrast/title placement, Manim bounding-box placement, and representative TEB frames were checked from actual renders. No P0/P1 visual blocker was seen in the inspected stills. Overall QA remains `INCOMPLETE`: a full mixed Battery movie and full-length normal-speed human review were not performed.
 
 ## Before / after evidence
 
-| Sample | Before evidence | Updated render | Finding |
+| Sample | Before evidence | Updated evidence | Finding |
 |---|---|---|---|
-| Bearing 6204 | Local R5 preview frame at 20 s from `/home/sang/make_simulation/pilots/v13_education/output/lessons/bearing-v13-preview-r5/bearing_blender.mp4` | `pilots/v13_education/output/lessons/v145-bearing-design/bearing_studio_light_frame_0600.png` and `bearing_technical_dark_frame_0600.png` | Previous upper-right panel crossed into the bearing silhouette. New profile render keeps the label group to the right; light/dark backgrounds and semantic highlights differ as selected. Ball material was brightened in Studio Light to separate balls from the floor. Compared frames are 960×540. The before artifact is local-only and untracked. |
-| Spur gears 20T:40T | Local V14.1 preview at 1 s from `/home/sang/make_simulation/pilots/v14_education/output/gear-v14.1-final-fixed/preview.mp4` | `pilots/v14_education/output/lessons/v145-gear-design/gears_preview.png` | Same registered asset and gear relationship. New Light profile reduces the older washed-out white gear surfaces and makes input/output semantic colors more distinct. Still frame only; no gear motion comparison was made. |
-| Bearing Manim | Existing dark semantic palette and fixed family behavior | Both profile renders under `pilots/v13_education/output/lessons/v145-bearing-design/manim_{technical_dark,studio_light}/.../BearingLessonScene.mp4` | Korean text rendered in both profiles; semantic accent contrast is adapted per profile. Static frame at 12 s was inspected. |
-| TEB reference | Existing locally rendered pilot at `/home/sang/make_simulation/pilots/01_teb_reference/output/pilot_teb_reference.mp4` | Existing reference only; no source or render changes | Inspected 2 s Blender still and 18 s Manim still to compare the bright 3D studio / dark information scene pairing. The source video remains in the original worktree and was read-only. |
-| Battery 18650 | Existing report: `docs/v14.2/BATTERY_EDUCATIONAL_QA.md` records a past Blender 5.2.1 still and mixed preview CI run. | No new render | Local solver invocation returned `PyBaMM battery solver is unavailable; install with uv sync --group sim-battery`; no current battery still was produced. The prior CI evidence is not represented as a render from this branch. |
+| Battery 18650 profile | Blender 5.2.1 stills before fix: `/tmp/v145-battery-output/battery-dark/battery_still.png` (`da103e…0182`) and `battery-light/battery_still.png` (`ee546d…2b519`). Both inherited the asset's `-3 EV`; the Light canvas corner was RGB `(38,40,42)`. The header was at the top frame edge. | `pilots/v14_education/output/lessons/v145-stabilization-qa/battery_{technical_dark,studio_light}_frame_{0001,0450}.png` | Scene now sets exposure/gamma to `0/1`; Light canvas corner is `(149,152,155)`. Header moved down into the frame. Cell, electrode and gauge colors retain their semantic mapping. Both profiles show frame 1 and mid-SOC frame 450. |
+| Battery Manim layer | No new V14.5 render was available. | `.../battery_manim_{technical_dark,studio_light}_layer.mp4` in the same ignored QA directory | Both registered Manim layers rendered from the validated Solver context: 24.033 s, 854×480, 30 fps, 721 frames; FFmpeg full decode passed. These are renderer layers, not a mixed Blender+Manim lesson preview. |
+| TEB Blender | Local reference MP4 `/home/sang/make_simulation/pilots/01_teb_reference/output/pilot_teb_reference.mp4`, SHA-256 `2ae70645da50bd48c0155de69f02d0222816c86a5174a46c60b55216f555b615`, 71.2 s, 1920×1080, 30 fps. Source/render provenance for this ignored local artifact is not recorded, so it is not treated as a controlled pixel comparison. | `pilots/01_teb_reference/output/blender/S1_final/still_0180.png` and `S3_final/still_0180.png` | Re-rendered corresponding S1/S3 states from the checked-out TEB source at 1920×1080, 30 fps, 64 samples, Blender 5.2.1 LTS, Studio Light. Compared against frames extracted at 6.0 s and 65.2 s from the reference video. Framing, drum/robot separation, studio floor and band/trail colors were visually consistent; no regression seen in these samples. |
+| TEB Manim | Same local reference MP4; Manim segment source provenance is not embedded in the old video. | `pilots/v14_education/output/lessons/v145-stabilization-qa/teb_manim_1080p30.mp4` | Current `BandDissection` source rendered at 1920×1080, 30 fps, 47.6 s / 1428 frames; H.264 full decode passed. The source chapter uses the existing dark palette and band trace. A 30 s representative frame was inspected. |
+| Manim layout | `center=False` passed `[left, top]` to `move_to()`, placing the object's center there and allowing its real bounds to spill outside the region. | `tests/test_visual_design_layout.py`; `/tmp/v145-layout-final/videos/v145_layout_smoke/1080p2/LayoutSmoke.mp4` | Real Manim Text, MathTex and VGroup bounds are tested for upper-left anchoring, fit/scaling, center behavior, multiple frame aspects, invalid margins and region bounds. A 1080p Manim scene smoke rendered and fully decoded. |
+| Bearing / gear | Existing R5/V14.1 local examples documented below; neither source was changed in this stabilization pass. | Existing V14.5 Bearing/Gear renders in `pilots/v13_education/output/lessons/v145-bearing-design/` and `pilots/v14_education/output/lessons/v145-gear-design/` | Existing samples remain evidence for those profiles. This pass did not rerender them. |
 
-The new local output videos and stills are covered by the project's ignore rules and are not included in the PR. Their SHA-256 values at review time:
+## Reproducibility record
 
-- Bearing Manim Technical Dark, 84 s: `68e27f4fbd3ab662cbe0d08f3478999c0c4f19556c03c6bd46f22f6e6eb77dd9`
-- Bearing Manim Studio Light, 84 s: `1d06e09e2e6169de82644310c300840131d452368083ba92de03d9638e26d81c`
-- Bearing Blender Technical Dark still, frame 600: `d5c2bbca93bb4f8b8b06a3496c1a274d5802eeb0a55d9b6652d0c9efc8769f95`
-- Bearing Blender Studio Light still, frame 600: `05f8bb6a79c90cebf4a83905148afcdabfad33c30f3fece5de938d6031550f55`
-- Gear Blender Studio Light still: `5928d273bf8a3b352a03b1ae5b65053a45033b3acc41f54cf2abe0e03450d3d1`
+The render outputs below remain local and are ignored by Git. Source revisions and input/output hashes identify what can be reproduced. The previous local TEB MP4 is also ignored and has no embedded source commit or render settings; those fields are explicitly unknown rather than inferred.
+
+### Battery
+
+| Item | Value |
+|---|---|
+| Source revision | `6373b928b05884e66f25d74764999dea6dad10ac` (`battery_scene.py` profile exposure/title fix) |
+| Solver | PyBaMM 26.10.0.0, IDAKLUSolver, CPU, SPM/Chen2020, 1C, 1800 s, 361 samples at 5 s |
+| Solver run / result | `v145-battery-qa`; result SHA-256 `e29e858dd80f48c969f8d4b51f6ef004c62241175f598c5b7bd965b65fb44b25` |
+| Config SHA-256 | `35afef525c0a4546fbfb4caae3fa0141fb9f5b450dffc8d0c98b15b1545dc3ff` |
+| Asset | `edu.mechanical_primitives.v1`, SHA-256 `d37958e2b25b6deb484dc45ecd5d69cf51c26dde2f6283099d749ef2743a0cc1` |
+| Blender | Blender 5.2.1 LTS, EEVEE, 960×540, 30 fps; profiles `technical_dark` and `studio_light`; still frames 1 (0 s) and 450 (~14.97 s presentation / ~895 s Solver time) |
+| Output | Technical Dark frame 1 `da8a33e24a69b61f61c76fabb463c3a88c8edce083bd4a307a215a2d9baedc5d`; frame 450 `5648c4668eb5746aa84f73d5b7f6c436c140e6d0a98c98ac309866baae917c8b`. Studio Light frame 1 `4b9f4291feb06c0c9290ee575d5e1fd0a218a06b320159f8abec47b921d6bb57`; frame 450 `2264ac803c0da22be08dc41b25270f319abfe4285ee2ddb7c898c4e876d3554e`. |
+| Manim layer | Manim CE 0.21.0; each profile 854×480, 30 fps, 24.033 s, 721 frames; hashes: Dark `05d8808bd308556d6681edfd25f39e6982de673f976f6fc2ac33479301ce5b20`, Light `9b0e27ad3cf0dd66ee74b070203ecb10cb814c50e5743c3a22ca02922ab4c7c3`. |
+
+### TEB
+
+| Item | Value |
+|---|---|
+| Source revisions | `pilots/01_teb_reference/{blender_shots.py,manim_shot.py}` last changed at `2af957f442d8919946cabd32e30152113bc47a20`; shared `studio_utils.py` profile implementation at `56157455d783c9617a5dba2feeb58f1523090595`. Files were unchanged in this pass. |
+| Inputs | `band_trace.json` SHA-256 `5ca8f34090e147dad85d63a68014e51b2f6c46e2479ef1e0413671c97e5b800a`; `drive_trace.json` SHA-256 `ffa045f3400107f5c8cc2ccb6342dc6b5aa6672285c0709c43064358c935d9fb`; manifest SHA-256 `939a14c065e660d29b0128230dd6e28de45d68c62189cb81a731203ad7690fb8`. |
+| Blender render | `render.sh S1 FINAL stills 180` and `render.sh S3 FINAL stills 180`; Blender 5.2.1 LTS, Studio Light default, 1920×1080, 30 fps, 64 samples. The stills correspond to `(180−1)/30 = 5.967 s` within each shot. S1 SHA-256 `9103643061a4bc2c0766a7a766d55c2e2bd042b7f2e5bb6790f7223ba9e5904d`; S3 `df2625d4b5d60ec2c5c66dc7ddc5f92e5c56bc4b92250c18d5e673d60eac782a`. |
+| Manim render | `manim -qh --fps 30 ... BandDissection`; Manim CE 0.21.0, 1920×1080, 30 fps, 47.6 s / 1428 frames. Output SHA-256 `2d61c06c3b635e9082ba9166f0fa6e81e8ad58a12d92f0a7c290d06a9a840295`. |
+| Before artifact limits | The old MP4 reports 1920×1080/30 and 71.2 s, SHA-256 above. Its exact producing source commit, renderer build/settings, trace hashes and per-frame render parameters cannot be recovered from the untracked file. Comparison is visual at matched nominal shot times, not a controlled numeric image-difference claim. |
 
 ## Automated checks
 
 | Check | Result |
 |---|---|
-| Full unittest suite | PASS — 232 tests |
-| Python compileall | PASS — `core scripts tests assets/education pilots/v13_education pilots/v14_education` |
-| Token schema / contrast | PASS — Studio Light 12.019:1 primary and 6.683:1 secondary; Technical Dark 17.620:1 primary and 6.191:1 secondary |
-| Korean font coverage | PASS — Blender resolver found NanumGothic TTF; Manim family NanumGothic covers requested Hangul |
-| Scene style | PASS — all six V13/V14 Blender and Manim scene files |
-| Bearing Manim encode/decode | PASS — each profile 960×540, H.264, 30 fps, 2520 frames, 83.999 s; FFmpeg full decode passed |
-| Render metrics | Technical sampling PASS; visual verdict remains `INCOMPLETE` by design. Dark-frame and brightness-jump candidates: none. Long identical-frame candidates at 0–8 s, 18–59 s, 60.25–68.25 s, 68.5–70.75 s, and 71–84 s correspond to the Manim scene intentionally holding its canvas while Blender beats play and holding the final summary; they are not classified automatically as defects. |
-| Actual Blender | PASS — Blender 5.2.1 rendered and saved Bearing stills for both profiles and a Gear still for Studio Light; each inspected visually at 960×540. Windows Blender was invoked from WSL. |
-| Battery actual Blender | NOT RUN — PyBaMM dependency unavailable locally, so no validated solver result could be supplied |
-| TEB current-source rerender | NOT RUN — inspected the existing local reference MP4 only; no change made to that scene |
-| Normal-speed video/audio review, 1080p render, learner comprehension | NOT RUN — the generated Manim output is silent; still inspection and full decode do not establish these results |
+| Full unittest suite | PASS — 236 tests, including real Manim object layout bounds. |
+| Compileall | PASS — `core scripts tests assets/education pilots/v13_education pilots/v14_education`. |
+| Visual design / scene style | PASS — all six V13/V14 Blender and Manim scenes. |
+| Token contrast | PASS — Studio Light 12.019:1 primary / 6.683:1 secondary; Technical Dark 17.620:1 / 6.191:1. |
+| Korean font coverage | PASS — Blender NanumGothic TTF and Manim NanumGothic Hangul coverage. |
+| Asset registries | PASS — 39 registry entries; 6 catalog models and 6 generated assets. |
+| Battery Solver result | PASS — saved result schema/hash validation, 361 samples, 1800 s. |
+| Battery Blender stills | PASS — both profiles, frames 1 and 450; asset-load report PASS; images inspected. |
+| Battery Manim layer | PASS — both profiles, H.264 and full decode; this does not validate a final mixed lesson. |
+| TEB Blender | PASS — representative current-source S1/S3 1080p stills rendered and compared against local reference frames. |
+| TEB Manim | PASS — current source rendered at 1080p30 and full decoded. |
+| Manim layout scene | PASS — real Text/MathTex/VGroup scene rendered at 1080p and full decoded. |
+| GitHub Education Renderer | FAIL — run [53](https://github.com/hinoonyaso/make_simulation/actions/runs/38495615435), head `404d14ac6faf168f09b69e8e72224ea7d0f3c9ec`; complete unittest regression could not import `test_visual_design_layout` because Manim was absent in that job environment. |
+| GitHub AI Trace | FAIL — run [123](https://github.com/hinoonyaso/make_simulation/actions/runs/38495615415), same head; complete unittest regression could not import `test_visual_design_layout` because Manim was absent in that job environment. |
 
-Commands used:
+`analyze_visual_render.py` is candidate sampling only. It does not establish readability, motion quality, full decode, learner comprehension or a design score. The user-visible video outputs listed above are local/ignored; generated product media is not included in the PR.
 
-```bash
-uv run python -m unittest discover -s tests -q
-uv run python -m compileall -q core scripts tests assets/education pilots/v13_education pilots/v14_education
-uv run python scripts/validate_visual_design.py --all-scenes
-uv run python scripts/validate_visual_design.py --blender-text '한글 베어링 부품' --manim-text '한글 그래프 수식'
-uv run python scripts/analyze_visual_render.py <rendered-preview.mp4> --report <visual-metrics.json>
-```
+## Render defects found and fixed
 
-## Render integration defects found and fixed
+1. Battery `.blend` asset stored `-3.0 EV`. Setting only AgX transform/look left both palettes too dark. The Battery scene now explicitly sets exposure to `0.0` and gamma to `1.0` after opening the asset; actual renders showed the Light background change from RGB `(38,40,42)` to `(149,152,155)`.
+2. Battery heading was too close to the top edge. Its anchor moved from `y=.052` to `.046` in camera-local space; both profile renders show an inset header.
+3. `place_in_layout(center=False)` aligned object centers rather than bounding-box corners. It now shifts the fitted bounding box to the region's safe upper-left and rejects unusable/non-finite margins. Real Manim tests cover text, equation, group, oversized and center cases.
 
-1. Setting `scene.world.color` did not change the rendered background for worlds using nodes. A shared `apply_world_profile()` now sets both the legacy value and the actual World Background shader color/strength.
-2. WSL did not forward `EDU_VISUAL_PROFILE` to Windows Blender. The generic lesson runner now sends an explicit `--visual-profile` argument, accepted by all registered V13/V14 Blender lesson scenes.
-3. Studio Light's bearing-ball color was too close to the background under the actual 540p render. A profile-specific neutral ball color increases separation without changing geometry or motion.
-4. The first repeat-frame heuristic emitted one candidate per duplicate 4-fps sample, producing noisy reports. It now groups identical runs and reports only runs meeting a configurable minimum duration; the output remains candidate-only.
+## Review status and remaining risks
 
-## Human review state and open risks
+- Representative still review: PASS for four Battery images, the current TEB S1/S3 comparison frames, and Manim layout/profile samples. No inspected still showed a blocker/high-severity defect.
+- Motion QA: `INCOMPLETE`. TEB Manim rendered in full, but the old narrated TEB movie was not watched end-to-end at normal speed; the Battery run is renderer-layer output plus stills, not a mixed movie. No motion claim is made for Battery.
+- Audio QA: `NOT APPLICABLE` to the new silent render layers; audio in the old TEB reference was not re-reviewed.
+- Before/after provenance: old TEB render source/settings are unknown, as stated above. The comparison is not presented as a controlled render benchmark.
+- Blender logs a deprecation warning for `Material.use_nodes` in the Battery emission helper on Blender 5.2.1. Rendering succeeds; migration is not part of this fix.
+- The first remote runs failed because the full CPU regression workflows intentionally install no Manim, but the new Manim-specific test imported Manim unconditionally. The test now raises a clear unittest skip when `sim-render` is absent; with locked local dependencies the full 236-test suite passes. A post-fix GitHub run is still required.
+- PR #10 remains Draft and stacked on PR #9's branch. GitHub runs are in progress; no PR was made Ready and no merge was attempted.
 
-- Still review: PASS for the inspected Bearing/Manim and Gear images; no inspected frame had clipping, overlap, or illegible Korean text at 960×540.
-- Motion continuity, camera feel, beat-to-narration synchronization, full-scene cross-renderer cut quality and audio: `INCOMPLETE`. Manim output was fully decoded but not watched at normal speed; no narration was generated.
-- Battery scene and current TEB code were not rendered from this branch. Battery is blocked by missing optional PyBaMM; TEB's local original render was only used as a visual reference.
-- Blender emits a Blender 5.2 deprecation warning for `Material.use_nodes` in Bearing's emission-material helper; it did not fail rendering, but should be migrated before Blender 6 compatibility is required.
-- GitHub Actions AI Trace Reproducibility run `38484695299` (run 119) completed successfully for the PR head. No other workflow run was returned for this head at report time; the local Education Renderer / Blender checks above remain the available evidence.
+No overall `10/10` score is claimed. The updated profile and layout checks are supported by real renders and bounds tests, while mixed Battery playback and full-speed human review remain open.

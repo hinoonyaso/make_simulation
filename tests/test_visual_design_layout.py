@@ -1,9 +1,13 @@
 from __future__ import annotations
 
 import importlib
+import importlib.util
 import sys
 import unittest
 from pathlib import Path
+
+if importlib.util.find_spec("manim") is None:
+    raise unittest.SkipTest("Manim layout tests require the sim-render dependency group")
 
 from manim import MathTex, Text, VGroup, config
 
