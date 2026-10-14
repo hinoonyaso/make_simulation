@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib
 import importlib.util
+import shutil
 import sys
 import unittest
 from pathlib import Path
@@ -45,12 +46,16 @@ class PlaceInLayoutTests(unittest.TestCase):
         self.assertLessEqual(mob.get_top()[1], top + 1e-6)
 
     def test_top_left_anchors_text_equation_and_group_by_actual_bounds(self):
-        for mob in (
+        mobjects = [
             Text("짧은 텍스트", font="NanumGothic"),
             Text("긴 설명 문장이 레이아웃 영역보다 충분히 넓게 이어지는 경우", font="NanumGothic"),
-            MathTex(r"\frac{a+b}{c}=x^2"),
-            VGroup(Text("A", font="NanumGothic"), MathTex(r"x+y=1")).arrange(),
-        ):
+            VGroup(Text("A", font="NanumGothic"), Text("B", font="NanumGothic")).arrange(),
+        ]
+        if shutil.which("latex"):
+            equation = MathTex(r"\frac{a+b}{c}=x^2")
+            mobjects.extend((equation,
+                             VGroup(Text("A", font="NanumGothic"), equation.copy()).arrange()))
+        for mob in mobjects:
             with self.subTest(mobject=type(mob).__name__):
                 bounds = manim_kit.layout_region(
                     "equation_geometry", "equation", config.frame_width, config.frame_height)
