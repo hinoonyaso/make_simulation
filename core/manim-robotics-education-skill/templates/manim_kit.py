@@ -55,14 +55,14 @@ def palette_for_profile(profile: str = "technical_dark") -> Palette:
     return Palette.for_profile(profile)
 
 
-def apply_theme(scene: Scene, profile=None, background=None):
-    """Apply a named canvas profile and expose its palette to the scene."""
-    profile = profile or DEFAULT_PROFILE
+def apply_theme(scene: Scene, background=None, *, profile=None):
+    """Apply a canvas profile while preserving the legacy background argument and Scene return."""
+    profile = DEFAULT_PROFILE if profile is None else profile
     palette = palette_for_profile(profile)
     scene.visual_profile = profile
     scene.palette = palette
-    scene.camera.background_color = background or palette.bg
-    return palette
+    scene.camera.background_color = palette.bg if background is None else background
+    return scene
 
 
 def txt(text, size=36, color=None, font=None, weight=NORMAL, profile=None):

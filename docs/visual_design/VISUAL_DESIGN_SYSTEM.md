@@ -48,7 +48,7 @@ Respect `safe_margin_fraction` and `caption_exclusion_fraction`; inspect the act
 
 ## Renderer usage
 
-- Manim Kit: `apply_theme(scene, profile=None)`, `palette_for_profile(profile)`, `txt(..., profile=...)`, `semantic_tex(..., profile=...)`, `coordinate_axes_2d(..., profile=...)`, and `place_in_layout(...)`. Existing default `P` and Technical Dark values remain compatible.
+- Manim Kit: `apply_theme(scene, background=None, *, profile=None)`, `palette_for_profile(profile)`, `txt(..., profile=...)`, `semantic_tex(..., profile=...)`, `coordinate_axes_2d(..., profile=...)`, and `place_in_layout(...)`. `apply_theme` keeps the legacy positional/keyword background argument and returns the same Scene; the selected V14.5 profile and palette are exposed as `scene.visual_profile` and `scene.palette`. Existing default `P` and Technical Dark values remain compatible.
 - Blender: `scene_kit.bootstrap(..., visual_profile=...)` chooses token-backed semantic materials while preserving the legacy render-quality `profile` argument. `studio_utils.setup_studio(..., visual_profile=...)` applies the selected canvas; `apply_world_profile()` sets both the legacy world color and the rendered World shader node. Use `studio_lights(profile)` and `add_studio_floor(..., profile)` for matching setup. `visual_material()` applies shared material-role values.
 - Production: `LessonSpec.visual_profile` is copied to the renderer contract and Manim environment. The generic lesson runner passes Blender the explicit `--visual-profile` CLI option because WSL does not reliably forward arbitrary Linux environment variables to Windows executables. Each registered Blender scene accepts the option; standalone scenes may still set `EDU_VISUAL_PROFILE` directly.
 
