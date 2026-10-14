@@ -2,7 +2,7 @@ name: Education renderer smoke
 
 on:
   pull_request:
-    branches: [main]
+    branches: [main, v14.4-bearing-visual-excellence]
     types: [opened, synchronize, reopened, ready_for_review]
     paths:
       - '.github/workflows/v13-education.yml'
