@@ -1,0 +1,34 @@
+{
+  "schema": "visual-design-tokens/v1",
+  "canvas": {
+    "aspect_ratio": "16:9",
+    "safe_margin_fraction": 0.05
+  },
+  "colors": {
+    "background": "#0B1020",
+    "primary_text": "#F4F7FB",
+    "secondary_text": "#8A94A6",
+    "faint": "#334155",
+    "sensor": "#38BDF8",
+    "active": "#FBBF24",
+    "result": "#34D399",
+    "error": "#F87171",
+    "learned": "#A78BFA",
+    "axis_x": "#EF4444",
+    "axis_y": "#22C55E",
+    "axis_z": "#3B82F6",
+    "bearing_steel": "#A7B4C2",
+    "bearing_inner": "#438CC2",
+    "bearing_ball": "#DCE6F0",
+    "bearing_cage": "#E6A653",
+    "bearing_stage": "#121B2A"
+  },
+  "typography_1080p": {
+    "title_px": 60,
+    "section_px": 42,
+    "primary_label_px": 32,
+    "secondary_label_px": 28,
+    "caption_px": 46,
+    "minimum_critical_preview_px": 14
+  }
+}
