@@ -140,3 +140,29 @@ At this point in the sequence, PR #10 remained open and Draft, with head `bf3614
 The user approved changing PR #10's base to `main`; the PR was retargeted without changing its head or Draft state. It remains open and Draft at head `bf3614138bb551169dabee03f0fb49c31b9412b7`, targeting `main` at `d387bc1ea8bc23c447b0d3572c1951a2cbfa3b03`. GitHub's compare reports the same 33 changed files and merge base `b1e45be371ccb5c601483d2360d4e2742b453b9e` as before retargeting.
 
 The existing Education Renderer [run #58](https://github.com/hinoonyaso/make_simulation/actions/runs/38499336935) and AI Trace [run #133](https://github.com/hinoonyaso/make_simulation/actions/runs/38499336921) passed on the PR head before the base change. No new workflow run appeared after retargeting: the current `main` Education Renderer workflow listens only to `opened`, `synchronize`, `reopened`, and `ready_for_review`, not `edited`, so changing only the base does not dispatch it. The PR API currently reports `mergeable=false` / `mergeable_state=dirty`; therefore the same file count does not establish mergeability. Do not mark checks fresh or merge-ready. Updating the PR head to resolve the reported conflict and obtaining fresh CI remain outstanding; PR #10 was not merged. The integration-only `84ae4ff` camera-background fix also remains absent from `main`.
+
+## Post-gate PR #10 conflict resolution and acceptance — 2026-10-15
+
+PR #10 remained based on `main` at `d387bc1ea8bc23c447b0d3572c1951a2cbfa3b03`, with Draft status preserved. Merging the latest `origin/main` into the clean PR worktree produced one content conflict: `pilots/v14_education/blender/battery_scene.py`. The resolution retained V14.3 sparse-plan validation and segment rendering, V14.5 `--visual-profile` handling and profile-driven material/light tokens, and the main-branch `.042` title safe-area position. It also incorporated only the Battery background correction from `84ae4ffba8f045243ad09bb8606541bbfd9d3073`: camera-ray background is separated from the world-light background, while the selected profile's world strength continues to control lighting. No other integration-branch files were copied.
+
+The merge commit is `331bdfea6625b6cef5fa90f64f77e3702db40c03`; it has `d387bc1` as a parent. The PR diff remains 33 files. The branch was pushed by fast-forward, and GitHub now reports PR #10 open, Draft, `mergeable=true`, `mergeable_state=clean`; no PR merge was performed.
+
+| Check | Result | Evidence |
+|---|---|---|
+| Full unittest | PASS | `uv run --locked --no-sync python -m unittest discover -s tests -v`; 250 tests, 14.197 s |
+| Python compile | PASS | `uv run --locked --no-sync python -m compileall -q core scripts tests` |
+| Visual design | PASS | `scripts/validate_visual_design.py --all-scenes`; six Blender/Manim scenes and profile contrast |
+| Asset validation | PASS | Registry 39 assets; education catalog 39 entries, 6 catalog models, 6 generated asset metadata/hash checks |
+| Battery plans | PASS | Default sparse plan and explicit `legacy_full` plan both `PLAN_VALIDATED` |
+| Solver result | PASS | Existing PyBaMM 26.10.0.0 / IDAKLUSolver output revalidated: 361 samples, 1800 s, SHA-256 `e29e858dd80f48c969f8d4b51f6ef004c62241175f598c5b7bd965b65fb44b25` |
+| Blender + Manim renders | PASS, sampled visual inspection | Blender 5.2.1 LTS and Manim 0.21.0; Technical Dark and Studio Light each 960×540, 30 fps, H.264, 720 frames; full decode and manifest/timeline/caption validation passed. Each render used 181 Blender images (one still and 180 animation frames) and the same solver result. |
+| Technical Dark preview | PASS | SHA-256 `669b20b6e2d76eba936241d28f47ca595493e681b661f97ac8e122b7a1359fb8`; local file `/tmp/pr10-main-merge-qa/renders/battery-technical-dark/preview.mp4` |
+| Studio Light preview | PASS | SHA-256 `d42259957911d06be8f01d996b14cc4ac886668e156438bae6005a07ea9f25d2`; local file `/tmp/pr10-main-merge-qa/renders/battery-studio-light/preview.mp4` |
+| Full 1× human review | INCOMPLETE | Representative frames around the 6 s, 12 s, and 18 s transitions were inspected. The full 24 s videos were not watched at normal speed. |
+| Education Renderer CI | PASS | [Run #65](https://github.com/hinoonyaso/make_simulation/actions/runs/38754717908), exact head `331bdfea` |
+| PyBaMM Battery CI | PASS | [Run #32](https://github.com/hinoonyaso/make_simulation/actions/runs/38754718561), exact head `331bdfea` |
+| AI Trace CI | PASS | [Run #144](https://github.com/hinoonyaso/make_simulation/actions/runs/38754717889), exact head `331bdfea` |
+
+The sampled transition frames show a small residual Blender-to-Manim background shift: Technical Dark sample pixels were `(0, 4, 14)` vs `(10, 13, 31)`; Studio Light `(193, 194, 197)` vs `(215, 220, 226)`. This matches the earlier integration observation and is recorded as a minor color-managed difference, not a render or decode failure. Technical Dark's repeated-frame metric candidates correspond to the planned BAT01 still hold; sampled metrics found no dark or brightness-jump candidates. The previews remain silent; narration and full-speed playback were not reviewed. GitHub Actions also completed successfully on the pushed head; no workflow dispatch was needed.
+
+PR #10 remains Draft and unmerged, ready for user review. The integration-only `84ae4ff` change is present in its Battery scene. Integration QA commits through `2604cce` remain in this worktree; this section is a documentation-only follow-up and does not add integration code to PR #10.
