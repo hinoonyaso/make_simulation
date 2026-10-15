@@ -29,6 +29,7 @@
       "state_change": "외장과 내부 개념 부품의 위치를 분리해 표시",
       "focus": "재사용된 CC0 교육용 18650 에셋",
       "tool": "B",
+      "render_mode": "still",
       "blueprint": "layered_structure",
       "evidence_type": "conceptual_illustration"
     },
