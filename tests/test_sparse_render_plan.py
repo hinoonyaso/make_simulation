@@ -1,0 +1,182 @@
+from __future__ import annotations
+
+import copy
+import json
+from pathlib import Path
+import shutil
+import subprocess
+import sys
+import tempfile
+import unittest
+
+from core.education.education_planner import plan_lesson
+from core.education.sparse_render_plan import build_sparse_render_plan, validate_sparse_render_plan
+
+ROOT = Path(__file__).resolve().parents[1]
+
+
+class SparseRenderPlanTests(unittest.TestCase):
+    def setUp(self):
+        spec = json.loads((ROOT / "examples/education/battery_spm_smoke.json").read_text())
+        spec["beats"][0]["render_mode"] = "still"
+        planned = plan_lesson(spec)
+        self.manifest, self.timeline = planned["visual_manifest"], planned["timeline"]
+
+    def run_plan_only(self, root: Path, spec: dict, *, strategy: str | None = None):
+        spec_path = root / "lesson.json"
+        output_root = root / "output"
+        spec_path.write_text(json.dumps(spec), encoding="utf-8")
+        command = [sys.executable, str(ROOT / "scripts/produce_lesson.py"),
+                   "--spec", str(spec_path), "--plan-only", "--output-root", str(output_root),
+                   "--run-id", "plan-only-e2e"]
+        if strategy:
+            command.extend(["--render-strategy", strategy])
+        result = subprocess.run(command, cwd=ROOT, capture_output=True, text=True)
+        return result, output_root / "plan-only-e2e"
+
+    def test_plan_only_sparse_cli_writes_the_validated_render_segments(self):
+        spec = json.loads((ROOT / "examples/education/battery_spm_smoke.json").read_text())
+        spec["beats"][0]["render_mode"] = "still"
+        with tempfile.TemporaryDirectory() as directory:
+            result, run_dir = self.run_plan_only(Path(directory), spec)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            report = json.loads((run_dir / "production_report.json").read_text())
+            segments = json.loads((run_dir / "render_segments.json").read_text())
+            self.assertEqual(report["status"], "PLAN_VALIDATED")
+            self.assertEqual(report["render_strategy"], "sparse")
+            self.assertEqual(report["render_segments"], "render_segments.json")
+            self.assertEqual(segments["total_frames"], 720)
+            self.assertEqual(segments["segments"][0]["source_frame"], 1)
+            self.assertEqual(segments["segments"][2]["source_frame_start"], 361)
+            self.assertEqual(segments["segments"][2]["source_frame_end"], 540)
+
+    def test_plan_only_sparse_cli_rejects_invalid_render_mode_without_success_artifacts(self):
+        spec = json.loads((ROOT / "examples/education/battery_spm_smoke.json").read_text())
+        spec["beats"][0]["render_mode"] = "typo"
+        with tempfile.TemporaryDirectory() as directory:
+            result, run_dir = self.run_plan_only(Path(directory), spec)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("invalid sparse render plan", result.stderr)
+            self.assertIn("unsupported sparse render_mode 'typo'", result.stderr)
+            self.assertFalse(run_dir.exists())
+
+    def test_plan_only_legacy_full_keeps_existing_output_contract(self):
+        spec = json.loads((ROOT / "examples/education/battery_spm_smoke.json").read_text())
+        with tempfile.TemporaryDirectory() as directory:
+            result, run_dir = self.run_plan_only(Path(directory), spec, strategy="legacy_full")
+            self.assertEqual(result.returncode, 0, result.stderr)
+            report = json.loads((run_dir / "production_report.json").read_text())
+            self.assertEqual(report["status"], "PLAN_VALIDATED")
+            self.assertEqual(report["render_strategy"], "legacy_full")
+            self.assertNotIn("render_segments", report)
+            self.assertFalse((run_dir / "render_segments.json").exists())
+
+    def test_battery_sparse_plan_uses_exact_0_based_to_blender_frame_mapping(self):
+        plan = build_sparse_render_plan(self.manifest, self.timeline,
+                                        supported_renderers=("blender", "manim"), supports_stills=True)
+        self.assertEqual(validate_sparse_render_plan(plan, self.timeline), [])
+        self.assertEqual(plan["total_frames"], 720)
+        self.assertEqual(plan["blender_still_count"], 1)
+        self.assertEqual(plan["blender_animation_frames"], 180)
+        self.assertEqual(
+            [(s["beat_id"], s["renderer"], s["timeline_start"], s["timeline_end"], s["output_frames"])
+             for s in plan["segments"]],
+            [("BAT01", "blender", 0, 180, 180),
+             ("BAT02", "manim", 180, 360, 180),
+             ("BAT03", "blender", 360, 540, 180),
+             ("BAT04", "manim", 540, 720, 180)],
+        )
+        self.assertEqual(plan["segments"][0]["source_frame"], 1)
+        self.assertEqual(plan["segments"][2]["source_frame_start"], 361)
+        self.assertEqual(plan["segments"][2]["source_frame_end"], 540)
+        self.assertEqual(plan["segments"][2]["output_frames"], 180)
+
+    def test_sparse_is_battery_registry_default_without_changing_other_renderer_defaults(self):
+        from core.education.renderer_registry import resolve_renderer
+
+        battery = resolve_renderer("li_ion_battery")
+        bearing = resolve_renderer("ball_bearing")
+        self.assertEqual(battery.default_render_strategy, "sparse")
+        self.assertIn("legacy_full", battery.render_strategies)
+        self.assertEqual(bearing.default_render_strategy, "legacy_full")
+        self.assertNotIn("sparse", bearing.render_strategies)
+
+    def test_blender_report_must_match_plan_and_total_rendered_images(self):
+        from scripts.produce_lesson import validate_sparse_blender_report
+
+        plan = build_sparse_render_plan(self.manifest, self.timeline,
+                                        supported_renderers=("blender", "manim"), supports_stills=True)
+        report = {"sparse_render": {
+            "timeline_sha256": plan["timeline_sha256"], "blender_rendered_images": 181,
+            "segments": [
+                {"beat_id": "BAT01", "mode": "still", "source_frame": 1,
+                 "output_frames": 180, "blender_rendered_images": 1},
+                {"beat_id": "BAT03", "mode": "animation", "source_frame_start": 361,
+                 "source_frame_end": 540, "output_frames": 180, "blender_rendered_images": 180},
+            ],
+        }}
+        validate_sparse_blender_report(report, plan)
+        report["sparse_render"]["blender_rendered_images"] = 720
+        with self.assertRaisesRegex(RuntimeError, "expects 181"):
+            validate_sparse_blender_report(report, plan)
+
+    def test_gap_overlap_still_capability_and_unsupported_renderer_are_rejected(self):
+        plan = build_sparse_render_plan(self.manifest, self.timeline,
+                                        supported_renderers=("blender", "manim"), supports_stills=True)
+        broken = copy.deepcopy(self.timeline)
+        broken["phases"][1]["presentation_start_frame"] += 1
+        with self.assertRaisesRegex(ValueError, "gap, overlap"):
+            build_sparse_render_plan(self.manifest, broken,
+                                     supported_renderers=("blender", "manim"), supports_stills=True)
+        with self.assertRaisesRegex(ValueError, "unsupported by its renderer capability"):
+            build_sparse_render_plan(self.manifest, self.timeline,
+                                     supported_renderers=("blender", "manim"), supports_stills=False)
+        bad_manifest = copy.deepcopy(self.manifest)
+        bad_manifest["beats"][0]["tool"] = "X"
+        with self.assertRaisesRegex(ValueError, "unsupported sparse renderer"):
+            build_sparse_render_plan(bad_manifest, self.timeline,
+                                     supported_renderers=("blender", "manim"), supports_stills=True)
+        corrupted = copy.deepcopy(plan)
+        corrupted["segments"][2]["source_frame_end"] -= 1
+        self.assertTrue(any("source frame mapping" in error
+                            for error in validate_sparse_render_plan(corrupted, self.timeline)))
+
+    @unittest.skipUnless(shutil.which("ffmpeg") and shutil.which("ffprobe"), "FFmpeg fixture tools unavailable")
+    def test_sparse_ffmpeg_composition_preserves_each_segment_frame_count(self):
+        from scripts.produce_lesson import compose_sparse_video
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            segments = root / "segments"
+            segments.mkdir()
+            still = segments / "battery_BAT01.png"
+            dynamic = segments / "battery_BAT03.mp4"
+            manim = root / "manim.mp4"
+            subprocess.run(["ffmpeg", "-v", "error", "-y", "-f", "lavfi", "-i",
+                            "color=c=red:s=64x64:r=30", "-frames:v", "1", str(still)], check=True)
+            subprocess.run(["ffmpeg", "-v", "error", "-y", "-f", "lavfi", "-i",
+                            "color=c=blue:s=64x64:r=30", "-frames:v", "2", "-c:v", "libx264",
+                            "-pix_fmt", "yuv420p", str(dynamic)], check=True)
+            subprocess.run(["ffmpeg", "-v", "error", "-y", "-f", "lavfi", "-i",
+                            "color=c=green:s=64x64:r=30", "-frames:v", "6", "-c:v", "libx264",
+                            "-vf", "setsar=2/1", "-pix_fmt", "yuv420p", str(manim)], check=True)
+            plan = {"segments": [
+                {"beat_id": "BAT01", "renderer": "blender", "mode": "still",
+                 "timeline_start": 0, "timeline_end": 2, "output_frames": 2},
+                {"beat_id": "BAT02", "renderer": "manim", "mode": "video",
+                 "timeline_start": 2, "timeline_end": 4, "output_frames": 2},
+                {"beat_id": "BAT03", "renderer": "blender", "mode": "animation",
+                 "timeline_start": 4, "timeline_end": 6, "output_frames": 2},
+            ]}
+            timeline = {"fps": 30, "total_frames": 6}
+            result = compose_sparse_video(plan, timeline, segments, manim, root / "final.mp4")
+            self.assertEqual(result["status"], "PASS")
+            self.assertEqual(result["frames"], 6)
+            probe = subprocess.check_output(["ffprobe", "-v", "error", "-select_streams", "v:0",
+                                             "-show_entries", "stream=sample_aspect_ratio", "-of", "json",
+                                             str(root / "final.mp4")], text=True)
+            self.assertEqual(json.loads(probe)["streams"][0]["sample_aspect_ratio"], "1:1")
+
+
+if __name__ == "__main__":
+    unittest.main()

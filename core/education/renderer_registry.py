@@ -28,6 +28,9 @@ class EducationRenderer:
     context_builder: Callable[[dict[str, Any]], dict[str, Any]] | None = None
     blender_context_required: bool = False
     asset_load_report_required: bool = False
+    render_strategies: tuple[str, ...] = ("legacy_full",)
+    default_render_strategy: str = "legacy_full"
+    supports_sparse_stills: bool = False
 
     def blueprints_for(self, renderer: str) -> tuple[str, ...]:
         return dict(self.blueprint_support).get(renderer, ())
@@ -144,6 +147,9 @@ REGISTRY: dict[str, EducationRenderer] = {
         context_builder=_battery_context,
         blender_context_required=True,
         asset_load_report_required=True,
+        render_strategies=("legacy_full", "sparse"),
+        default_render_strategy="sparse",
+        supports_sparse_stills=True,
     ),
 }
 

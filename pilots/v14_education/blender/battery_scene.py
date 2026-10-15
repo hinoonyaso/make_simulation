@@ -23,6 +23,7 @@ from studio_utils import apply_world_profile, set_interpolation
 from core.education.blender_compat import configure_eevee
 from core.education.renderer_registry import resolve_asset
 from core.visual_primitives.design_tokens import get_visual_profile, hex_to_linear_rgba, profile_color
+from core.education.sparse_render_plan import validate_sparse_render_plan
 
 ASSET_ID = "edu.mechanical_primitives.v1"
 CELL_OBJECTS = ("Cell_18650_Can", "Cell_Cathode_Can", "Cell_Anode_Cap",
@@ -41,6 +42,8 @@ def args_from_blender() -> argparse.Namespace:
     parser.add_argument("--samples", type=int, default=16)
     parser.add_argument("--still-frame", type=int, default=None)
     parser.add_argument("--visual-profile", choices=("studio_light", "technical_dark"))
+    parser.add_argument("--sparse-plan", type=Path, default=None)
+    parser.add_argument("--segments-dir", type=Path, default=None)
     argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
     return parser.parse_args(argv)
 
@@ -84,6 +87,32 @@ def new_emission_material(name: str, color: tuple[float, float, float, float], s
     return material
 
 
+def apply_profile_camera_background(scene, visual_profile: str):
+    """Keep profile world strength for lighting while matching the visible canvas."""
+    world = apply_world_profile(scene, visual_profile)
+    nodes = world.node_tree.nodes
+    links = world.node_tree.links
+    lighting_background = nodes.get("Background")
+    camera_background = nodes.get("Battery_Camera_Background") or nodes.new("ShaderNodeBackground")
+    camera_background.name = "Battery_Camera_Background"
+    camera_background.inputs["Color"].default_value = hex_to_linear_rgba(
+        get_visual_profile(visual_profile)["background"])
+    camera_background.inputs["Strength"].default_value = 1.0
+    light_path = nodes.get("Battery_World_Light_Path") or nodes.new("ShaderNodeLightPath")
+    light_path.name = "Battery_World_Light_Path"
+    mix = nodes.get("Battery_World_Background_Mix") or nodes.new("ShaderNodeMixShader")
+    mix.name = "Battery_World_Background_Mix"
+    output = nodes.get("World Output") or nodes.new("ShaderNodeOutputWorld")
+    surface = output.inputs["Surface"]
+    for link in list(surface.links):
+        links.remove(link)
+    links.new(light_path.outputs["Is Camera Ray"], mix.inputs[0])
+    links.new(lighting_background.outputs["Background"], mix.inputs[1])
+    links.new(camera_background.outputs["Background"], mix.inputs[2])
+    links.new(mix.outputs["Shader"], surface)
+    return world
+
+
 def setup_scene(scene, camera_target: Vector, width: int, height: int, fps: int, samples: int):
     visual_profile = os.environ.get("EDU_VISUAL_PROFILE", "technical_dark")
     look = get_visual_profile(visual_profile)
@@ -109,7 +138,7 @@ def setup_scene(scene, camera_target: Vector, width: int, height: int, fps: int,
     scene.view_settings.exposure = 0.0
     scene.view_settings.gamma = 1.0
     scene.render.image_settings.file_format = "FFMPEG"
-    apply_world_profile(scene, visual_profile)
+    apply_profile_camera_background(scene, visual_profile)
     scene.frame_start = 1
     bpy.ops.object.camera_add(location=camera_target + Vector((.15, -.42, .19)))
     camera = bpy.context.object
@@ -149,8 +178,9 @@ def add_soc_gauge(scene, camera):
     result = hex_to_linear_rgba(profile_color("result", os.environ.get("EDU_VISUAL_PROFILE", "technical_dark")))
     fill.data.materials.append(new_emission_material("SOC_Gauge_Fill_Material", result, 1))
     fill["base_height_m"] = .074
-    create_text(camera, "18650 EDUCATION MODEL", -0.080, .046, size=.007)
-    create_text(camera, "MODEL SOC", .027, .046, size=.006)
+    # Keep the headings inside the 16:9 camera safe area at 540p and 1080p.
+    create_text(camera, "18650 EDUCATION MODEL", -0.080, .042, size=.007)
+    create_text(camera, "MODEL SOC", .027, .042, size=.006)
     return backing, fill
 
 
@@ -245,6 +275,59 @@ def render_lesson(args: argparse.Namespace):
     }
     report_path = args.output.parent / "asset_load_report.json"
     scene.frame_set(1)
+    if args.sparse_plan is not None:
+        if args.segments_dir is None:
+            raise ValueError("--sparse-plan requires --segments-dir")
+        sparse_plan = json.loads(args.sparse_plan.read_text(encoding="utf-8"))
+        errors = validate_sparse_render_plan(sparse_plan, timeline)
+        if errors:
+            raise RuntimeError("invalid sparse plan supplied to Blender: " + "; ".join(errors))
+        blender_segments = [segment for segment in sparse_plan.get("segments", [])
+                            if segment.get("renderer") == "blender"]
+        rendered = []
+        segments_dir = args.segments_dir.resolve()
+        segments_dir.mkdir(parents=True, exist_ok=True)
+        for segment in blender_segments:
+            beat_id = segment["beat_id"]
+            if segment["mode"] == "still":
+                scene.frame_set(int(segment["source_frame"]))
+                scene.render.image_settings.media_type = "IMAGE"
+                scene.render.image_settings.file_format = "PNG"
+                image_path = segments_dir / f"battery_{beat_id}.png"
+                scene.render.filepath = str(image_path)
+                bpy.ops.render.render(write_still=True)
+                if not image_path.is_file() or image_path.stat().st_size == 0:
+                    raise RuntimeError(f"Blender did not produce sparse still {image_path}")
+                rendered.append({"beat_id": beat_id, "mode": "still", "source_frame": segment["source_frame"],
+                                 "output_frames": segment["output_frames"], "image": image_path.name,
+                                 "blender_rendered_images": 1})
+            elif segment["mode"] == "animation":
+                start = int(segment["source_frame_start"])
+                end = int(segment["source_frame_end"])
+                scene.frame_start, scene.frame_end = start, end
+                scene.render.image_settings.media_type = "IMAGE"
+                scene.render.image_settings.file_format = "PNG"
+                sequence_pattern = segments_dir / f"battery_{beat_id}_"
+                scene.render.filepath = str(sequence_pattern)
+                bpy.ops.render.render(animation=True)
+                frame_paths = [segments_dir / f"battery_{beat_id}_{frame:04d}.png"
+                               for frame in range(start, end + 1)]
+                missing = [path.name for path in frame_paths if not path.is_file() or path.stat().st_size == 0]
+                if missing:
+                    raise RuntimeError("Blender sparse sequence is incomplete: " + ", ".join(missing[:5]))
+                rendered.append({"beat_id": beat_id, "mode": "animation", "source_frame_start": start,
+                                 "source_frame_end": end, "output_frames": segment["output_frames"],
+                                 "sequence_pattern": f"battery_{beat_id}_%04d.png",
+                                 "blender_rendered_images": len(frame_paths)})
+            else:
+                raise ValueError(f"unsupported Blender sparse segment mode: {segment['mode']}")
+        report["sparse_render"] = {
+            "plan_schema": sparse_plan.get("schema"), "timeline_sha256": sparse_plan.get("timeline_sha256"),
+            "segments": rendered,
+            "blender_rendered_images": sum(segment["blender_rendered_images"] for segment in rendered),
+        }
+        report_path.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        return
     if args.still_frame is not None:
         if args.still_frame < 1 or args.still_frame > scene.frame_end:
             raise ValueError(f"still frame must be between 1 and {scene.frame_end}")
