@@ -70,7 +70,7 @@ A contact sheet of six representative frames per profile plus a 0.5-second volta
 | Existing default-profile lesson plan | PASS | `examples/education/education_smoke.json` retained Technical Dark default |
 | `apply_theme()` compatibility and timeline/manifest unit coverage | PASS | Included in 250-test suite |
 | `git diff --check` | PASS | Integration worktree |
-| AI Trace GitHub Actions | PASS | [Run #136](https://github.com/hinoonyaso/make_simulation/actions/runs/38734305895) completed successfully on integration SHA `8e3ea2ee063af394c0bdf7ba4c6335df96ca64c4`. |
+| AI Trace GitHub Actions | PASS | [Run #137](https://github.com/hinoonyaso/make_simulation/actions/runs/38734493644) completed successfully on integration SHA `c06dc917e13f22f82337cd825a9899bad8637407`. |
 | Education Renderer / Battery GitHub Actions | NOT RUN | Education workflow supports manual dispatch but has no push trigger for this integration branch; the connected GitHub tools are read-only for Actions dispatch, and no authenticated `gh` CLI is installed. Local validation passed. |
 
 The test environment emitted an existing optional SoX warning. Rendering, tests, and silent delivery validation succeeded without SoX. Blender 5.2.1 was installed and executed successfully using the approved unsandboxed WSL path. GPU use was not established.
@@ -80,6 +80,29 @@ The test environment emitted an existing optional SoX warning. Rendering, tests,
 - P1: none identified by the executed tests, mixed renders, and sampled-frame review.
 - P2: no same-host legacy full Blender render timing was captured; only requested Blender image counts were compared. Studio Light still has a small color-managed canvas difference between Blender and Manim.
 - P2: full 1× motion review, narration review, and learner comprehension remain incomplete; current previews are silent.
-- AI Trace remote CI passed on integration SHA `8e3ea2ee063af394c0bdf7ba4c6335df96ca64c4`; Education Renderer and Battery Actions remain `NOT RUN`. The report-only follow-up commit will trigger another AI Trace push run.
+- AI Trace remote CI passed on integration SHA `c06dc917e13f22f82337cd825a9899bad8637407`; Education Renderer and Battery Actions remain `NOT RUN`. The report-only follow-up commit will trigger another AI Trace push run.
 
 Recommended stacked PR sequence: merge PR #8 (V14.3) into `main`; then PR #9 (V14.4) into `main`; then retarget PR #10 from V14.4 to `main`, allow the base-change CI to complete, and review/merge V14.5. This integration branch is validation evidence only; it does not authorize any PR merge. Do not merge `main` as part of this task.
+
+## Final integration recheck — 2026-10-15
+
+The following recheck was performed against integration HEAD `c06dc917e13f22f82337cd825a9899bad8637407`. No production source changed during this recheck.
+
+| Check | Result | Fresh evidence |
+|---|---|---|
+| Git remote/worktree | PASS | `git fetch origin --prune` succeeded; integration branch is clean and matches `origin/integration/v14.3-v14.5-validation` at `c06dc91`. The original `/home/sang/make_simulation` V13 worktree remains untouched (66 pre-existing modified/untracked paths). |
+| Full unittest | PASS | 250 tests, 11.842 s, using the existing `/home/sang/make_simulation-v14.5/.venv` with `UV_PROJECT_ENVIRONMENT=...`; no test skips were introduced. An initial attempt selected an empty worktree-local `.venv` and failed imports; the complete rerun in the configured project environment passed. |
+| Compile, visual style, assets | PASS | `compileall`; all six Blender/Manim scenes and design-token contrast; registry (39 assets) and education catalog validation (39 entries, 6 catalog models, 6 generated metadata checks). |
+| Education Manim smoke | PASS | Fresh silent 4-second preview at `/tmp/v14-final-education-smoke/final-smoke/preview.mp4`; manifest, 960×540/30fps H.264, 120 frames, captions, timeline and full decode passed. |
+| Gear Manim smoke | PASS | Fresh silent 12-second preview at `/tmp/v14-final-education-smoke/gear-final/preview.mp4`; manifest, calculated gear mapping, 960×540/30fps H.264, 360 frames and full decode passed. |
+| Battery normal solver | PASS | Existing solver result revalidated: PyBaMM 26.10.0.0 / IDAKLUSolver, 361 samples, 1800 s, SHA-256 `e29e858dd80f48c969f8d4b51f6ef004c62241175f598c5b7bd965b65fb44b25`. |
+| Battery early cutoff | PASS | Fresh local solver run ended on `event: Minimum voltage [V]` at 3606.549305848152 s, before its requested end; 62 samples and validated result SHA-256 `f2631a1c28111bf4e19af646a6c82978990f36e9025480ee107235b22d43c66a`. |
+| Battery mixed preview delivery | PASS | Both existing MP4s were checked at preview floor 960×540, 30 fps, with timeline, caption timing and full decode. Each has 720 frames, 8 caption cues and no audio stream by design. The final-delivery validator's default 1080p floor was overridden explicitly for these preview artifacts. |
+| Battery render provenance | PASS | Both profile reports identify the same validated solver result/run, battery asset SHA, sparse 1-still + 180-animation plan, 720-frame composition and Blender 5.2.1 LTS / Manim 0.21.0. Video hashes remain the values in the table above. |
+| Visual metrics / sampled frames | PASS, sampled only | Fresh 96-frame metrics for each preview found no dark/blank or brightness-jump candidates. Technical Dark reported a repeated-frame candidate only in the intentional BAT01 still hold. Existing profile contact sheets were inspected; model, graph/marker, SOC gauge, and model-limit text are visible. This is not full-motion playback. |
+| Remote Actions | AI Trace PASS; Education/Battery NOT RUN — PERMISSION BLOCKED | [AI Trace run #137](https://github.com/hinoonyaso/make_simulation/actions/runs/38734493644) succeeded for `c06dc91`. GitHub read access confirmed no Education or Battery run on this branch. `gh` is unavailable and the connected GitHub interface has GET/read operations but no workflow-dispatch operation, so no remote dispatch could be issued. The workflows were not modified. |
+| `git diff --check` | PASS | Clean before this report-only update; rerun before commit. |
+
+`FULL_MOTION_REVIEW=INCOMPLETE`. A human should watch both 24-second previews at 1×, focusing on BAT01→BAT02 near 6 s, BAT02→BAT03 near 12 s, and BAT03→BAT04 near 18 s; check for visible canvas jumps, clipped text, geometry occlusion, unexpected freezes, graph marker continuity and SOC motion. The videos are silent; narration QA is `NOT APPLICABLE` for these previews. Learner comprehension is untested.
+
+Current readiness remains `CONDITIONAL`: no P0/P1 defect was found in the executed local checks or sampled visual review, but Education and Battery GitHub Actions were not run remotely and full-motion human review is incomplete. Current PR API state: #8 open/Ready/mergeable, #9 open/Draft/mergeable, #10 open/Draft/mergeable (stacked on V14.4). The integration-only `84ae4ff` change modifies only `pilots/v14_education/blender/battery_scene.py` to separate camera-ray background from world lighting. It is not present in PR #10's head. After the planned PR sequence, review the resulting `battery_scene.py` against this change and submit it as a deliberate follow-up change if still needed; do not assume the merge contains it or cherry-pick without inspecting the merged file. No PR or `main` changes were made.
