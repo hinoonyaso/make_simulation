@@ -70,7 +70,8 @@ A contact sheet of six representative frames per profile plus a 0.5-second volta
 | Existing default-profile lesson plan | PASS | `examples/education/education_smoke.json` retained Technical Dark default |
 | `apply_theme()` compatibility and timeline/manifest unit coverage | PASS | Included in 250-test suite |
 | `git diff --check` | PASS | Integration worktree |
-| Remote GitHub Actions | NOT RUN | Education workflow supports manual dispatch but has no push trigger for this integration branch; no GitHub Actions dispatch tool or authenticated `gh` CLI was available in this session. CI status must be checked after push or dispatched from GitHub UI. |
+| AI Trace GitHub Actions | PASS | [Run #136](https://github.com/hinoonyaso/make_simulation/actions/runs/38734305895) completed successfully on integration SHA `8e3ea2ee063af394c0bdf7ba4c6335df96ca64c4`. |
+| Education Renderer / Battery GitHub Actions | NOT RUN | Education workflow supports manual dispatch but has no push trigger for this integration branch; the connected GitHub tools are read-only for Actions dispatch, and no authenticated `gh` CLI is installed. Local validation passed. |
 
 The test environment emitted an existing optional SoX warning. Rendering, tests, and silent delivery validation succeeded without SoX. Blender 5.2.1 was installed and executed successfully using the approved unsandboxed WSL path. GPU use was not established.
 
@@ -79,6 +80,6 @@ The test environment emitted an existing optional SoX warning. Rendering, tests,
 - P1: none identified by the executed tests, mixed renders, and sampled-frame review.
 - P2: no same-host legacy full Blender render timing was captured; only requested Blender image counts were compared. Studio Light still has a small color-managed canvas difference between Blender and Manim.
 - P2: full 1× motion review, narration review, and learner comprehension remain incomplete; current previews are silent.
-- Remote CI remains `NOT RUN` until an Actions run is observed for this pushed integration revision.
+- AI Trace remote CI passed on integration SHA `8e3ea2ee063af394c0bdf7ba4c6335df96ca64c4`; Education Renderer and Battery Actions remain `NOT RUN`. The report-only follow-up commit will trigger another AI Trace push run.
 
 Recommended stacked PR sequence: merge PR #8 (V14.3) into `main`; then PR #9 (V14.4) into `main`; then retarget PR #10 from V14.4 to `main`, allow the base-change CI to complete, and review/merge V14.5. This integration branch is validation evidence only; it does not authorize any PR merge. Do not merge `main` as part of this task.
