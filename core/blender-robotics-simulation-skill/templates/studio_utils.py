@@ -15,11 +15,17 @@ from pathlib import Path
 
 import bpy
 from mathutils import Matrix, Vector
+import sys
+
+_ROOT = Path(__file__).resolve().parents[3]
+if str(_ROOT) not in sys.path:
+    sys.path.insert(0, str(_ROOT))
 
 from animation_utils import set_interpolation
 from geometry_utils import add_cube, add_cylinder, add_sphere, apply_bevel
-from material_utils import assign_material, principled_material
+from material_utils import assign_material, principled_material, visual_material
 from robotics_visual_utils import add_trajectory, create_emission_material
+from core.visual_primitives.design_tokens import get_visual_profile, hex_to_linear_rgba
 
 FPS = 30
 PROFILES = {"PREVIEW": ((960, 540), 16, False), "FINAL": ((1920, 1080), 64, True),
@@ -36,7 +42,7 @@ def smoothstep(x):
 
 
 # ---------- scene ----------
-def setup_studio(profile="PREVIEW", frames=1):
+def setup_studio(profile="PREVIEW", frames=1, visual_profile="studio_light"):
     bpy.ops.wm.read_factory_settings(use_empty=True)
     s = bpy.context.scene
     (w, h), samples, final = PROFILES[profile]
@@ -54,13 +60,24 @@ def setup_studio(profile="PREVIEW", frames=1):
         s.view_settings.look = "AgX - Punchy"
     except TypeError:
         pass
-    world = bpy.data.worlds.new("Studio")
-    s.world = world
-    world.use_nodes = True
-    bg = world.node_tree.nodes["Background"]
-    bg.inputs["Color"].default_value = (0.66, 0.67, 0.69, 1)
-    bg.inputs["Strength"].default_value = 0.42
+    apply_world_profile(s, visual_profile)
     return s
+
+
+def apply_world_profile(scene, visual_profile="studio_light"):
+    """Apply tokenized background to both legacy color and the rendered World node."""
+    look = get_visual_profile(visual_profile)
+    world = scene.world or bpy.data.worlds.new("Education World")
+    scene.world = world
+    world.color = hex_to_linear_rgba(look["background"])[:3]
+    world.use_nodes = True
+    background = world.node_tree.nodes.get("Background")
+    if background is None:
+        background = world.node_tree.nodes.new("ShaderNodeBackground")
+    background.inputs["Color"].default_value = hex_to_linear_rgba(look["background"])
+    background.inputs["Strength"].default_value = look["world_strength"]
+    scene["visual_profile"] = visual_profile
+    return world
 
 
 def add_area_light(name, location, energy, size, target=(0, 0, 0)):
@@ -73,10 +90,13 @@ def add_area_light(name, location, energy, size, target=(0, 0, 0)):
     return obj
 
 
-def studio_lights():
-    return [add_area_light("Key", (-1.5, 2.5, 5.5), 1600, 3.5),
-            add_area_light("Fill", (3.0, -3.5, 4.0), 350, 6.0),
-            add_area_light("Rim", (4.0, 3.0, 2.0), 400, 2.5, target=(0, 0, 0.2))]
+def studio_lights(visual_profile="studio_light"):
+    ratios = get_visual_profile(visual_profile)["lighting"]
+    key = 1600 * ratios["key"]
+    return [add_area_light("Key", (-1.5, 2.5, 5.5), key, 3.5),
+            add_area_light("Fill", (3.0, -3.5, 4.0), key * ratios["fill"], 6.0),
+            add_area_light("Rim", (4.0, 3.0, 2.0), key * ratios["rim"], 2.5,
+                           target=(0, 0, 0.2))]
 
 
 def concrete_material(tile=0.6):
@@ -117,11 +137,15 @@ def concrete_material(tile=0.6):
     return mat
 
 
-def add_studio_floor(size=160):
+def add_studio_floor(size=160, visual_profile="studio_light"):
     bpy.ops.mesh.primitive_plane_add(size=size, location=(0, 0, 0))
     floor = bpy.context.object
     floor.name = "Floor"
-    assign_material(floor, concrete_material())
+    if visual_profile == "studio_light":
+        assign_material(floor, concrete_material())
+    else:
+        assign_material(floor, visual_material("VisualProfileFloor", "floor",
+            profile=visual_profile, material_role="rubber"))
     return floor
 
 

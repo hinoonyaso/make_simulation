@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import os
 from pathlib import Path
 import sys
 
@@ -17,7 +18,11 @@ from mathutils import Vector
 BLENDER_KIT = REPO_ROOT / "core/blender-robotics-simulation-skill/templates"
 if str(BLENDER_KIT) not in sys.path:
     sys.path.insert(0, str(BLENDER_KIT))
-from studio_utils import set_interpolation
+from studio_utils import apply_world_profile, set_interpolation
+from core.visual_primitives.design_tokens import (
+    COLORS, TOKENS, get_visual_profile, hex_to_linear_rgba, profile_color,
+)
+from core.visual_primitives.font_support import discover_korean_font
 
 
 def args_after_separator():
@@ -29,6 +34,7 @@ def args_after_separator():
     parser.add_argument("--height", type=int, default=540)
     parser.add_argument("--fps", type=int, default=30)
     parser.add_argument("--samples", type=int, default=16)
+    parser.add_argument("--visual-profile", choices=("studio_light", "technical_dark"))
     parser.add_argument("--still-frame", type=int, default=0,
                         help="render one review still instead of the full animation")
     values = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
@@ -73,7 +79,14 @@ def text_overlay(camera, body, name, location, mat, size=.17):
     return obj
 
 
-def camera_rotation_indicator(camera, accent, white, phase, frame_end):
+def assert_preview_text_floor(obj, width, camera_data):
+    size_px = obj.data.size * width / camera_data.ortho_scale
+    minimum_px = TOKENS["typography_1080p"]["minimum_critical_preview_px"]
+    if size_px < minimum_px:
+        raise ValueError(f"critical label {obj.name!r} scales to {size_px:.1f}px, below {minimum_px}px")
+
+
+def camera_rotation_indicator(camera, accent, white, font, phase, frame_end):
     """Camera-space counter-clockwise cue for the positive local-Z shaft rotation."""
     cx, cy, radius, z = -3.05, 1.34, .31, -2.15
     curve_data = bpy.data.curves.new("inner_race_rotation_arc", "CURVE")
@@ -106,7 +119,10 @@ def camera_rotation_indicator(camera, accent, white, phase, frame_end):
     head.data.materials.append(accent)
 
     label = text_overlay(camera, "내륜 회전 방향", "inner_race_rotation_label",
-                         (-2.62, 1.27, z), white, .13)
+                         (-2.62, 1.27, z), white, .15)
+    label.data.font = font
+    assert_preview_text_floor(label, bpy.context.scene.render.resolution_x,
+                              bpy.context.scene.camera.data)
     for obj in (arc, head, label):
         for frame, hidden in ((1, True), (max(1, phase["presentation_start_frame"] - 1), True),
                               (phase["presentation_start_frame"], False),
@@ -118,14 +134,34 @@ def camera_rotation_indicator(camera, accent, white, phase, frame_end):
         set_interpolation(obj, "CONSTANT", paths=["hide_render"])
 
 
-def key_visibility(obj, frames, visible):
-    obj.hide_render = not visible
-    obj.keyframe_insert(data_path="hide_render", frame=frames[0])
-    obj.hide_render = not visible
-    obj.keyframe_insert(data_path="hide_render", frame=frames[1])
+def key_visibility_for_phases(obj, timeline, visible_phase_ids, frame_end):
+    phases = {phase["phase_id"]: phase for phase in timeline["phases"]}
+    missing = set(visible_phase_ids) - phases.keys()
+    if missing:
+        raise ValueError(f"label visibility phases are missing from timeline: {sorted(missing)}")
+    keys = {1: True}
+    for phase_id in visible_phase_ids:
+        phase = phases[phase_id]
+        start = max(1, int(phase["presentation_start_frame"]))
+        end = min(frame_end, int(phase["presentation_end_frame"]))
+        keys[start] = False
+        if end > start:
+            keys[end - 1] = False
+        if end <= frame_end:
+            keys[end] = True
+    for frame, hidden in sorted(keys.items()):
+        obj.hide_render = hidden
+        obj.keyframe_insert(data_path="hide_render", frame=frame)
+    set_interpolation(obj, "CONSTANT", paths=["hide_render"])
+
+
+def token_rgb(token_name, profile="technical_dark"):
+    return hex_to_linear_rgba(profile_color(token_name, profile))[:3]
 
 
 def make_scene(manifest, timeline, output, width, height, fps, samples=16, still_frame=0):
+    visual_profile = os.environ.get("EDU_VISUAL_PROFILE", "technical_dark")
+    lighting = get_visual_profile(visual_profile)["lighting"]
     bpy.ops.object.select_all(action="SELECT")
     bpy.ops.object.delete(use_global=False)
     scene = bpy.context.scene
@@ -144,18 +180,38 @@ def make_scene(manifest, timeline, output, width, height, fps, samples=16, still
     scene.render.ffmpeg.constant_rate_factor = "HIGH"
     scene.render.filepath = str(output)
     scene.render.film_transparent = False
-    scene.world.color = (.018, .026, .043)
+    apply_world_profile(scene, visual_profile)
     scene.view_settings.view_transform = "AgX"
     scene.render.image_settings.color_mode = "RGB"
 
-    steel = material("Satin chromium steel", (.33, .49, .66), .40, .50)
-    blue_steel = material("Inner race blue steel", (.08, .37, .68), .38, .48)
-    ceramic = material("Rolling elements", (.77, .84, .9), .18, .42)
-    cage_mat = material("Cage polymer brass", (.91, .43, .12), .24, .46)
-    ground_mat = material("Stage", (.025, .04, .065), .16, .55)
-    accent = material("Load path highlight", (1.0, .22, .12), .25, .33)
-    white = material("Labels", (.83, .91, 1), .1, .5)
-    label_ink = emissive_material("Minimal overlay text", (1.0, 1.0, 1.0), 1.5)
+    steel = material("Satin chromium steel", token_rgb("bearing_steel", visual_profile), .40, .50)
+    blue_steel = material("Inner race blue steel", token_rgb("bearing_inner", visual_profile), .38, .48)
+    ceramic = material("Rolling elements", token_rgb("bearing_ball", visual_profile), .18, .42)
+    cage_mat = material("Cage polymer brass", token_rgb("bearing_cage", visual_profile), .24, .46)
+    ground_mat = material("Stage", token_rgb("bearing_stage", visual_profile), .16, .55)
+    accent = material("Load path highlight", token_rgb("error", visual_profile), .25, .33)
+    white = material("Labels", token_rgb("primary_text", visual_profile), .1, .5)
+    label_ink = emissive_material("Minimal overlay text", token_rgb("primary_text", visual_profile), 1.0)
+    part_rows = [
+        "내륜  ·  축과 함께 회전",
+        "외륜  ·  하우징에 고정",
+        "볼  ·  궤도에서 구름",
+        "케이지  ·  볼 간격 유지",
+    ]
+    caveat_rows = [
+        "교육용 운동 모델",
+        "접촉력 · 마찰 · 변형 미계산",
+        "하중 분포 해석 아님",
+    ]
+    font_text = "\n".join(["부품과 역할", *part_rows, "내륜 회전 방향", "해석 범위", *caveat_rows])
+    font_path = discover_korean_font(font_text)
+    try:
+        font = bpy.data.fonts.load(font_path, check_existing=True)
+    except (OSError, RuntimeError) as exc:
+        raise RuntimeError(f"Blender could not load the selected Korean font {font_path!r}: {exc}") from exc
+    if not font:
+        raise RuntimeError(f"Blender returned no font for the selected Korean font path {font_path!r}")
+    print(f"BEARING_KOREAN_FONT loaded: {font.name} ({font.filepath})")
 
     from core.visual_primitives.blender.exploded_assembly import create_ring, create_roller_set
 
@@ -176,11 +232,6 @@ def make_scene(manifest, timeline, output, width, height, fps, samples=16, still
         ball.rotation_mode = "XYZ"
 
     spin_ball = rollers[0]
-    bpy.ops.mesh.primitive_torus_add(major_segments=32, minor_segments=8,
-                                    major_radius=.145, minor_radius=.024, location=(0,0,0))
-    spin_marker = bpy.context.object
-    spin_marker.name = "rolling_element_spin_marker"
-    spin_marker.parent = spin_ball
     # A small high-contrast surface dot makes ball rotation observable.
     bpy.ops.mesh.primitive_uv_sphere_add(segments=16, ring_count=8, radius=.045,
                                          location=(0,0,0))
@@ -191,7 +242,8 @@ def make_scene(manifest, timeline, output, width, height, fps, samples=16, still
     spin_marker.data.materials.append(accent)
 
     # The shaft and housing are cutaway visual references, not CAD geometry.
-    bpy.ops.mesh.primitive_cylinder_add(vertices=64, radius=.60, depth=2.0, location=(0, 0, 0))
+    shaft_depth = .72
+    bpy.ops.mesh.primitive_cylinder_add(vertices=64, radius=.60, depth=shaft_depth, location=(0, 0, 0))
     shaft = bpy.context.object
     shaft.name = "shaft_reference"
     shaft.data.materials.append(blue_steel)
@@ -211,7 +263,7 @@ def make_scene(manifest, timeline, output, width, height, fps, samples=16, still
     shaft_face_marker = bpy.context.object
     shaft_face_marker.name = "rotating_shaft_face_marker"
     shaft_face_marker.parent = shaft
-    shaft_face_marker.location = (.38, 0, 1.035)
+    shaft_face_marker.location = (.38, 0, shaft_depth / 2 + .035)
     shaft_face_marker.data.materials.append(accent)
     bpy.ops.mesh.primitive_torus_add(major_segments=96, minor_segments=16, major_radius=2.08,
                                     minor_radius=.12, location=(0, 0, 0))
@@ -252,10 +304,14 @@ def make_scene(manifest, timeline, output, width, height, fps, samples=16, still
     direction = Vector((.5, 0, 0)) - camera.location
     camera.rotation_euler = direction.to_track_quat("-Z", "Y").to_euler()
     camera_data.type = "ORTHO"
-    camera_data.ortho_scale = 8.25
+    camera_data.ortho_scale = 7.75
+    camera.location += camera.rotation_euler.to_quaternion() @ Vector((.55, 0, 0))
     scene.camera = camera
 
-    for loc, energy, size in [((2,-4,6), 320, 7), ((-4,-1,2), 180, 6), ((1,4,4), 240, 5)]:
+    for loc, energy, size in [
+            ((2, -4, 6), 320 * lighting["key"], 7),
+            ((-4, -1, 2), 320 * lighting["fill"], 6),
+            ((1, 4, 4), 320 * lighting["rim"], 5)]:
         light_data = bpy.data.lights.new("studio_softbox", "AREA")
         light_data.energy = energy
         light_data.shape = "DISK"
@@ -270,7 +326,7 @@ def make_scene(manifest, timeline, output, width, height, fps, samples=16, still
     beats = {beat["phase_id"]: beat for beat in manifest["beats"]}
     rotation_phase = phases.get("rotation")
     if rotation_phase:
-        camera_rotation_indicator(camera, accent, white, rotation_phase, scene.frame_end)
+        camera_rotation_indicator(camera, accent, white, font, rotation_phase, scene.frame_end)
     exploded_phase = phases.get("exploded")
     reassemble_phase = phases.get("parts_reassemble")
     if exploded_phase and reassemble_phase:
@@ -328,30 +384,35 @@ def make_scene(manifest, timeline, output, width, height, fps, samples=16, still
         obj.hide_render = True
         obj.keyframe_insert(data_path="hide_render", frame=min(scene.frame_end, load_range[1]+1))
 
-    # Labels and evidence boundary are camera-attached and keyed to the relevant beats.
-    font = None
-    korean_font = Path("C:/Windows/Fonts/malgun.ttf")
-    if korean_font.is_file():
-        font = bpy.data.fonts.load(str(korean_font))
+    # Minimal camera-attached labels appear only while component identity is being taught.
     title = text_overlay(camera, "부품과 역할", "bearing_label_title",
-                         (2.18, 1.78, -1.95), label_ink, .19)
-    if font is not None:
-        title.data.font = font
-    part_rows = [
-        "내륜  ·  축과 함께 회전",
-        "외륜  ·  하우징에 고정",
-        "볼  ·  궤도에서 구름",
-        "케이지  ·  볼 간격 유지",
-    ]
+                         (1.98, 1.77, -1.95), label_ink, .22)
+    title.data.font = font
+    assert_preview_text_floor(title, width, camera_data)
+    part_labels = [title]
     for index, body in enumerate(part_rows):
         label = text_overlay(camera, body, f"bearing_label_{index}",
-                             (2.18, 1.40-index*.37, -1.95), label_ink, .14)
-        if font is not None:
-            label.data.font = font
-    caveat = text_overlay(camera, "교육용 개념 모델", "bearing_label_caveat",
-                          (2.18, -.15, -1.95), label_ink, .11)
-    if font is not None:
-        caveat.data.font = font
+                             (1.98, 1.34-index*.34, -1.95), label_ink, .16)
+        label.data.font = font
+        assert_preview_text_floor(label, width, camera_data)
+        part_labels.append(label)
+    part_visibility = ("exploded", "parts_reassemble")
+    for label in part_labels:
+        key_visibility_for_phases(label, timeline, part_visibility, scene.frame_end)
+
+    caveat_title = text_overlay(camera, "해석 범위", "bearing_label_caveat_title",
+                                (1.98, 1.72, -1.95), label_ink, .20)
+    caveat_title.data.font = font
+    assert_preview_text_floor(caveat_title, width, camera_data)
+    caveat_lines = [caveat_title]
+    for index, body in enumerate(caveat_rows):
+        label = text_overlay(camera, body, f"bearing_label_caveat_{index}",
+                             (1.98, 1.34-index*.28, -1.95), label_ink, .135)
+        label.data.font = font
+        assert_preview_text_floor(label, width, camera_data)
+        caveat_lines.append(label)
+    for label in caveat_lines:
+        key_visibility_for_phases(label, timeline, ("summary",), scene.frame_end)
 
     scene.render.filepath = str(output)
     scene.frame_set(max(1, min(scene.frame_end, still_frame or 1)))
@@ -367,6 +428,8 @@ def make_scene(manifest, timeline, output, width, height, fps, samples=16, still
 
 def main():
     args = args_after_separator()
+    if args.visual_profile:
+        os.environ["EDU_VISUAL_PROFILE"] = args.visual_profile
     manifest = json.loads(Path(args.manifest).read_text(encoding="utf-8"))
     timeline = json.loads(Path(args.timeline).read_text(encoding="utf-8"))
     make_scene(manifest, timeline, Path(args.output), args.width, args.height, args.fps,

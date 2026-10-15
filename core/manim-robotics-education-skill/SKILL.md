@@ -2,7 +2,7 @@
 name: manim-robotics-education-skill
 description: High-polish, low-token Manim reasoning scenes using persistent visual states, data-driven visuals, selective density, rapid preview, and 1080p+ delivery.
 metadata:
-  version: "5.11-decision-emphasis"
+  version: "5.12-shared-visual-profiles"
 ---
 
 # Manim Robotics Education
@@ -24,6 +24,9 @@ Use Manim for reasoning. The manifest already owns story/timing; do not re-plan 
 - Final >=1920x1080; prefer 2560x1440 for line/text-heavy masters when practical.
 - Main concept dominates frame; no tiny dashboard cards/badges by default.
 - At most two semantic highlight colors compete at once.
+- Read `EDU_VISUAL_PROFILE` through `manim_kit.apply_theme`; choose the profile from the evidence and contrast, never from Manim versus Blender. Shared semantic colors, type scale, layout regions and advisory motion ranges live in `core/visual_primitives/`.
+- Use `palette_for_profile()` for profile-aware text/equations and `place_in_layout()` only when the named region suits the content. Preserve default `technical_dark` for legacy scenes; do not force decorative panels into empty regions.
+- Korean text uses the installed glyph-checked Manim family resolver. Set `EDU_MANIM_FONT` to an installed family name when automatic selection is unsuitable; do not silently use a font with missing glyphs.
 
 ## Workflow
 1. Read only active beat(s) + optional trace path.

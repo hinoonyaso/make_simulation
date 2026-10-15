@@ -8,6 +8,7 @@ from typing import Any
 
 MODES = {"concept_visualization", "mathematical_demonstration", "computed_engineering_demonstration"}
 EVIDENCE_TYPES = {"conceptual_illustration", "derived_calculation", "computed_result", "measured_data"}
+VISUAL_PROFILES = {"studio_light", "technical_dark"}
 
 
 @dataclass(frozen=True)
@@ -26,6 +27,7 @@ class LessonSpec:
     solver: str | None = None
     solver_config: str | None = None
     trace: str | None = None
+    visual_profile: str = "technical_dark"
 
     @classmethod
     def from_dict(cls, raw: dict[str, Any]) -> "LessonSpec":
@@ -39,7 +41,8 @@ class LessonSpec:
                    visualization=raw.get("visualization", "auto"),
                    computation_policy=raw.get("computation_policy", "only_when_needed"),
                    output_profile=raw.get("output_profile", "youtube_education"), asset_id=raw.get("asset_id"),
-                   solver=raw.get("solver"), solver_config=raw.get("solver_config"), trace=raw.get("trace"))
+                   solver=raw.get("solver"), solver_config=raw.get("solver_config"), trace=raw.get("trace"),
+                   visual_profile=raw.get("visual_profile", "technical_dark"))
 
     @classmethod
     def load(cls, path: str | Path) -> "LessonSpec":
@@ -52,6 +55,8 @@ def validate_lesson_spec(raw: Any) -> list[str]:
     errors: list[str] = []
     if raw.get("schema") != "education-lesson-spec/v1":
         errors.append("schema must be education-lesson-spec/v1")
+    if raw.get("visual_profile", "technical_dark") not in VISUAL_PROFILES:
+        errors.append(f"visual_profile must be one of {sorted(VISUAL_PROFILES)}")
     for key in ("topic", "question", "audience", "language"):
         if not isinstance(raw.get(key), str) or not raw[key].strip():
             errors.append(f"{key} must be a non-empty string")

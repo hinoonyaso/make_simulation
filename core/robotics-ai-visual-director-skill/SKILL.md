@@ -2,7 +2,7 @@
 name: robotics-ai-visual-director-skill
 description: Low-overhead visual director for robotics/AI explainers using state-transition storytelling, shared computed traces, progressive disclosure, and strong screen composition.
 metadata:
-  version: "5.12-guided-reasoning"
+  version: "5.13-visual-profile-routing"
 ---
 
 # Robotics / AI Visual Director
@@ -60,6 +60,12 @@ Do not separately restate script + storyboard.
 10. For a full narrated explainer, select the contiguous beat IDs carrying the hardest inference. Render a cheap moving excerpt with measured narration before full production; typically 15–25 seconds, adjusted to the inference. Keep those IDs and their ranges in the existing manifest, not a second storyboard. Review it using the discovery criteria in `references/director-qa.md`. Reuse an already reviewed equivalent excerpt when its story, timing and evidence have not changed.
 11. Resolve central story/timing defects in that excerpt before costly full rendering. Technical preview availability alone is not approval. If motion/audio inspection is unavailable, report the missing checks and remaining production status; do not call it fully approved.
 12. Handoff only the compact manifest + optional trace path + excerpt review status.
+
+## Shared visual profile
+- Choose `studio_light` or `technical_dark` from the primary learning evidence (spatial form/contact versus equations/data), contrast, adjacent shots and readability. Renderer identity alone never selects the profile.
+- Put the lesson-wide choice in `LessonSpec.visual_profile`; the education pipeline passes it to both renderers. Existing specs without the field retain `technical_dark`. Keep geometry, semantic roles, units, trace values and time unchanged across a profile choice.
+- Treat the profile recommendation in `core/visual_primitives/design_tokens.py` as a starting point. Select one of the token layout hints only when its regions fit the actual content; omit unused panels. Use motion ranges as advice, subordinate to narration and recorded event timing.
+- State the reason in the lesson/episode notes when a profile or a 3D↔2D transition materially affects interpretation.
 
 ## On-demand references
 Load at most one: storyboard / research-compression / visual-contract / director-qa / narration.

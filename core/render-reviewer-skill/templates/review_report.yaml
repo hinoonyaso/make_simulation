@@ -24,6 +24,14 @@ studio_craft:                 # optional when aesthetic refinement is requested
   status: not_assessed        # acceptable | needs_revision | not_assessed within inspected scope
   inspected_states: []        # same source state for material/light candidate comparisons
   selection_evidence: ""      # baseline weakness -> candidate -> visible improvement
+render_metrics:                 # optional automated sample; candidates require human frame inspection
+  status: not_run
+  report_path: ""
+  sample_rate_fps: null
+  dark_candidates: []
+  repeated_frame_candidates: []
+  brightness_jump_candidates: []
+  interpretation: ""            # confirmed defect / intentional hold or dark canvas / unresolved
 craft_targets: []           # optional for requested refinement; use defined episode targets
 # Each target: id, owner, baseline, criterion, status (met | needs_revision | uninspected), evidence.
 craft_status: not_applicable # met | needs_revision | incomplete | not_applicable; separate from educational_status

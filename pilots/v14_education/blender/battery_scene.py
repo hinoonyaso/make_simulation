@@ -5,6 +5,7 @@ import argparse
 import csv
 import hashlib
 import json
+import os
 from pathlib import Path
 import sys
 
@@ -18,10 +19,11 @@ if str(ROOT) not in sys.path:
 BLENDER_KIT = ROOT / "core/blender-robotics-simulation-skill/templates"
 if str(BLENDER_KIT) not in sys.path:
     sys.path.insert(0, str(BLENDER_KIT))
-from studio_utils import set_interpolation
+from studio_utils import apply_world_profile, set_interpolation
 from core.education.blender_compat import configure_eevee
 from core.education.renderer_registry import resolve_asset
 from core.education.sparse_render_plan import validate_sparse_render_plan
+from core.visual_primitives.design_tokens import get_visual_profile, hex_to_linear_rgba, profile_color
 
 ASSET_ID = "edu.mechanical_primitives.v1"
 CELL_OBJECTS = ("Cell_18650_Can", "Cell_Cathode_Can", "Cell_Anode_Cap",
@@ -41,6 +43,7 @@ def args_from_blender() -> argparse.Namespace:
     parser.add_argument("--still-frame", type=int, default=None)
     parser.add_argument("--sparse-plan", type=Path, default=None)
     parser.add_argument("--segments-dir", type=Path, default=None)
+    parser.add_argument("--visual-profile", choices=("studio_light", "technical_dark"))
     argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
     return parser.parse_args(argv)
 
@@ -65,7 +68,8 @@ def create_text(camera, body: str, x: float, y: float, *, size: float = .009):
     obj.rotation_euler = camera.rotation_euler
     bpy.context.view_layer.update()
     obj.location = camera.matrix_world @ Vector((x, y, -.22))
-    data.materials.append(new_emission_material("Battery_Label_Material", (.78, .86, .94, 1.0), 1.0))
+    ink = hex_to_linear_rgba(profile_color("primary_text", os.environ.get("EDU_VISUAL_PROFILE", "technical_dark")))
+    data.materials.append(new_emission_material("Battery_Label_Material", ink, 1.0))
     return obj
 
 
@@ -84,6 +88,9 @@ def new_emission_material(name: str, color: tuple[float, float, float, float], s
 
 
 def setup_scene(scene, camera_target: Vector, width: int, height: int, fps: int, samples: int):
+    visual_profile = os.environ.get("EDU_VISUAL_PROFILE", "technical_dark")
+    look = get_visual_profile(visual_profile)
+    lighting = look["lighting"]
     configure_eevee(scene, samples)
     scene.render.resolution_x = width
     scene.render.resolution_y = height
@@ -101,8 +108,11 @@ def setup_scene(scene, camera_target: Vector, width: int, height: int, fps: int,
     scene.render.film_transparent = False
     scene.view_settings.view_transform = "AgX"
     scene.view_settings.look = "AgX - Medium High Contrast"
+    # The imported educational asset stores -3 EV; profile renders must not inherit it.
+    scene.view_settings.exposure = 0.0
+    scene.view_settings.gamma = 1.0
     scene.render.image_settings.file_format = "FFMPEG"
-    scene.world.color = (.018, .027, .043)
+    apply_world_profile(scene, visual_profile)
     scene.frame_start = 1
     bpy.ops.object.camera_add(location=camera_target + Vector((.15, -.42, .19)))
     camera = bpy.context.object
@@ -114,14 +124,14 @@ def setup_scene(scene, camera_target: Vector, width: int, height: int, fps: int,
     bpy.ops.object.light_add(type="AREA", location=camera_target + Vector((.12, -.17, .24)))
     key = bpy.context.object
     key.name = "Battery_Key_Softbox"
-    key.data.energy = 18
+    key.data.energy = 18 * lighting["key"]
     key.data.shape = "DISK"
     key.data.size = .22
     key.rotation_euler = (camera_target - key.location).to_track_quat("-Z", "Y").to_euler()
     bpy.ops.object.light_add(type="AREA", location=camera_target + Vector((-.20, .08, .10)))
     fill = bpy.context.object
     fill.name = "Battery_Fill_Softbox"
-    fill.data.energy = 8
+    fill.data.energy = 18 * lighting["key"] * lighting["fill"]
     fill.data.size = .28
     fill.rotation_euler = (camera_target - fill.location).to_track_quat("-Z", "Y").to_euler()
     return camera
@@ -139,9 +149,10 @@ def add_soc_gauge(scene, camera):
     fill.name = "Solver_SOC_Gauge_Fill"
     fill.dimensions = (.010, .004, .074)
     bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
-    fill.data.materials.append(new_emission_material("SOC_Gauge_Fill_Material", (.12, .66, .92, 1), 1))
+    result = hex_to_linear_rgba(profile_color("result", os.environ.get("EDU_VISUAL_PROFILE", "technical_dark")))
+    fill.data.materials.append(new_emission_material("SOC_Gauge_Fill_Material", result, 1))
     fill["base_height_m"] = .074
-    # Keep the headings inside the 16:9 camera safe area at 540p and 1080p.
+    # Keep headings inset from the top safe area at preview and delivery sizes.
     create_text(camera, "18650 EDUCATION MODEL", -0.080, .042, size=.007)
     create_text(camera, "MODEL SOC", .027, .042, size=.006)
     return backing, fill
@@ -315,4 +326,7 @@ def render_lesson(args: argparse.Namespace):
 
 
 if __name__ == "__main__":
-    render_lesson(args_from_blender())
+    args = args_from_blender()
+    if args.visual_profile:
+        os.environ["EDU_VISUAL_PROFILE"] = args.visual_profile
+    render_lesson(args)
