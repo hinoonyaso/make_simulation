@@ -87,6 +87,32 @@ def new_emission_material(name: str, color: tuple[float, float, float, float], s
     return material
 
 
+def apply_profile_camera_background(scene, visual_profile: str):
+    """Keep profile world strength for lighting while matching the visible canvas."""
+    world = apply_world_profile(scene, visual_profile)
+    nodes = world.node_tree.nodes
+    links = world.node_tree.links
+    lighting_background = nodes.get("Background")
+    camera_background = nodes.get("Battery_Camera_Background") or nodes.new("ShaderNodeBackground")
+    camera_background.name = "Battery_Camera_Background"
+    camera_background.inputs["Color"].default_value = hex_to_linear_rgba(
+        get_visual_profile(visual_profile)["background"])
+    camera_background.inputs["Strength"].default_value = 1.0
+    light_path = nodes.get("Battery_World_Light_Path") or nodes.new("ShaderNodeLightPath")
+    light_path.name = "Battery_World_Light_Path"
+    mix = nodes.get("Battery_World_Background_Mix") or nodes.new("ShaderNodeMixShader")
+    mix.name = "Battery_World_Background_Mix"
+    output = nodes.get("World Output") or nodes.new("ShaderNodeOutputWorld")
+    surface = output.inputs["Surface"]
+    for link in list(surface.links):
+        links.remove(link)
+    links.new(light_path.outputs["Is Camera Ray"], mix.inputs[0])
+    links.new(lighting_background.outputs["Background"], mix.inputs[1])
+    links.new(camera_background.outputs["Background"], mix.inputs[2])
+    links.new(mix.outputs["Shader"], surface)
+    return world
+
+
 def setup_scene(scene, camera_target: Vector, width: int, height: int, fps: int, samples: int):
     visual_profile = os.environ.get("EDU_VISUAL_PROFILE", "technical_dark")
     look = get_visual_profile(visual_profile)
@@ -112,7 +138,7 @@ def setup_scene(scene, camera_target: Vector, width: int, height: int, fps: int,
     scene.view_settings.exposure = 0.0
     scene.view_settings.gamma = 1.0
     scene.render.image_settings.file_format = "FFMPEG"
-    apply_world_profile(scene, visual_profile)
+    apply_profile_camera_background(scene, visual_profile)
     scene.frame_start = 1
     bpy.ops.object.camera_add(location=camera_target + Vector((.15, -.42, .19)))
     camera = bpy.context.object
