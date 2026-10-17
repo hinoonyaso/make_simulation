@@ -4,11 +4,15 @@
 
 - Audit branch: `audit/cross-pilot-visual-consistency`
 - Audited source HEAD: `331bdfea6625b6cef5fa90f64f77e3702db40c03`
-- PR #10 at audit time: Open / Draft; this worktree is separate and does not modify PR #10 or `main`.
-- Review method: existing MP4s and their recorded reports, sampled frames, two contact sheets, shared visual-system source inspection, and one current-source PyBaMM-backed Blender still render.
+- `origin/main` at check: `d387bc1ea8bc23c447b0d3572c1951a2cbfa3b03`.
+- PR #10 at check: open / Draft, head `331bdfea6625b6cef5fa90f64f77e3702db40c03`, base `main` at `d387bc1`, mergeable. This worktree is separate and does not modify PR #10 or `main`.
+- Audit branch at start: `ccd0706e1d64cb6dcd29e657c20987e3f9af997b`, synced with its remote tracking branch.
+- Review method: existing MP4s and their recorded reports, sampled frames, four published evidence sheets, shared visual-system source inspection, and one current-source PyBaMM-backed Blender still render.
 - No existing full video was re-rendered. The generated render is one frame used to resolve a suspected title-margin defect.
 
-**Overall visual design score: 7.3/10 (subjective snapshot audit).** Existing work has a recognizable visual language: semantic input/output colors, restrained technical-dark explanations, studio-light physical scenes, and consistent Korean typography choices. The score is limited by uneven provenance across older pilots, visible renderer handoffs that are not consistently bridged, and a mixture of current-source stills and historical final videos. It is not a motion-quality or educational-effectiveness score.
+**Overall Visual Quality: 7.4/10 (subjective snapshot audit).** This is the equal-weight arithmetic mean of Visual Consistency (7.5), Typography (7.0), Layout (7.5), Color/Lighting (8.0), and Educational Communication (7.0). It reflects visible design quality in the inspected output frames. It is not a motion-quality or educational-effectiveness score.
+
+**Overall Evidence Confidence: MEDIUM.** Output hashes and real frames were checked, and some current renders have detailed provenance. Several historical TEB/DWB/Robot Arm/Gear outputs cannot be bound to exact source/input hashes. The two Battery preview hashes have strong technical reports and a recorded human-acceptance entry, but the latest integrated QA commit contains a contradictory `INCOMPLETE` row for those same files. DWB was inspected as extracted frames, not perceptually reviewed at continuous 1× playback. These limits reduce confidence in the conclusions, not the visible design score.
 
 | Dimension | Score | Evidence-based assessment |
 |---|---:|---|
@@ -19,19 +23,44 @@
 | Educational communication | 7/10 | Several samples connect a physical object to its analytical representation. Still samples cannot establish that the complete explanation is understandable. |
 | Motion QA | INCOMPLETE | This audit sampled frames, not complete normal-speed playback. Moving Obstacle's prior review also marks full motion/audio review incomplete. |
 
-No P0/P1 issue was established. No source-level visual edit met the evidence threshold in this pass. One historical DWB output concern and one renderer-handoff concern are documented below for follow-up against provenance-bound renders.
+No P0/P1 current-source issue was established. No source-level visual edit met the evidence threshold in this pass. The DWB handoff artifact shows a route gap, but its source provenance is unknown; the cost-panel overlap was not reproduced on the recorded video hash.
+
+### Evidence confidence by claim
+
+| Claim | Confidence | Basis / limit |
+|---|---|---|
+| Visual quality score | MEDIUM | Real output frames and exact local output hashes were inspected; multiple legacy files do not identify the source commit that produced them. |
+| DWB handoff observation | HIGH for the archived MP4; LOW for current-source relevance | MP4 SHA matched the recorded value and its full decode passed. The render source/input hashes are absent; this is an observation of that file, not current code. |
+| DWB cost-panel no-overlap observation | MEDIUM | Ten time-labeled frames from the same hash show no overlapping candidate rows; native full-resolution stills are clear, but no continuous playback was reviewed. |
+| Battery technical validation | HIGH as a recorded result; raw MP4 recheck unavailable | The integration QA record binds exact video hashes to solver, asset, sparse plan, renderer versions, frame count, full decode, and CI. The two MP4s are no longer present at the recorded `/tmp` paths, so their bytes could not be re-hashed in this audit. |
+| Battery prior human acceptance | CONFLICTING RECORDS | Commit `c636062` records user 1× acceptance for both exact MP4 hashes; later commit `cfe741e` repeats those hashes but also marks full 1× review `INCOMPLETE`. The latest source document contains both statements. The audit preserves the historical PASS entry but uses `INCOMPLETE` as the reconciled status until the record is clarified. |
+| Learner comprehension | NOT REVIEWED | No learner study or comprehension feedback was present in the reviewed evidence. |
 
 ## Contact sheets and audit artifacts
 
-These files are local audit artifacts under `/tmp`; they are not committed. Their samples come from project outputs, not generated reference imagery.
+The originals are local under `/tmp`; compact WebP copies are committed with this report for remote review. They use actual project output frames only. Every WebP is below 1 MB. Section labels distinguish historical videos, V14.5 current-source local stills, renderer layers, and non-final/smoke outputs.
 
 | Artifact | Contents | SHA-256 |
 |---|---|---|
-| `/tmp/make_simulation-visual-audit/cross_pilot_contact_sheet.png` | TEB, DWB, Moving Obstacle R18, Robot Arm Manim, H1 Blender smoke, Bearing R6, Gear V14.1, V14.5 bearing stills, V14.5 gear stills, and battery renderer-only frames. | `23db302c4507c3bf1ae65346b8a5473d0c5d06728de6e63e6fefddbf4259e358` |
-| `/tmp/make_simulation-visual-audit/renderer_transition_contact_sheet.png` | TEB and DWB handoff samples at 11.4/12.0/12.6 s; Gear V14.1 samples at 33.5/34.0/34.6 s. | `6306bf4a80bbd295ff850ec755ed12054a38e821d4fa8a6caf7f83c1ad42a9e2` |
+| [`cross_pilot_contact_sheet.webp`](evidence/cross_pilot_contact_sheet.webp) | All audited pilots and clearly labeled historical/current/local-still/smoke rows. 2220×5305; 454,324 bytes. Original PNG SHA-256 `23db302c4507c3bf1ae65346b8a5473d0c5d06728de6e63e6fefddbf4259e358`; WebP SHA-256 `f13a242a9f37161095019065748423652bdd04ce5883ae4551f31ac6b9c0873a`. | `f13a242a9f37161095019065748423652bdd04ce5883ae4551f31ac6b9c0873a` |
+| [`renderer_transition_contact_sheet.webp`](evidence/renderer_transition_contact_sheet.webp) | TEB/DWB at 11.4/12.0/12.6 s and Gear V14.1 at 33.5/34.0/34.6 s. 2220×1473; 80,206 bytes. Original PNG SHA-256 `6306bf4a80bbd295ff850ec755ed12054a38e821d4fa8a6caf7f83c1ad42a9e2`; WebP SHA-256 `f0e0d01902fe5c15a39e4f37b0d7f8f0b6536e1e514e521343144526d3f5339c`. | `f0e0d01902fe5c15a39e4f37b0d7f8f0b6536e1e514e521343144526d3f5339c` |
+| [`dwb_handoff_sequence.webp`](evidence/dwb_handoff_sequence.webp) | 13 source frames sampled at 10 fps from 11.4–12.6 s, labeled by time. 1920×1200; 41,790 bytes. PNG source SHA-256 `e5ea4dbdb1319173ad7abe8fb11464f5aefc9b512d17ea42cbd52b41b6308eaa`; WebP SHA-256 `a6e85d7f9911c06eb713f6201b5612b4ee4b081e17747d7faf91acf47edb5189`. | `a6e85d7f9911c06eb713f6201b5612b4ee4b081e17747d7faf91acf47edb5189` |
+| [`dwb_cost_panel_sequence.webp`](evidence/dwb_cost_panel_sequence.webp) | Ten source frames sampled at 5 fps from 35.5–37.3 s. 2400×600; 87,314 bytes. PNG source SHA-256 `90132782139474dbd627a3a7ef55bbbd2ff50284a9242e05e4b67932e42bd6c0`; WebP SHA-256 `06341572be9b790f917940b472ea266d8aa2a0cd2c56162441eac4ead4f55628`. | `06341572be9b790f917940b472ea266d8aa2a0cd2c56162441eac4ead4f55628` |
 | `/tmp/make_simulation-visual-audit/battery_render/source-frame-1/battery_still.png` | One 960×540 current-source Blender frame, generated from a validated PyBaMM result to inspect the title margin. | `9735e44698f164253372cee3013f90e598b07c7acadae5b66bf7a75c3b5ee548` |
 
-The full contact sheet labels V14.5 battery stills as non-composite frames and the V14.5 gear stills as non-final output. They must not be interpreted as completed mixed videos.
+The full contact sheet labels V14.5 battery stills as non-composite frames and V14.5 gear stills as non-final output; the H1 file is labeled as a 2.03 s smoke. They must not be interpreted as completed final videos. The original transition sheet and two focused DWB sheets were visually compared to their WebP copies; headings, time labels, and sampled content remain legible. The DWB short clip is `/tmp/make_simulation-visual-audit/dwb-finalization/dwb_handoff_10.5-13.5.mp4` (3 s, 1920×1080, 30 fps, H.264 + AAC, 90 frames, SHA-256 `5d7656d8c7e11a6b587e69cd226fcfa15b82ddcb7bed10241e634ad307c5170f`). It is a convenience excerpt of the original MP4, not a new render; subtitle metadata was not carried into the excerpt.
+
+### Cross-pilot frames
+
+![Cross-pilot contact sheet with historical videos, current-source stills, renderer layers, and smoke output labeled separately.](evidence/cross_pilot_contact_sheet.webp)
+
+### DWB handoff at 10 fps
+
+![DWB frames from 11.4 to 12.6 seconds, sampled at 0.1-second intervals.](evidence/dwb_handoff_sequence.webp)
+
+### DWB cost panel at 5 fps
+
+![DWB cost panel frames from 35.5 to 37.3 seconds, sampled at 0.2-second intervals.](evidence/dwb_cost_panel_sequence.webp)
 
 ## Shared design system: guidance versus adoption
 
@@ -44,36 +73,52 @@ That is real but partial adoption. TEB/DWB and older pilot outputs remain their 
 | Content | Information | Layout | Typography | Color | Consistency / provenance | Motion QA |
 |---|---|---|---|---|---|---|
 | TEB | 7.5/10 — robot, obstacle, path, and analytical frame are identifiable in sampled views. | 7/10 — subject separation is good; explanatory frame is denser. | 7/10 — main labels readable in samples; small annotations not assessed at native playback size. | 8/10 — orange obstacle and purple/cyan path remain distinct across the sampled renderer handoff. | 6/10 — historical local MP4 has no embedded renderer/source/input provenance. | INCOMPLETE; sampled 0, 31, 62 s and 11.4/12.0/12.6 s handoff only. |
-| DWB | 7/10 — candidate path and cost ranking can be identified; the old output has a cluttered cost-table moment. | 6.5/10 — sampled 12.0 s has robot/title but no visible path, which reappears by 12.6 s. | 6.5/10 — cost rows are small and crowded in the historical 36 s frame. | 8/10 — obstacle and path colors remain clear. | 5.5/10 — old MP4 is not bound to a source hash; current B04 source segment renders cleanly. | INCOMPLETE; sampled 0, 36, 70 s and 11.4/12.0/12.6 s handoff only. |
+| DWB | 7/10 — candidate path and cost ranking can be identified; path context drops during the sampled renderer cut. | 6.5/10 — robot pose is stable in the samples, but route is absent for about 0.8 s. | 7/10 — no cost-row overlap was visible in the 35.5–37.3 s sequence; the values are compact. | 8/10 — obstacle and path colors remain clear. | 5.5/10 — MP4 SHA is verified but source/render-input provenance is absent; it is a historical artifact. Current B04 source segment renders cleanly. | STALE_ARTIFACT for current-source conclusions; normal-speed motion review INCOMPLETE. |
 | Moving Obstacle R18 | 8/10 — the obstacle/robot/path relationship is clear in the sampled beats. | 7.5/10 — physical and explanatory layouts are appropriately distinct. | 6.5/10 — sampled overlays are small at contact-sheet scale; full-resolution reading not certified here. | 8/10 — green planned path, cyan/blue reference, and orange obstacle are distinct. | 7/10 — output has trace/pose validation and a review record, but no complete renderer-source binding was found. | INCOMPLETE; report records mosaic review of 90 frames, not complete continuous playback/audio. |
 | Robot Arm Manim | 7/10 — arm pose and target/actual graph coexist, but the complete lesson is a short historical clip. | 7/10 — arm and plot have separate regions. | 6.5/10 — graph ticks are small in the sampled video. | 7.5/10 — target/actual curves and joint colors are distinguishable. | 5.5/10 — historical output lacks source/input provenance. H1 Blender file is a separate 2.03 s smoke, not a final. | INCOMPLETE; sampled 1, 4.9, 8 s / H1 0.1, 1.0, 1.9 s. |
 | Bearing R6 | 8.5/10 — components and rolling elements are visually prominent; the object reads clearly. | 8/10 — clean 3D composition with supporting text separated to the side. | 7/10 — labels are readable in sampled frames, but small text at 540p warrants full-speed review. | 8/10 — metal races, balls, and cage are visually separable. | 7/10 — validated 84 s silent preview and asset provenance exist; exact source commit/render-code hash is not in the report. This is pre-V14.5. | INCOMPLETE in this audit. The prior user review was PASS for R6 at normal speed, but it does not validate the later V14.5 sources. |
 | Gear V14.1 | 7.5/10 — input/output ratio and counter-rotation are shown. | 7/10 — gear pair dominates the physical frame; the analytical screen has several concurrent labels. | 6.5/10 — equation labels are small in 540p samples. | 8/10 — input/output use distinct semantic colors. | 6.5/10 — 80 s pre-V14.5 mixed preview exists; no exact source binding established in this audit. | INCOMPLETE; samples at 5, 39, 64 s and around 33.5–34.6 s only. |
-| Battery V14.5 | 7/10 — cell, electrodes, SOC gauge, and Manim computation layers have clear roles in individual stills/layers. | 7/10 — current-source frame has safe title margin; no completed mixed composition was available. | 7/10 — current-source title is not clipped; detailed graph tick readability remains unreviewed. | 8/10 — light/dark profile separation is effective and cell/electrode colors are distinct. | 7.5/10 — current Blender still uses a validated PyBaMM result; output layers are not a final composite. | INCOMPLETE; one Blender still and historical layer outputs only. |
+| Battery V14.5 | 7/10 — cell, electrodes, SOC gauge, and computation layers have clear roles in stills/layers. | 7/10 — current-source still has safe title margin; prior mixed composition was technically validated. | 7/10 — current-source title is not clipped; detailed graph tick readability remains unreviewed in this audit. | 8/10 — light/dark profile separation is effective and cell/electrode colors are distinct. | 7.5/10 — two mixed previews have detailed technical provenance records; the video files are no longer at their recorded `/tmp` paths. | Prior human review is recorded for exact hashes but contradicted by the later same-report `INCOMPLETE` row; see Battery evidence below. |
 
 Scores are subjective assessments of the sampled visual evidence, not a metric produced by an automated checker. `INCOMPLETE` means motion has not been established by this frame-based audit.
 
 ## Observations and priorities
 
-### P2 — Historical DWB cost panel is crowded (artifact-level, not confirmed in current source output)
+### DWB cost panel — NOT REPRODUCED on the recorded artifact
 
-- **Scene / time:** DWB historical MP4, approximately 36–37 s.
-- **Observed:** candidate command rows are visible behind/near weighted cost values, reducing the table's visual separation in the sampled frame.
+- **Scene / time:** DWB MP4 SHA `8314f6b2280d689cf4a63753b4f056d335bedab64bad2cff02cdf33a1477c961`, 35.5–37.3 s.
+- **Observed:** ten frames sampled at 5 fps show the cost rows and total `7.335`; the candidate command rows do not overlap the cost panel in those samples. The prior overlap concern is **CLOSED / NOT REPRODUCED for this output hash**.
 - **Source check:** current tracked `pilots/02_dwb_reference/manim_shot.py` SHA-256 is `86a10e066641329b2e78850191d78270a1c89194327ceb69e529a3685873e4b2`; B04 fades the command rows before the cost panel. A current-source 1080p30 render of B04 produced the same tested frame before and after a temporary explicit removal (`mean pixel difference 0`, frame SHA identical). The temporary edit was reverted.
-- **Disposition:** no source change. The historical MP4 has no exact source provenance, so it cannot prove a current-source regression. If this MP4 is still a delivery artifact, rebuild it from current source and bind the output report to the code/input hashes.
-- **Risk / verification:** a rebuild could change legacy timing; compare the same cost-panel timestamp and preserve the trace and timeline.
+- **Artifact integrity:** source MP4 hash matches the recorded SHA; metadata is H.264 1920×1080 at 30 fps, 2500 frames / 83.333 s, with AAC audio and mov_text subtitles. FFmpeg full decode exited successfully.
+- **Disposition / status:** no code change. Current B04 source also contains the intended fade-out. The old MP4 remains source-unbound, so this result is artifact-specific rather than proof of source-to-video reproducibility.
 
-### P2 — DWB path context drops during the renderer handoff (sampled-sequence concern)
+### DWB handoff — STALE_ARTIFACT; current-source status unresolved
 
-- **Scene / time:** DWB handoff at 11.4, 12.0, and 12.6 s in the historical local MP4.
-- **Observed:** the 11.4 s studio frame has the route; at 12.0 s the dark analytical frame shows the robot and heading but not the route; by 12.6 s a candidate route is visible again.
-- **Root cause:** unknown. The samples show a short representation gap, but do not establish whether the transition is an intentional staged reveal or an unwanted disappearance.
-- **Disposition:** no code change because source provenance and continuous normal-speed review are unavailable. On the next provenance-bound render, confirm that the route identity remains understandable through the handoff; if it is intentional, the reveal should read as one staged transition.
-- **Risk / verification:** changing the cross-renderer transition could affect timing and semantic mapping. Review continuous playback and compare route/robot IDs and trace timestamps before editing.
+- **File / integrity:** `/home/sang/make_simulation/pilots/02_dwb_reference/output/dwb_reference_ko.mp4`; SHA-256 exactly matches `8314f6b2280d689cf4a63753b4f056d335bedab64bad2cff02cdf33a1477c961`. Metadata is H.264 1920×1080, 30 fps, 2500 frames, 83.333 s; full FFmpeg decode passed. Subtitles are present as mov_text. No MP4 sidecar binds it to the current render sources or trace hashes.
+- **Samples:** 13 frames at 10 fps from 11.4–12.6 s are in `evidence/dwb_handoff_sequence.webp`; the source frames cover the actual clip at 0.1 s steps.
+- **Observed sequence:** Studio Light route remains visible through 11.7 s. The Technical Dark cut begins by 11.8 s; robot and obstacle remain in stable positions, while the route is absent through 12.5 s. A thin yellow candidate curve appears at 12.6 s. Thus the old output has an observed route-context gap of about 0.8 s and the route's visual representation/color changes. The new candidate is not clearly identifiable as the same route from these still samples alone.
+- **Continuous review:** the original 10.5–13.5 s section was launched through `ffplay` at 1× outside the sandbox, and playback returned successfully. The agent has no live view of the player window/audio, so naturalness and perception cannot be independently judged; normal-speed perceptual review is **INCOMPLETE**, not PASS. The output classification for current-source conclusions is **STALE_ARTIFACT** because source/input provenance is missing.
+- **Disposition:** no code change. Do not treat the old clip as evidence of a current-source defect. For a current-source judgment, render only this handoff from the current manifest/trace with source hashes, then inspect a continuous 1× clip. If route loss is reproduced, propose a separate minimal fix.
+- **Status:** historical artifact symptom observed; current source `NOT REVIEWED` at continuous speed.
 
 ### Battery title margin: suspected issue not reproduced
 
 The older local frame raised a clipping concern. A new single-frame render from current HEAD shows the full `18650 EDUCATION MODEL` heading with visible top margin in 960×540. No title-position fix is warranted. This is not a full Battery video review.
+
+### Battery Mixed Preview: technical evidence and human-review record
+
+The separate integration QA worktree is at `cfe741e6a341b701d934d34ee2a8a3e82e56cc74` (2026-10-15 23:51:59 +09:00). Its report is [V14_3_V14_5_INTEGRATION_QA.md](https://github.com/hinoonyaso/make_simulation/blob/integration/v14.3-v14.5-validation/docs/integration/V14_3_V14_5_INTEGRATION_QA.md). That record and the PR #10 description bind these Technical Dark / Studio Light previews to source HEAD `331bdfea6625b6cef5fa90f64f77e3702db40c03`:
+
+| Evidence | Technical Dark | Studio Light |
+|---|---|---|
+| Recorded output SHA-256 | `669b20b6e2d76eba936241d28f47ca595493e681b661f97ac8e122b7a1359fb8` | `d42259957911d06be8f01d996b14cc4ac886668e156438bae6005a07ea9f25d2` |
+| Recorded format | 960×540, 30 fps, H.264, 720 frames, 24 s; silent by design | Same |
+| Recorded render provenance | Blender 5.2.1, Manim 0.21.0, sparse 1 still + 180 animation frames, same validated PyBaMM result | Same |
+| Shared solver result | PyBaMM 26.10.0.0 / IDAKLUSolver; 361 samples / 1800 s; SHA-256 `e29e858dd80f48c969f8d4b51f6ef004c62241175f598c5b7bd965b65fb44b25` | Same validated result |
+| Production/media validation | PASS in recorded QA: manifest/timeline/caption timing and H.264 full decode | PASS in recorded QA |
+| Remote Actions on HEAD 331bdfea | [Education Renderer #65 PASS](https://github.com/hinoonyaso/make_simulation/actions/runs/38754717908); [PyBaMM Battery #32 PASS](https://github.com/hinoonyaso/make_simulation/actions/runs/38754718561); [AI Trace #144 PASS](https://github.com/hinoonyaso/make_simulation/actions/runs/38754717889) | Same run results; these checks validate the PR head, not profile-specific renders |
+
+The QA report records prior user 1× acceptance for both exact hashes in its `c636062` release-gate section. The later `cfe741e` final section repeats those hashes but marks full 1× review `INCOMPLETE`, saying only transition samples were inspected. Git blame dates the PASS record to 23:00:41 and the later INCOMPLETE row to 23:51:59 on 2026-10-15; both concern source head `331bdfea` and the same output hashes. The newer row is used as the reconciled status, while the earlier approval record is preserved as historical evidence. The two MP4s no longer exist at their recorded `/tmp/pr10-main-merge-qa/renders/...` paths, so their bytes could not be re-hashed or re-watched here. Technical validation remains PASS as recorded; the latest integrated QA status for human review is INCOMPLETE; learner comprehension remains untested.
 
 ## Reproduction and provenance
 
@@ -118,17 +163,20 @@ No global token change is justified by this audit. A scoped visual edit should f
 
 ## Changed files and validation
 
-- Changed file: this report only. No scene, shared kit, design token, trace, timeline, or existing media was edited.
+- Changed files: this report and four compact evidence WebPs. No scene, shared kit, design token, trace, timeline, or existing media was edited.
 - Solver validation/render: current PyBaMM battery solver returned PASS with 361 samples and full requested duration; one current-source Blender still rendered and its asset validation passed.
-- DWB diagnostic: current source B04 rendered at 1920×1080/30; the cost-panel frame remained pixel-identical with and without the temporary explicit removal (`mean pixel difference = 0`). The no-op source edit was reverted.
-- Contact sheets and generated stills: inspected visually. They remain local under `/tmp` and are not committed.
+- DWB diagnostic: original video hash and metadata verified; full decode passed; 3 s excerpt made and launched in ffplay at 1×; 13 transition frames and 10 cost-panel frames inspected. Current source B04 had also rendered at 1920×1080/30; its cost-panel frame remained pixel-identical with and without the temporary explicit removal (`mean pixel difference = 0`). The no-op source edit was reverted.
+- Contact sheets: original PNGs inspected, WebP copies checked visually and by dimensions/hash; all four are under 1 MB. The original DWB excerpt remains local under `/tmp`, not committed.
 - Full suite, all-scene style check, complete video decode, 1080p final render, and audio review were not repeated because no source changed and this is a comparative audit. Do not treat them as PASS for this work.
 - `git diff --check`: run before commit.
 
 ## Final QA status
 
-- P0/P1 visual blocker: none established from reviewed frames.
+- P0/P1 current-source visual blocker: none established from reviewed frames.
 - Confirmed current-source title clipping: none; the suspected Battery issue did not reproduce.
-- P2 follow-up: historical DWB cost-table crowding and handoff route gap need confirmation against a provenance-bound current render.
-- Motion, audio/caption synchronization, full-speed viewing of all pilot videos, Battery mixed playback, and learner comprehension: **INCOMPLETE / NOT REVIEWED**.
-- Current overall visual quality: **7.3/10 snapshot audit**, not approved as a production-wide final visual acceptance.
+- DWB cost panel: **CLOSED / NOT REPRODUCED** on output hash `8314f6b...`; current B04 source has the intended fade.
+- DWB handoff: **STALE_ARTIFACT** symptom observed (route absent about 0.8 s) and **INCOMPLETE** for current-source/continuous perceptual review.
+- Battery production/technical validation: **PASS as recorded** for both exact preview hashes, plus three CI checks on HEAD `331bdfea`.
+- Battery prior human acceptance: **recorded PASS, then contradicted by a later INCOMPLETE row**; reconciled latest status is **INCOMPLETE** because the files are unavailable to resolve it here.
+- Audio/caption sync, full-speed review of all pilots, current-source DWB motion acceptance, and learner comprehension: **INCOMPLETE / NOT REVIEWED**.
+- Current overall Visual Quality: **7.4/10 snapshot audit**. Overall Evidence Confidence: **MEDIUM**. This is not a production-wide final visual acceptance.
