@@ -2,7 +2,7 @@
 name: blender-robotics-simulation-skill
 description: Build Blender robotics spatial explanations and physics-backed scenes, using actual solver outputs, shared traces, reusable assets, studio rendering, and faithful 2D handoffs.
 metadata:
-  version: "5.11-surface-light-response"
+  version: "5.12-shared-visual-profiles"
 ---
 
 # Blender Robotics Spatial
@@ -19,7 +19,7 @@ Use Blender only when 3D space materially improves understanding. Story/timing c
 - For engineering mechanism explanations, query `core/visual-assets/registry.json` for `edu.*` assets before modeling from scratch. These CC0 assemblies live in `assets/education/generated/`; preserve named component objects and consult each adjacent JSON for dimensional assumptions, animation status, and fidelity limits. They are educational geometry, not product CAD or solver evidence.
 - `raw_mesh_set` assets (imported STL/DAE) are static geometry only, no joints — rig them via the matching `reference.*` urdf/xacro origin/axis/limit before posing. Procedural primitives (e.g. `add_stylized_robot_arm`) are already posable out of the box.
 - Auto-frame hero subjects from their world bounds before hand-tuning camera; avoid small objects floating in empty space.
-- Default look = bright studio floor via `templates/studio_utils.py` (EEVEE, AgX Punchy, concrete tiles, soft area lights, native 30 fps, full frame). Reference: `pilots/01_teb_reference` (S1/S3). `scene_kit.py` remains for dark technical shots.
+- Use the lesson's `EDU_VISUAL_PROFILE` from `core/visual_primitives/design_tokens.json`: `studio_light` for readable physical form/space, `technical_dark` for data/formula focus when its contrast is better. Either renderer can use either profile. `studio_utils.py` preserves the reference studio setup; `scene_kit.py` preserves the dark setup. Explicitly thread `visual_profile` to `setup_studio`/`bootstrap` and use `visual_material` for new semantic materials.
 - Mobile-robot episodes use the real TurtleBot3 mesh (`studio_utils.load_turtlebot3`) and use solver wheel orientations for physical replay, or `diff_drive_wheel_angles` for a declared kinematic illustration; state when the planner's footprint differs from the shown robot.
 - Never Workbench for delivery, never render below 24 fps and time-stretch; `scripts/check_scene_style.py` fails both.
 - Final >=1920x1080; use 2560x1440 for flagship/overlay masters when practical.
@@ -35,6 +35,11 @@ Use Blender only when 3D space materially improves understanding. Story/timing c
 7. FINAL/DELIVERY; HERO only for short flagship shots.
 8. Write each rendered beat's output path into `visual_manifest.json` `beats[].media` (relative to the manifest), plus `media_in`/`media_out` when one shot file carries several beats.
 9. Handing off to a Manim top view: end on `studio_utils.top_view(width_m)` and verify with a blended overlay of both frames before the final render.
+
+## Shared visual system
+- Keep object-specific physical materials local; use shared semantic colors and material roles for attention, sensor, result and annotation layers. Convert token sRGB values with the shared helper before assigning Blender shader inputs.
+- Profile defaults are recommendations, not exposure targets. Inspect the deciding surface, silhouette, contact/clearance, text contrast and highlight clipping in actual renders. Use auto-framing as a starting point, then frame the educational evidence.
+- Use the common Korean font resolver for Korean overlays; `EDU_KOREAN_FONT` is the preferred file path, with `BEARING_KOREAN_FONT` retained as a legacy alias. Fail clearly when Blender cannot load the chosen font or required glyphs.
 
 ## On-demand references
 production / evidence / one matching topic.

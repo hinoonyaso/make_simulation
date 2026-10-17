@@ -26,6 +26,7 @@
     "visualization": {"type": "string"},
     "computation_policy": {"enum": ["only_when_needed", "always", "never"]},
     "output_profile": {"type": "string"},
+    "visual_profile": {"enum": ["studio_light", "technical_dark"], "default": "technical_dark"},
     "asset_id": {"type": "string", "minLength": 1},
     "solver": {"type": ["string", "null"]},
     "solver_config": {"type": ["string", "null"]},

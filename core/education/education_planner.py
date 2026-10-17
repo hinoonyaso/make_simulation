@@ -20,9 +20,10 @@ def plan_lesson(spec: dict[str, Any], *, fps: int = 30) -> dict[str, Any]:
     actual = sum(float(beat.get("sec", 0)) for beat in beats if isinstance(beat, dict))
     if target and abs(actual - target) / target > .20:
         raise ValueError(f"beat duration {actual:.2f}s differs from duration_target_sec={target}s by more than 20%")
+    visual_profile = spec.get("visual_profile", "technical_dark")
     manifest = {"language": spec.get("language", "ko-KR"), "voice": spec.get("voice", "ko-KR-SunHiNeural"),
                 "rate": spec.get("rate", "+0%"), "format": "technical_preview",
-                "title": spec.get("title", spec["question"]), "beats": beats}
+                "title": spec.get("title", spec["question"]), "visual_profile": visual_profile, "beats": beats}
     errors = validate_manifest(manifest)
     if errors:
         raise ValueError("invalid V9 visual manifest: " + "; ".join(errors))
@@ -42,6 +43,7 @@ def plan_lesson(spec: dict[str, Any], *, fps: int = 30) -> dict[str, Any]:
     timeline = build_timeline([{"phase_id": beat["phase_id"], "sec": beat["sec"]} for beat in beats], fps=fps)
     return {"visual_manifest": manifest, "timeline": timeline,
             "visual_plan": {"kind": "education", "topic": spec["topic"], "title": manifest["title"],
+                            "visual_profile": visual_profile,
                             "blueprints": [beat.get("blueprint") for beat in beats],
                             "beat_evidence": evidence.get("beat_evidence", []),
                             "renderer_registry_id": renderer_contract["registry_id"],

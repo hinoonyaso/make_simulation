@@ -368,13 +368,16 @@ def render(manifest_path: Path, timeline_path: Path, run_dir: Path, mode: str, m
             blender_args.extend(["--context", blender_path_arg(run_dir / "renderer_context.json", blender)])
         blender_args.extend([
             "--output", blender_path_arg(blender_output, blender),
-            "--width", str(width), "--height", str(height), "--fps", "30"])
+            "--width", str(width), "--height", str(height), "--fps", "30",
+            "--visual-profile", renderer_contract.get("visual_profile", "technical_dark")])
         blender_args.extend(["--samples", "16" if mode == "preview" else "32"])
         if sparse_plan is not None:
             blender_args.extend(["--sparse-plan", blender_path_arg(run_dir / "render_segments.json", blender),
                                  "--segments-dir", blender_path_arg(segment_dir, blender)])
         started = time.perf_counter()
-        subprocess.run(blender_args, cwd=ROOT, check=True)
+        render_env = os.environ.copy()
+        render_env["EDU_VISUAL_PROFILE"] = renderer_contract.get("visual_profile", "technical_dark")
+        subprocess.run(blender_args, cwd=ROOT, env=render_env, check=True)
         blender_sec = time.perf_counter() - started
         if sparse_plan is None and (not blender_output.is_file() or blender_output.stat().st_size == 0):
             raise RuntimeError(f"Blender exited without producing its expected video: {blender_output}")
@@ -410,6 +413,7 @@ def render(manifest_path: Path, timeline_path: Path, run_dir: Path, mode: str, m
     scene = ROOT / renderer.manim_script
     manim_dir = run_dir / f"{renderer.topic}_manim"
     env = os.environ.copy()
+    env["EDU_VISUAL_PROFILE"] = renderer_contract.get("visual_profile", "technical_dark")
     env["EDUCATION_MANIFEST_PATH"] = str(manifest_path.resolve())
     env["EDUCATION_TIMELINE_PATH"] = str(timeline_path.resolve())
     env["EDUCATION_RENDER_CONTEXT_PATH"] = str((run_dir / "renderer_context.json").resolve())
@@ -760,6 +764,7 @@ def main() -> int:
                    "--context", blender_path_arg(run_dir / "renderer_context.json", blender), "--output",
                    blender_path_arg(still_base, blender), "--width", "960" if args.preview else "1920",
                    "--height", "540" if args.preview else "1080", "--fps", "30", "--samples", "16",
+                   "--visual-profile", planned["renderer_contract"].get("visual_profile", "technical_dark"),
                    "--still-frame", str(args.blender_still_frame)]
         subprocess.run(command, cwd=ROOT, check=True)
         still_path = still_base.with_suffix(".png")

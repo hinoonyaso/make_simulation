@@ -11,7 +11,12 @@ from core.visual_primitives.design_tokens import (
     COLORS,
     TOKENS,
     contrast_ratio,
+    get_visual_profile,
     hex_to_linear_rgba,
+    layout_region,
+    profile_color,
+    recommend_visual_profile,
+    recommended_motion,
 )
 
 
@@ -47,6 +52,10 @@ class VisualDesignTokenTests(unittest.TestCase):
                 self.assertEqual(kit.P.bg, COLORS["background"])
                 self.assertEqual(kit.P.fg, COLORS["primary_text"])
                 self.assertEqual(kit.P.active, COLORS["active"])
+                light = kit.Palette.for_profile("studio_light")
+                self.assertEqual(light.bg, get_visual_profile("studio_light")["background"])
+                self.assertEqual(light.active, profile_color("active", "studio_light"))
+                self.assertNotEqual(light.active, kit.P.active)
         finally:
             sys.path.remove(str(kit_path))
             sys.modules.pop("manim_kit", None)
@@ -67,6 +76,34 @@ class VisualDesignTokenTests(unittest.TestCase):
         self.assertNotEqual(hex_to_linear_rgba("#808080")[0], 128 / 255)
         with self.assertRaises(ValueError):
             hex_to_linear_rgba("white")
+
+    def test_visual_profiles_are_distinct_and_meet_text_contrast(self):
+        light = get_visual_profile("studio_light")
+        dark = get_visual_profile("technical_dark")
+        self.assertNotEqual(light["background"], dark["background"])
+        for profile in (light, dark):
+            self.assertGreaterEqual(contrast_ratio(profile["primary_text"], profile["background"]), 4.5)
+            self.assertGreaterEqual(contrast_ratio(profile["secondary_text"], profile["background"]), 4.5)
+        self.assertEqual(
+            profile_color("active", "studio_light"),
+            get_visual_profile("studio_light")["semantic_colors"]["active"],
+        )
+
+    def test_visual_goal_recommendation_does_not_select_a_renderer(self):
+        self.assertEqual(recommend_visual_profile("spatial_geometry"), "studio_light")
+        self.assertEqual(recommend_visual_profile("algorithm"), "technical_dark")
+        with self.assertRaisesRegex(ValueError, "unknown visual goal"):
+            recommend_visual_profile("arbitrary")
+
+    def test_layout_and_motion_tokens_are_advisory_ranges(self):
+        bounds = layout_region("equation_geometry", "equation", 14.2, 8.0)
+        self.assertAlmostEqual(bounds[0], 8.52)
+        self.assertAlmostEqual(bounds[1], 1.44)
+        self.assertAlmostEqual(bounds[2], 13.348)
+        self.assertAlmostEqual(bounds[3], 6.4)
+        low, high = recommended_motion("state_transition")
+        self.assertLessEqual(low, high)
+        self.assertGreaterEqual(high, 0.4)
 
 
 if __name__ == "__main__":

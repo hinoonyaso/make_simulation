@@ -2,7 +2,7 @@
 name: davinci-resolve-robotics-postproduction-skill
 description: Low-token, high-quality DaVinci Resolve post-production for robotics/AI educational videos. Consumes Director/Manim/Blender outputs and uses the connected davinci-resolve MCP for safe timeline assembly, narration, SFX/BGM, subtitles, review, and delivery.
 metadata:
-  version: "1.6-source-state-handoffs"
+  version: "1.7-visual-profile-handoffs"
 ---
 
 # DaVinci Resolve Robotics / AI Post-production
@@ -25,6 +25,7 @@ Turn generated assets into a polished educational video while preserving technic
 - Keep narration dominant. Music and SFX support understanding; they must not compete with speech.
 - Do not add transitions, zooms, motion graphics, or sound merely for decoration.
 - Preserve the Director's persistent objects, beat order, semantic colors, terminology, variable names, units, and evidence labels.
+- Preserve the selected lesson visual profile across Blender/Manim clips. If a profile change is intentional, retain semantic meaning and inspect a cut frame on the final composite; editor color treatment must not silently change measurement meaning.
 - Do not fabricate captions, measurements, paper results, or audio transcripts. Use supplied script/transcript or verified media analysis.
 - Keep Resolve MCP in compound/default mode unless a required capability genuinely needs full/granular mode.
 
