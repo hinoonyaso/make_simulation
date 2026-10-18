@@ -24,6 +24,7 @@ The renderer change reserves additional camera space for sentence captions in th
 
 - Human video review: PASS (user-confirmed)
 - Local technical production checks: PASS (see ignored `pilots/01_teb_reference/output/production_report.json`)
-- GitHub Actions for this production branch: not yet run through a pull request
+- AI Trace reproducibility CI: PASS ([run 39099529298](https://github.com/hinoonyaso/make_simulation/actions/runs/39099529298))
+- Education Renderer and PyBaMM workflows: not run; their path filters do not match this PR
 - PR #11: separate cross-pilot visual QA documentation; unrelated to this TEB production change
 - Merge: not performed
