@@ -105,7 +105,8 @@ class BandDissection(MovingCameraScene):
         rim = DashedVMobject(Circle(radius=limit, color=P.error, stroke_width=2.5), num_dashes=48).move_to(W(OX, OY))
         with BeatClock(self, B02) as beat:
             beat.play(LaggedStart(*[GrowFromCenter(c) for c in halo], lag_ratio=.08), Create(rim),
-                      self.camera.frame.animate.set(width=10.6).move_to(W(0.05, 0.10)), run_time=2.4)
+                      # Reserve the lower caption-safe area without covering the band or cost panel.
+                      self.camera.frame.animate.set(width=20.0).move_to(W(0.05, -1.15)), run_time=2.4)
             self.bring_to_front(drum, band_mob, bot)
             beat.wait(B02 * 0.55 - 2.4)  # "...그 한가운데를 지나갑니다"
             inside = [W(p[0], p[1]) for p in SNAP[0]["poses"] if clearance(p[0], p[1]) < MARGIN]
@@ -180,5 +181,5 @@ class BandDissection(MovingCameraScene):
 
         # --- B06: pull back to the whole corridor for the cut to the full drive (S3) ---
         with BeatClock(self, B06) as beat:
-            beat.play(self.camera.frame.animate.set(width=8.0 * K).move_to(W(0, 0)),
+            beat.play(self.camera.frame.animate.set(width=8.0 * K).move_to(W(0, -1.15)),
                       FadeOut(VGroup(bar, base, j_value, tags)), run_time=3.0)
